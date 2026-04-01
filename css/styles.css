@@ -451,3 +451,96 @@ body {
   }
 }
 }
+
+body {
+  margin: 0;
+  font-family: Arial;
+}
+
+/* NAVBAR */
+.navbar {
+  background: #2d4a9d;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+}
+
+/* MAIN */
+.main {
+  display: flex;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  background: #243b7c;
+  color: white;
+  height: calc(100vh - 60px);
+  padding: 20px;
+}
+
+.sidebar a {
+  display: block;
+  color: white;
+  margin: 10px 0;
+  text-decoration: none;
+}
+
+.sidebar .active {
+  background: #1b2e63;
+  padding: 5px;
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  padding: 20px;
+  background: #f2f2f2;
+}
+
+/* HEADER */
+.header {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* BOTON */
+.btn {
+  background: #1b2e63;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+}
+
+/* FILTROS */
+.filtros {
+  background: #333;
+  color: white;
+  padding: 10px;
+  margin: 20px 0;
+}
+
+/* TABLA */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+thead {
+  background: #1b2e63;
+  color: white;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+}
+
+footer {
+  background: #1b2e63;
+  color: white;
+  text-align: center;
+  padding: 10px;
+}
