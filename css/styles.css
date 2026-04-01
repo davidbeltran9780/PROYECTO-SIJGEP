@@ -449,12 +449,12 @@ body {
   .titulo-ia {
     font-size: 22px;
   }
+} 
 }
-}
-
 body {
   margin: 0;
   font-family: Arial;
+  background: #f4f6fb;
 }
 
 /* NAVBAR */
@@ -463,10 +463,10 @@ body {
   color: white;
   display: flex;
   justify-content: space-between;
-  padding: 10px 20px;
+  padding: 12px 24px;
 }
 
-/* MAIN */
+/* LAYOUT */
 .main {
   display: flex;
 }
@@ -476,49 +476,65 @@ body {
   width: 220px;
   background: #243b7c;
   color: white;
-  height: calc(100vh - 60px);
   padding: 20px;
 }
 
 .sidebar a {
   display: block;
-  color: white;
-  margin: 10px 0;
+  padding: 10px;
+  color: #ddd;
   text-decoration: none;
+  border-radius: 6px;
+}
+
+.sidebar a:hover {
+  background: #1b2e63;
 }
 
 .sidebar .active {
   background: #1b2e63;
-  padding: 5px;
+  color: white;
 }
 
 /* CONTENT */
 .content {
   flex: 1;
-  padding: 20px;
-  background: #f2f2f2;
+  padding: 24px;
 }
 
 /* HEADER */
 .header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
-/* BOTON */
+/* BUTTON */
 .btn {
   background: #1b2e63;
   color: white;
   border: none;
-  padding: 8px 15px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #162554;
 }
 
 /* FILTROS */
 .filtros {
-  background: #333;
-  color: white;
-  padding: 10px;
+  display: flex;
+  gap: 10px;
   margin: 20px 0;
+}
+
+.filtros input,
+.filtros select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
 }
 
 /* TABLA */
@@ -526,6 +542,8 @@ table {
   width: 100%;
   border-collapse: collapse;
   background: white;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 thead {
@@ -534,13 +552,54 @@ thead {
 }
 
 th, td {
-  padding: 10px;
-  text-align: left;
+  padding: 12px;
 }
 
+tbody tr:hover {
+  background: #f1f3ff;
+}
+
+/* BADGES */
+.badge {
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.activo {
+  background: #d4edda;
+  color: #155724;
+}
+
+.proceso {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.cerrado {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* FOOTER */
 footer {
   background: #1b2e63;
   color: white;
   text-align: center;
   padding: 10px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .main {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .filtros {
+    flex-direction: column;
+  }
 }
