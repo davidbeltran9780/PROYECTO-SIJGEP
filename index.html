@@ -6,10 +6,60 @@
   <title>SIGJEP - Login</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
+<body class="login-body">
+<div class="login-card">
 
-  <!-- CONTENIDO DEL LOGIN VA AQUÍ -->
+  <img src="assets/logo.png" alt="SIGJEP" class="login-logo">
+  <h2>Acceso</h2>
 
-  <script src="js/main.js"></script>
+  <input type="email" placeholder="Correo electrónico">
+  <input type="password" placeholder="Contraseña">
+
+  <select>
+    <option>Seleccionar rol</option>
+    <option>Administrador</option>
+    <option>Abogado</option>
+    <option>Ciudadano</option>
+  </select>
+
+<form onsubmit="return login()">
+  <button type="submit" class="btn-login">Iniciar sesión</button>
+  <p class="error">Correo o contraseña incorrectos</p>
+    <p class="registro">
+  ¿No tienes cuenta? 
+  <a href="registro.html">Regístrate</a>
+</p>
+
+</div>
+<script>
+function login() {
+
+  let correo = document.querySelector("input[type='email']").value.trim();
+  let password = document.querySelector("input[type='password']").value.trim();
+
+  let correoGuardado = localStorage.getItem("correo");
+  let passwordGuardado = localStorage.getItem("password");
+
+  let error = document.querySelector(".error");
+
+  error.style.display = "none";
+
+  if (correoGuardado === null || passwordGuardado === null) {
+    error.innerText = "Primero debes registrarte";
+    error.style.display = "block";
+    return false;
+  }
+
+  if (correo === correoGuardado && password === passwordGuardado) {
+    window.location.href = "dashboard.html";
+  } else {
+    error.innerText = "Correo o contraseña incorrectos";
+    error.style.display = "block";
+  }
+
+  return false;
+}
+</script>
+
 </body>
 </html>

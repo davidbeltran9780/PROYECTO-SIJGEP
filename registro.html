@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro - SIGJEP</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="login-body">
+
+<div class="login-card">
+
+  <img src="assets/logo.png" alt="SIGJEP" class="login-logo">
+  <h2>Registro</h2>
+
+  <form onsubmit="return registrar()">
+
+    <input type="text" id="nombre" placeholder="Nombre completo" required>
+
+    <input type="email" id="correo" placeholder="Correo electrónico" required>
+
+    <input type="password" id="password" placeholder="Contraseña" required>
+
+    <select id="rol" required>
+      <option value="">Seleccionar rol</option>
+      <option>Administrador</option>
+      <option>Abogado</option>
+      <option>Ciudadano</option>
+    </select>
+
+    <button type="submit" class="btn-login">Registrarse</button>
+
+  </form>
+
+  <p class="registro">
+    ¿Ya tienes cuenta? 
+    <a href="index.html">Inicia sesión</a>
+  </p>
+
+</div>
+
+<script>
+function registrar() {
+
+  let correo = document.getElementById("correo").value;
+  let password = document.getElementById("password").value;
+
+  // Guardar datos
+  localStorage.setItem("correo", correo);
+  localStorage.setItem("password", password);
+
+  alert("Usuario registrado correctamente");
+
+  // Redirigir al login
+  window.location.href = "index.html";
+
+  return false; // 🔥 evita que se recargue
+}
+</script>
+
+</body>
+</html>

@@ -544,3 +544,140 @@ footer {
   text-align: center;
   padding: 10px;
 }
+
+/* LOGIN */
+.login-container {
+  width: 300px;
+  margin: 100px auto;
+  background: var(--blanco);
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.login-container h2 {
+  margin-bottom: 20px;
+  color: var(--primario);
+}
+
+.login-container input,
+.login-container select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.btn-login {
+  width: 100%;
+  padding: 10px;
+  background: var(--primario);
+  color: var(--blanco);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-login:hover {
+  background: var(--azul-hover);
+}
+
+.error {
+  color: var(--rojo);
+  font-size: 12px;
+  margin-top: 10px;
+}
+.login-body {
+  background: linear-gradient(90deg, #E5B93D, var(--primario));
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* TARJETA */
+.login-card {
+  background: var(--primario);
+  padding: 30px 25px;
+  border-radius: 25px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+/* LOGO */
+.login-logo {
+  width: 120px;
+  margin-bottom: 10px;
+}
+
+/* TITULO */
+.login-card h2 {
+  color: var(--blanco);
+  margin-bottom: 20px;
+}
+/* INPUTS */
+.login-card input,
+.login-card select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: none;
+  background: #ddd;
+  text-align: center;
+}
+
+/* LINK */
+.link {
+  font-size: 11px;
+  color: var(--blanco);
+  display: block;
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+/* BOTON */
+.btn-login {
+  margin-top: 10px;
+  background: #1b2e63;
+  color: var(--blanco);
+  border: none;
+  padding: 10px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.btn-login:hover {
+  background: var(--azul-hover);
+}
+
+/* ERROR */
+.error-text {
+  font-size: 11px;
+  color: var(--rojo);
+  text-align: left;
+}
+
+/* REGISTRO */
+.registro {
+  margin-top: 15px;
+  font-size: 12px;
+  color: var(--blanco);
+}
+.error {
+  display: none;
+  color: red;
+  font-size: 12px;
+}
+
+.registro a {
+  color: var(--blanco); /* o white */
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.registro a:hover {
+  text-decoration: underline;
+}
