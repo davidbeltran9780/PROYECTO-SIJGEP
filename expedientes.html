@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Expedientes</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar">
+  <div class="logo">SIGJEP</div>
+  <div class="user">Usuario - Abogado (15)</div>
+</header>
+
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <p>Menú</p>
+    <a href="#">Dashboard</a>
+    <a href="#" class="active">Expedientes</a>
+    <a href="#">Módulo IA</a>
+  </aside>
+
+  <!-- CONTENIDO -->
+  <section class="content">
+
+    <div class="header">
+      <h2>Gestión de Expedientes</h2>
+      <button class="btn">Nuevo Expediente</button>
+    </div>
+
+    <div class="filtros">
+      Filtros | Tipo | Estado | Buscar
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Expediente</th>
+          <th>Tipo</th>
+          <th>Demandante</th>
+          <th>Fecha</th>
+          <th>Vence</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>EXP-001</td>
+          <td>Tutela</td>
+          <td>Rodríguez</td>
+          <td>10/01/2026</td>
+          <td>1 día</td>
+          <td>Activo</td>
+        </tr>
+
+        <tr>
+          <td>EXP-002</td>
+          <td>Demanda</td>
+          <td>Pérez</td>
+          <td>08/01/2026</td>
+          <td>3 días</td>
+          <td>En proceso</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </section>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  © 2026 SIGJEP - Sistema de Gestión Jurídica
+</footer>
+
+</body>
+</html>
