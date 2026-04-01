@@ -1,80 +1,122 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Expedientes</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expedientes</title>
+<link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
 
 <!-- NAVBAR -->
 <header class="navbar">
-  <div class="logo">SIGJEP</div>
-  <div class="user">Usuario - Abogado (15)</div>
-</header>
-
-<div class="main">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <p>Menú</p>
-    <a href="#">Dashboard</a>
-    <a href="#" class="active">Expedientes</a>
-    <a href="#">Módulo IA</a>
-  </aside>
-
-  <!-- CONTENIDO -->
-  <section class="content">
-
-    <div class="header">
-      <h2>Gestión de Expedientes</h2>
-      <button class="btn">Nuevo Expediente</button>
-    </div>
-
-    <div class="filtros">
-      Filtros | Tipo | Estado | Buscar
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Expediente</th>
-          <th>Tipo</th>
-          <th>Demandante</th>
-          <th>Fecha</th>
-          <th>Vence</th>
-          <th>Estado</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr>
-          <td>EXP-001</td>
-          <td>Tutela</td>
-          <td>Rodríguez</td>
-          <td>10/01/2026</td>
-          <td>1 día</td>
-          <td>Activo</td>
-        </tr>
-
-        <tr>
-          <td>EXP-002</td>
-          <td>Demanda</td>
-          <td>Pérez</td>
-          <td>08/01/2026</td>
-          <td>3 días</td>
-          <td>En proceso</td>
-        </tr>
-      </tbody>
-    </table>
-
-  </section>
+<div class="logo">
+<img src="assets/Logo.png">
+<span>SIGJEP</span>
 </div>
 
-<!-- FOOTER -->
+<div class="user">
+Usuario - Abogado (15)
+</div>
+</header>
+
+<div class="container">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+
+<button class="menu-btn" onclick="toggleMenu()">☰ Menú</button>
+
+<div class="menu" id="menu">
+<a href="dashboard.html" class="active">Dashboard</a>
+<a href="expedientes.html" class="active">Expedientes</a>
+<a href="modulo-ia.html" class="active">Módulo IA</a>
+</div>
+
+<button class="logout" onclick="logout()">Cerrar sesión</button>
+
+<script>
+  function logout(){
+  window.location.href = "login.html";
+  }
+</script>
+</aside>
+
+<!-- CONTENT -->
+<section class="content">
+
+<div class="top">
+<h2>Gestión de Expedientes</h2>
+<button class="nuevo">Nuevo Expediente</button>
+</div>
+
+<div class="filtros">
+<button>Filtros</button>
+<button>Tipo</button>
+<button>Estado</button>
+<button>Buscar</button>
+</div>
+
+<div class="tabla">
+
+<table>
+
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Demandante</th>
+<th>Fecha</th>
+<th>Vence</th>
+<th>Estado</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td>Tutela</td>
+<td>Rodríguez</td>
+<td>10/01/2026</td>
+<td>1 día</td>
+<td><span class="badge activo">Activo</span></td>
+</tr>
+
+<tr>
+<td>Demanda</td>
+<td>Pérez</td>
+<td>08/01/2026</td>
+<td>3 días</td>
+<td><span class="badge proceso">En proceso</span></td>
+</tr>
+
+<tr>
+<td>PQRS</td>
+<td>Gómez</td>
+<td>01/01/2025</td>
+<td>10 días</td>
+<td><span class="badge cerrado">Cerrado</span></td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+</div>
+
 <footer>
-  © 2026 SIGJEP - Sistema de Gestión Jurídica
+© 2026 SIGJEP - Sistema de Gestión Jurídica
 </footer>
+
+<script>
+function toggleMenu(){
+document.getElementById("menu").classList.toggle("show");
+}
+</script>
 
 </body>
 </html>
