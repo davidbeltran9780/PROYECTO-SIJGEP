@@ -458,6 +458,10 @@ body {
   background: #f4f6fb;
 }
 
+.logo img {
+  height: 40px;
+}
+
 .logo {
   display: flex;
   align-items: center;
@@ -475,6 +479,7 @@ body {
   color: white;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 12px 24px;
 }
 
@@ -489,6 +494,7 @@ body {
   background: #243b7c;
   color: white;
   padding: 20px;
+  min-height: 100vh;
 }
 
 .sidebar a {
