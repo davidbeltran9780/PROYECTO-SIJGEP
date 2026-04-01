@@ -8,28 +8,24 @@
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="header-izquierda">
-      <button class="menu-btn" onclick="toggleSidebar()">☰ Menú</button>
-      <img src="assets/Logo.png" alt="SIGJEP" class="logo">
-    </div>
-    <div class="header-derecha">
-      <span class="usuario">Usuario - Abogado 🔔 15</span>
-    </div>
-  </header>
+<header class="header">
+  <div class="header-izquierda">
+    <img src="assets/Logo.png" alt="SIGJEP" class="logo">
+  </div>
+  <div class="header-derecha">
+    <span class="usuario">Usuario - Abogado 🔔 15</span>
+  </div>
+</header>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
+<aside class="sidebar">
+  <details open>
+    <summary>☰ Menú</summary>
     <a href="dashboard.html">Dashboard</a>
     <a href="expedientes.html">Expedientes</a>
     <a href="modulo-ia.html">Módulo IA</a>
-
-    <div class="sidebar-extra">
-      <a href="login.html" class="cerrar-sesion">Cerrar Sesión</a>
-      <p>© 2026 SIGJEP - Sistema de Gestión Jurídica</p>
-    </div>
-  </aside>
+  </details>
+  <a href="index.html" class="logout">Cerrar sesión</a>
+</aside>
 
   <!-- CONTENIDO -->
   <main class="contenido">
@@ -80,6 +76,5 @@
     <p>© 2026 SIGJEP - Sistema de Gestión Jurídica</p>
   </footer>
 
-  <script src="js/main.js"></script>
 </body>
 </html>

@@ -9,41 +9,25 @@
 
 <body>
 
-<!-- NAVBAR -->
-<header class="navbar">
-<div class="logo">
-<img src="assets/Logo.png">
-<span>SIGJEP</span>
-</div>
-
-<div class="user">
-Usuario - Abogado (15)
-</div>
+<header class="header">
+  <div class="header-izquierda">
+    <img src="assets/Logo.png" alt="SIGJEP" class="logo">
+  </div>
+  <div class="header-derecha">
+    <span class="usuario">Usuario - Abogado 15</span>
+  </div>
 </header>
 
-<div class="container">
-
-<!-- SIDEBAR -->
 <aside class="sidebar">
-
-<button class="menu-btn" onclick="toggleMenu()">☰ Menú</button>
-
-<div class="menu" id="menu">
-<a href="dashboard.html" class="active">Dashboard</a>
-<a href="expedientes.html" class="active">Expedientes</a>
-<a href="modulo-ia.html" class="active">Módulo IA</a>
-</div>
-
-<button class="logout" onclick="logout()">Cerrar sesión</button>
-
-<script>
-  function logout(){
-  window.location.href = "login.html";
-  }
-</script>
+  <details open>
+    <summary> Menú</summary>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="expedientes.html">Expedientes</a>
+    <a href="modulo-ia.html">Módulo IA</a>
+  </details>
+  <a href="index.html" class="logout">Cerrar sesión</a>
 </aside>
 
-<!-- CONTENT -->
 <section class="content">
 
 <div class="top">
@@ -52,10 +36,41 @@ Usuario - Abogado (15)
 </div>
 
 <div class="filtros">
-<button>Filtros</button>
-<button>Tipo</button>
-<button>Estado</button>
-<button>Buscar</button>
+
+  <details class="filtro">
+    <summary>Filtros ▾</summary>
+    <div class="filtro-opciones">
+      <label><input type="checkbox"> Urgentes</label>
+      <label><input type="checkbox"> Próximos</label>
+      <label><input type="checkbox"> A tiempo</label>
+    </div>
+  </details>
+
+  <details class="filtro">
+    <summary>Tipo ▾</summary>
+    <div class="filtro-opciones">
+      <label><input type="checkbox"> Tutela</label>
+      <label><input type="checkbox"> Demanda</label>
+      <label><input type="checkbox"> PQRS</label>
+    </div>
+  </details>
+
+  <details class="filtro">
+    <summary>Estado ▾</summary>
+    <div class="filtro-opciones">
+      <label><input type="checkbox"> Activo</label>
+      <label><input type="checkbox"> En proceso</label>
+      <label><input type="checkbox"> Cerrado</label>
+    </div>
+  </details>
+
+  <details class="filtro">
+    <summary>Buscar ▾</summary>
+    <div class="filtro-opciones">
+      <input type="text" placeholder="Buscar expediente...">
+    </div>
+  </details>
+
 </div>
 
 <div class="tabla">
@@ -79,7 +94,7 @@ Usuario - Abogado (15)
 <td>Rodríguez</td>
 <td>10/01/2026</td>
 <td>1 día</td>
-<td><span class="badge activo">Activo</span></td>
+<td class="urgente">Urgente</td>
 </tr>
 
 <tr>
@@ -87,7 +102,7 @@ Usuario - Abogado (15)
 <td>Pérez</td>
 <td>08/01/2026</td>
 <td>3 días</td>
-<td><span class="badge proceso">En proceso</span></td>
+<td class="proximo">Próximo</td>
 </tr>
 
 <tr>
@@ -95,7 +110,7 @@ Usuario - Abogado (15)
 <td>Gómez</td>
 <td>01/01/2025</td>
 <td>10 días</td>
-<td><span class="badge cerrado">Cerrado</span></td>
+<td class="atiempo">A tiempo</td>
 </tr>
 
 </tbody>
@@ -106,17 +121,9 @@ Usuario - Abogado (15)
 
 </section>
 
-</div>
-
 <footer>
-© 2026 SIGJEP - Sistema de Gestión Jurídica
+<p> 2026 SIGJEP - Sistema de Gestión Jurídica</p>
 </footer>
-
-<script>
-function toggleMenu(){
-document.getElementById("menu").classList.toggle("show");
-}
-</script>
 
 </body>
 </html>
