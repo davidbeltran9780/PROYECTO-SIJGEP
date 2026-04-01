@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGJEP - Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <header class="header">
+  <div class="header-izquierda">
+    <img src="assets/logo.png" alt="SIGJEP" class="logo">
+  </div>
+  <div class="header-derecha">
+    <span class="usuario">Usuario - Abogado 🔔 15</span>
+  </div>
+</header>
+
+  <!-- SIDEBAR -->
+ <aside class="sidebar">
+  <p class="menu-titulo">☰ Menú</p>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="expedientes.html">Expedientes</a>
+  <a href="modulo-ia.html">Módulo IA</a>
+</aside>
+
+  <!-- CONTENIDO -->
+   <main class="contenido">
+
+  <div class="tarjetas">
+
+    <div class="tarjeta verde">
+      <span class="numero">50</span>
+      <p class="etiqueta">Expedientes activos</p>
+    </div>
+
+    <div class="tarjeta amarilla">
+      <span class="numero">15</span>
+      <p class="etiqueta">Alertas</p>
+    </div>
+
+    <div class="tarjeta roja">
+      <span class="numero">45</span>
+      <p class="etiqueta">Vencimientos</p>
+    </div>
+
+  </div>
+  <table class="tabla">
+  <thead>
+    <tr>
+      <th>Expediente</th>
+      <th>Tipo</th>
+      <th>Vence</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>EXP-001</td>
+      <td>Tutela</td>
+      <td>1 día</td>
+      <td class="urgente">Urgente</td>
+    </tr>
+     <tr>
+        <td>EXP-002</td>
+        <td>Demanda</td>
+        <td>3 días</td>
+        <td class="proximo">Próximo</td>
+      </tr>
+      <tr>
+        <td>EXP-003</td>
+        <td>PQRS</td>
+        <td>10 días</td>
+        <td class="atiempo">A tiempo</td>
+      </tr>
+  </tbody>
+</table>
+
+
+</main>
+
+  <!-- FOOTER -->
+<footer class="footer">
+  <p>© 2026 SIGJEP - Sistema de Gestión Jurídica</p>
+</footer>
+
+     <script src="js/main.js"></script>
+</body>
+</html>
