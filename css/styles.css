@@ -96,6 +96,16 @@ details a:hover { background-color:var(--azul-hover); }
 .numero { font-size:22px; font-weight:bold; color:var(--blanco); }
 .etiqueta { font-size:12px; color:var(--blanco); margin-top:4px; }
 
+/* Evita que las tarjetas se vean como enlaces */
+.tarjeta {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.tarjeta:hover {
+  opacity: 0.9;
+}
+
 /* ── TABLA ── */
 table { width:100%; border-collapse:collapse; margin-top:20px; border-bottom: 4px solid #1E3A8A; }
 thead { background-color:var(--primario); color:var(--blanco); }
@@ -157,6 +167,7 @@ footer {
 .registro { margin-top:15px; font-size:12px; color:var(--blanco); }
 .registro a { color:var(--blanco); font-weight:bold; text-decoration:none; }
 .registro a:hover { text-decoration:underline; }
+
 
 
 /* ── RESPONSIVE MÓVIL ── */

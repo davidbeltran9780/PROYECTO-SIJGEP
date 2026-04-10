@@ -4,88 +4,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIGJEP - Dashboard</title>
+    <!-- Estilos globales del proyecto -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
+  <!-- ── HEADER ── -->
   <header class="header">
     <div class="header-izquierda">
       <img src="assets/Logo.png" alt="SIGJEP" class="logo">
     </div>
     <div class="header-derecha">
-      <span class="usuario">Usuario - Abogado 🔔 15</span>
+      <span class="usuario" id="info-usuario">Usuario - Abogado 🔔 15</span>
     </div>
   </header>
 
+  <!-- ── SIDEBAR ── -->
   <aside class="sidebar">
     <details open>
       <summary>☰ Menú</summary>
       <a href="dashboard.html">Dashboard</a>
       <a href="expedientes.html">Expedientes</a>
       <a href="modulo-ia.html">Módulo IA</a>
+      <a href="alertas.html">Alertas</a>
+      <a href="documentos.html">Documentos</a>
+      <a href="reportes.html">Reportes</a>
+      <a href="pqrs.html">PQRS</a>
     </details>
+    <!-- Botón de cierre de sesión -->
     <a href="index.html" class="logout">Cerrar sesión</a>
   </aside>
 
-  <!-- CONTENIDO -->
-   <main class="contenido">
+  <!-- ── CONTENIDO PRINCIPAL ── -->
+  <main class="contenido">
 
-  <div class="tarjetas">
+    <!-- Tarjetas de resumen: muestran totales por estado -->
+    <div class="tarjetas">
 
-    <div class="tarjeta verde">
-      <span class="numero">50</span>
-      <p class="etiqueta">Expedientes activos</p>
+      <!-- Tarjeta verde: expedientes activos -->
+      <a href="expedientes.html" class="tarjeta verde">
+        <span class="numero">50</span>
+        <p class="etiqueta">Expedientes activos</p>
+      </a>
+
+      <!-- Tarjeta amarilla: alertas pendientes -->
+      <a href="alertas.html" class="tarjeta amarilla">
+        <span class="numero">15</span>
+        <p class="etiqueta">Alertas</p>
+      </a>
+
+      <!-- Tarjeta roja: expedientes por vencer -->
+      <a href="alertas.html" class="tarjeta roja">
+        <span class="numero">45</span>
+        <p class="etiqueta">Vencimientos</p>
+      </a>
+
     </div>
 
-    <div class="tarjeta amarilla">
-      <span class="numero">15</span>
-      <p class="etiqueta">Alertas</p>
-    </div>
+    <!-- Tabla de expedientes recientes con semáforo de urgencia -->
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Expediente</th>
+          <th>Tipo</th>
+          <th>Vence</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Expediente urgente: vence en menos de 2 días -->
+        <tr>
+          <td>EXP-001</td>
+          <td>Tutela</td>
+          <td>1 día</td>
+          <td class="urgente">Urgente</td>
+        </tr>
+        <!-- Expediente próximo: vence entre 2 y 5 días -->
+        <tr>
+          <td>EXP-002</td>
+          <td>Demanda</td>
+          <td>3 días</td>
+          <td class="proximo">Próximo</td>
+        </tr>
+        <!-- Expediente a tiempo: más de 5 días -->
+        <tr>
+          <td>EXP-003</td>
+          <td>PQRS</td>
+          <td>10 días</td>
+          <td class="atiempo">A tiempo</td>
+        </tr>
+      </tbody>
+    </table>
 
-    <div class="tarjeta roja">
-      <span class="numero">45</span>
-      <p class="etiqueta">Vencimientos</p>
-    </div>
+  </main>
 
-  </div>
-  <table class="tabla">
-  <thead>
-    <tr>
-      <th>Expediente</th>
-      <th>Tipo</th>
-      <th>Vence</th>
-      <th>Estado</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>EXP-001</td>
-      <td>Tutela</td>
-      <td>1 día</td>
-      <td class="urgente">Urgente</td>
-    </tr>
-     <tr>
-        <td>EXP-002</td>
-        <td>Demanda</td>
-        <td>3 días</td>
-        <td class="proximo">Próximo</td>
-      </tr>
-      <tr>
-        <td>EXP-003</td>
-        <td>PQRS</td>
-        <td>10 días</td>
-        <td class="atiempo">A tiempo</td>
-      </tr>
-  </tbody>
-</table>
-
-
-</main>
-
-  <!-- FOOTER -->
-<footer class="footer">
-  <p>© 2026 SIGJEP - Sistema de Gestión Jurídica</p>
-</footer>
-
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <p>© 2026 SIGJEP - Sistema de Gestión Jurídica</p>
+  </footer>
+<script src="js/dashboard.js"></script>
 </body>
 </html>
