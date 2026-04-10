@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGJEP - Alertas</title>
+  <!-- Estilos globales del proyecto -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ── HEADER ──
+       Barra superior fija con logo y nombre del usuario activo -->
+  <header class="header">
+    <div class="header-izquierda">
+      <img src="assets/Logo.png" alt="SIGJEP" class="logo">
+    </div>
+    <div class="header-derecha">
+      <span class="usuario" id="info-usuario">Usuario - Abogado 🔔 0</span>
+    </div>
+  </header>
+
+  <!-- ── SIDEBAR ──
+       Menú lateral de navegación entre módulos del sistema -->
+  <aside class="sidebar">
+    <details open>
+      <summary>☰ Menú</summary>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="expedientes.html">Expedientes</a>
+      <a href="documentos.html">Documentos</a>
+      <a href="alertas.html">Alertas</a>
+      <a href="pqrs.html">PQRS</a>
+      <a href="reportes.html">Reportes</a>
+      <a href="modulo-ia.html">Módulo IA</a>
+    </details>
+    <!-- Botón de cierre de sesión -->
+    <a href="index.html" class="logout">Cerrar sesión</a>
+  </aside>
+
+  <!-- ── CONTENIDO PRINCIPAL ──
+       Panel de alertas ordenado por urgencia con semáforo de colores -->
+  <main class="content">
+
+    <div class="top">
+      <h2>Alertas de Vencimiento</h2>
+    </div>
+
+    <!-- ── SECCIÓN URGENTE ──
+         Expedientes que vencen en menos de 2 días - color rojo -->
+    <h3 class="seccion-alerta">🔴 Urgente — menos de 2 días</h3>
+    <div class="tabla-contenedor">
+      <table>
+        <thead>
+          <tr>
+            <th>Expediente</th>
+            <th>Tipo</th>
+            <th>Demandante</th>
+            <th>Fecha límite</th>
+            <th>Días restantes</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-urgente">
+          <!-- Los datos se cargan desde js/alertas.js -->
+          <tr>
+            <td>EXP-001</td>
+            <td>Tutela</td>
+            <td>Rodríguez</td>
+            <td>11/04/2026</td>
+            <td class="urgente">1 día</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── SECCIÓN PRÓXIMO ──
+         Expedientes que vencen entre 2 y 5 días - color naranja -->
+    <h3 class="seccion-alerta">🟡 Próximo — entre 2 y 5 días</h3>
+    <div class="tabla-contenedor">
+      <table>
+        <thead>
+          <tr>
+            <th>Expediente</th>
+            <th>Tipo</th>
+            <th>Demandante</th>
+            <th>Fecha límite</th>
+            <th>Días restantes</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-proximo">
+          <!-- Los datos se cargan desde js/alertas.js -->
+          <tr>
+            <td>EXP-002</td>
+            <td>Demanda</td>
+            <td>Pérez</td>
+            <td>13/04/2026</td>
+            <td class="proximo">3 días</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── SECCIÓN A TIEMPO ──
+         Expedientes que vencen en más de 5 días - color verde -->
+    <h3 class="seccion-alerta">🟢 A tiempo — más de 5 días</h3>
+    <div class="tabla-contenedor">
+      <table>
+        <thead>
+          <tr>
+            <th>Expediente</th>
+            <th>Tipo</th>
+            <th>Demandante</th>
+            <th>Fecha límite</th>
+            <th>Días restantes</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-atiempo">
+          <!-- Los datos se cargan desde js/alertas.js -->
+          <tr>
+            <td>EXP-003</td>
+            <td>PQRS</td>
+            <td>Gómez</td>
+            <td>20/04/2026</td>
+            <td class="atiempo">10 días</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <!-- ── FOOTER ──
+       Pie de página fijo con información del sistema -->
+  <footer>
+    <p>© 2026 SIGJEP - Sistema de Gestión Jurídica</p>
+  </footer>
+
+  <!-- Lógica de alertas -->
+  <script src="js/alertas.js"></script>
+
+</body>
+</html>
