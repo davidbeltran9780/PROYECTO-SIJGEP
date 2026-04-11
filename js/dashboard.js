@@ -1,8 +1,19 @@
-// Obtener datos del usuario guardados al iniciar sesión
-let nombre = localStorage.getItem("nombre")
-let rol = localStorage.getItem("rol")
-let alertas = localStorage.getItem("alertas") || 0
+// Verifica sesión activa - debe ir primero
+//verificarSesion()
 
 
-// Mostrar cantidad de alertas en el heade
-document.getElementById("info-usuario").innerText = nombre + " - " + rol + " 🔔 " + alertas
+cargarUsuarioHeader()
+
+// PRUEBA - borrar después
+confirmar("¿Estás seguro de eliminar este expediente?").then(function(respuesta) {
+  if (respuesta) {
+    mostrarExito("Expediente eliminado correctamente")
+  } else {
+    mostrarError("Operación cancelada")
+  }
+})
+
+
+document.querySelector(".logout").addEventListener("click", function() {
+  localStorage.clear()
+})

@@ -1,3 +1,6 @@
+
+cargarUsuarioHeader()
+
 // Datos de prueba - se reemplazarán con la llamada a api.js cuando el backend esté listo
 const expedientes = [
   { id: "EXP-001", tipo: "Tutela", demandante: "Rodríguez", fechaLimite: "2026-04-11" },
@@ -46,28 +49,3 @@ function cargarAlertas() {
 
 // Ejecuta la función cuando carga la página
 cargarAlertas()
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Calcula los días que faltan entre hoy y una fecha límite
-
-
-
-
-
-function calcularDias(fechaLimite) {
-  let hoy = new Date()
-  let limite = new Date(fechaLimite)
-  let diferencia = limite - hoy
-  return Math.ceil(diferencia / (1000 * 60 * 60 * 24))
-}
