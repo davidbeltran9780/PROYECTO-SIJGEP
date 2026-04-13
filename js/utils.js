@@ -138,7 +138,17 @@ function cargarUsuarioHeader() {
   let nombre = localStorage.getItem("nombre") || "Usuario"
   let rol = localStorage.getItem("rol") || "Sin rol"
   let alertas = localStorage.getItem("alertas") || 0
-  document.getElementById("info-usuario").innerText = nombre + " - " + rol + " 🔔 " + alertas
+
+  let info = document.getElementById("info-usuario")
+  let num = document.getElementById("num-alertas")
+
+  if (info) {
+    info.innerText = nombre + " - " + rol
+  }
+
+  if (num) {
+    num.innerText = alertas
+  }
 }
 
 function cerrarSesion() {

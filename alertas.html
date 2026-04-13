@@ -9,16 +9,20 @@
 </head>
 <body>
 
-  <!-- ── HEADER ──
-       Barra superior fija con logo y nombre del usuario activo -->
-  <header class="header">
-    <div class="header-izquierda">
-      <img src="assets/Logo.png" alt="SIGJEP" class="logo">
-    </div>
-    <div class="header-derecha">
-      <span class="usuario" id="info-usuario">Usuario - Abogado 🔔 0</span>
-    </div>
-  </header>
+   <!-- ── HEADER ── -->
+ <header class="header">
+  <div class="header-izquierda">
+    <img src="assets/Logo.png" alt="SIGJEP" class="logo">
+  </div>
+
+  <div class="header-derecha">
+    <span class="usuario" id="info-usuario"></span>
+
+    <a href="alertas.html" class="notificaciones" id="campana">
+      🔔 <span id="num-alertas">0</span>
+    </a>
+  </div>
+</header>
 
   <!-- ── SIDEBAR ──
        Menú lateral de navegación entre módulos del sistema -->
