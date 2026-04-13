@@ -163,7 +163,7 @@ footer {
 .login-card input, .login-card select { width:100%; padding:10px; margin:10px 0; border-radius:5px; border:none; background:#ddd; text-align:center; }
 .btn-login { margin-top:10px; background:#1b2e63; color:var(--blanco); border:none; padding:10px; width:100%; cursor:pointer; }
 .btn-login:hover { background:var(--azul-hover); }
-.error { display:none; color:red; font-size:12px; }
+.error { display:none; color:rgb(255, 0, 0); font-size:12px; }
 .registro { margin-top:15px; font-size:12px; color:var(--blanco); }
 .registro a { color:var(--blanco); font-weight:bold; text-decoration:none; }
 .registro a:hover { text-decoration:underline; }
@@ -686,5 +686,25 @@ footer {
   border-radius: 8px;
 }
 
+/* OLVIDÓ CONTRASEÑA*/
+.forgot a {
+  color: #E5B93D!important;
+  text-decoration: none;
+}
 
+.forgot a:hover {
+  color: #ffffff !important;
+  text-decoration: underline;
 
+}
+
+.mensaje-exito {
+  display: none; 
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 8px;
+  border-radius: 6px;
+  margin-top: 180px;
+  font-size: 14px;
+  text-align: center;
+}

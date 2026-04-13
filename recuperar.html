@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGJEP - Login</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="login-body">
+<div class="login-card">
+
+  <img src="assets/logo.png" alt="SIGJEP" class="login-logo">
+<h2>Recuperar contraseña</h2>
+
+<form onsubmit="return recuperarPassword()">
+<input type="email" id="correo" placeholder="Ingresa tu correo">
+<button type="submit">Enviar enlace</button>
+<p id="mensaje" class="mensaje-exito"></p>
+</form>
+
+<script src="js/recuperar.js"></script>
+</body>
+</html>
