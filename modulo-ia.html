@@ -53,8 +53,13 @@
         <p>Documento seleccionado</p>
         <strong id="docSeleccionado">Ninguno</strong>
 
-        <button class="btn-primario">Subir Archivo</button>
-      </div>
+        <input type="file" id="inputArchivo" hidden>
+        <button class="btn-primario" onclick="document.getElementById('inputArchivo').click()">
+          Subir Archivo
+        </button>
+
+        <p id="nombreArchivo">Ninguno</p>
+      </div> <!-- ✅ CIERRE CORRECTO -->
 
       <!-- ANÁLISIS IA -->
       <div class="ia-card">
@@ -94,6 +99,14 @@
 <footer class="footer">
   <p>© 2026 SIGJEP - Sistema de Gestión Jurídica</p>
 </footer>
+
+<!-- SPINNER -->
+<div id="overlaySpinner" class="overlay-spinner" style="display:none;"></div>
+
+<div id="spinner" class="spinner-contenedor" style="display:none;">
+  <div class="spinner"></div>
+  <p>Procesando con IA...</p>
+</div>
 
 <!-- SCRIPT IA -->
 <script type="module" src="js/ia.js"></script>
