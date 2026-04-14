@@ -27,91 +27,64 @@
   <a href="index.html" class="logout">Cerrar sesión</a>
 </aside>
 
-  <!-- CONTENIDO -->
-  <main class="contenido">
-    <section class="modulo-ia">
+<!-- CONTENIDO -->
+<main class="contenido">
+  <section class="modulo-ia">
 
-  <div class="ia-container">
+    <div class="ia-container">
 
-    <h2>Asistente Jurídico Inteligente</h2>
-    <p class="descripcion">
-      Herramienta de apoyo para análisis de expedientes, riesgos y vencimientos
-    </p>
+      <h2>Asistente Jurídico Inteligente</h2>
+      <p class="descripcion">
+        Herramienta de apoyo para análisis de expedientes, riesgos y vencimientos
+      </p>
 
-    <!-- SELECT EXPEDIENTE -->
-    <select id="expedienteSelect" class="ia-select" onchange="seleccionarExpediente()">
-      <option value="">Seleccionar expediente</option>
-      <option value="1">EXP-001</option>
-      <option value="2">EXP-002</option>
-    </select>
+      <!-- SELECT EXPEDIENTE -->
+      <select id="expedienteSelect" class="ia-select" onchange="seleccionarExpediente()">
+        <option value="">Seleccionar expediente</option>
+        <option value="1">EXP-001</option>
+        <option value="2">EXP-002</option>
+      </select>
 
-    <!-- BOTONES -->
-    <div class="ia-botones">
-      <button onclick="resumir()">Resumir expediente</button>
-      <button onclick="clasificar()">Detectar riesgo</button>
-      <button onclick="descargarBorrador()">Sugerir acción legal</button>
-    </div>
-
-    <!-- CHAT -->
-    <div class="ia-chat" id="chatIA">
-      <div class="mensaje ia">
-        Hola. Soy tu asistente jurídico. Puedo ayudarte a analizar expedientes, identificar riesgos procesales y sugerir acciones.
+      <!-- BOTONES -->
+      <div class="ia-botones">
+        <button onclick="resumir()">Resumir expediente</button>
+        <button onclick="clasificar()">Detectar riesgo</button>
+        <button onclick="descargarBorrador()">Sugerir acción legal</button>
       </div>
-    </div>
-
-    <!-- RESULTADOS -->
-    <div class="ia-resultado">
-      <h3>Resultado del análisis</h3>
-      <p><strong>Tipo de caso:</strong> <span id="resultadoClasificacion">-</span></p>
-      <p><strong>Resumen:</strong></p>
-      <textarea id="resultadoResumen" readonly></textarea>
-    </div>
-
-    <!-- INPUT -->
-    <div class="ia-input">
-      <textarea id="inputUsuario" placeholder="Escribe aquí tu consulta jurídica..."></textarea>
-      <button onclick="enviarConsulta()">Analizar</button>
-    </div>
-
-  </div>
-
-</section>
 
       <!-- CHAT -->
-      <div class="chat-ia">
+      <div class="ia-chat" id="chatIA">
         <div class="mensaje ia">
-          <p><strong>Asistente IA:</strong> Hola. Soy tu asistente jurídico. Puedo ayudarte a analizar expedientes, identificar riesgos procesales y sugerir acciones.</p>
-        </div>
-
-        <div class="mensaje usuario-chat">
-          <p><strong>Tú:</strong> Analiza el expediente EXP-001 y dime si tiene riesgo de vencimiento.</p>
-        </div>
-
-        <div class="mensaje ia">
-          <p><strong>Asistente IA:</strong> El expediente EXP-001 presenta un vencimiento próximo en 1 día. Se recomienda revisión inmediata.</p>
+          Hola. Soy tu asistente jurídico. Puedo ayudarte a analizar expedientes, identificar riesgos procesales y sugerir acciones.
         </div>
       </div>
 
-      <!-- RESULTADO -->
-      <div class="resultado-ia">
+      <!-- RESULTADOS -->
+      <div class="ia-resultado">
         <h3>Resultado del análisis</h3>
-        <p><strong>Expediente:</strong> EXP-001</p>
-        <p><strong>Nivel de riesgo:</strong> Alto</p>
-        <p><strong>Recomendación:</strong> Priorizar revisión inmediata y activar alerta jurídica.</p>
+        <p><strong>Tipo de caso:</strong> <span id="resultadoClasificacion">-</span></p>
+        <p><strong>Resumen:</strong></p>
+        <textarea id="resultadoResumen" readonly></textarea>
       </div>
 
-      <!-- ENTRADA -->
-      <div class="entrada-ia">
-        <textarea placeholder="Escribe aquí tu consulta jurídica..."></textarea>
-        <button class="btn-enviar">Analizar</button>
+      <!-- INPUT -->
+      <div class="ia-input">
+        <textarea id="inputUsuario" placeholder="Escribe aquí tu consulta jurídica..."></textarea>
+        <button onclick="enviarConsulta()">Analizar</button>
       </div>
-    </section>
-  </main>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <p>© 2026 SIGJEP - Sistema de Gestión Jurídica</p>
-  </footer>
+    </div>
+
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>© 2026 SIGJEP - Sistema de Gestión Jurídica</p>
+</footer>
+
+<!-- SCRIPT IA -->
+<script type="module" src="js/ia.js"></script>
 
 </body>
 </html>
