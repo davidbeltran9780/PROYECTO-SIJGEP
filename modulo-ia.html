@@ -30,15 +30,52 @@
   <!-- CONTENIDO -->
   <main class="contenido">
     <section class="modulo-ia">
-      <h1 class="titulo-ia">Asistente Jurídico Inteligente</h1>
-      <p class="subtitulo-ia">Herramienta de apoyo para análisis de expedientes, riesgos y vencimientos</p>
 
-      <!-- ACCIONES -->
-      <div class="acciones-ia">
-        <button class="accion-btn">Resumir expediente</button>
-        <button class="accion-btn">Detectar riesgo</button>
-        <button class="accion-btn">Sugerir acción legal</button>
+  <div class="ia-container">
+
+    <h2>Asistente Jurídico Inteligente</h2>
+    <p class="descripcion">
+      Herramienta de apoyo para análisis de expedientes, riesgos y vencimientos
+    </p>
+
+    <!-- SELECT EXPEDIENTE -->
+    <select id="expedienteSelect" class="ia-select" onchange="seleccionarExpediente()">
+      <option value="">Seleccionar expediente</option>
+      <option value="1">EXP-001</option>
+      <option value="2">EXP-002</option>
+    </select>
+
+    <!-- BOTONES -->
+    <div class="ia-botones">
+      <button onclick="resumir()">Resumir expediente</button>
+      <button onclick="clasificar()">Detectar riesgo</button>
+      <button onclick="descargarBorrador()">Sugerir acción legal</button>
+    </div>
+
+    <!-- CHAT -->
+    <div class="ia-chat" id="chatIA">
+      <div class="mensaje ia">
+        Hola. Soy tu asistente jurídico. Puedo ayudarte a analizar expedientes, identificar riesgos procesales y sugerir acciones.
       </div>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div class="ia-resultado">
+      <h3>Resultado del análisis</h3>
+      <p><strong>Tipo de caso:</strong> <span id="resultadoClasificacion">-</span></p>
+      <p><strong>Resumen:</strong></p>
+      <textarea id="resultadoResumen" readonly></textarea>
+    </div>
+
+    <!-- INPUT -->
+    <div class="ia-input">
+      <textarea id="inputUsuario" placeholder="Escribe aquí tu consulta jurídica..."></textarea>
+      <button onclick="enviarConsulta()">Analizar</button>
+    </div>
+
+  </div>
+
+</section>
 
       <!-- CHAT -->
       <div class="chat-ia">
