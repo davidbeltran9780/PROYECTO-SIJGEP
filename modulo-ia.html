@@ -37,6 +37,13 @@
 
     <h2>Asistente Jurídico con IA</h2>
 
+    <!-- SELECT EXPEDIENTE -->
+    <select id="expedienteSelect" onchange="seleccionarExpediente()">
+      <option value="">Seleccionar expediente</option>
+      <option value="1">EXP-001</option>
+      <option value="2">EXP-002</option>
+    </select>
+
     <div class="ia-panel">
 
       <!-- DOCUMENTOS -->
@@ -44,7 +51,7 @@
         <h3>Documentos</h3>
 
         <p>Documento seleccionado</p>
-        <strong>archivo.pdf</strong>
+        <strong id="docSeleccionado">Ninguno</strong>
 
         <button class="btn-primario">Subir Archivo</button>
       </div>
@@ -53,22 +60,25 @@
       <div class="ia-card">
         <h3>Análisis IA</h3>
 
-        <button class="btn-primario">Analizar con IA</button>
-
-        <p><strong>Clasificación:</strong> Tutela (95%)</p>
+        <button class="btn-primario" onclick="clasificar()">Analizar con IA</button>
 
         <p>
-          <strong>Resumen:</strong><br>
-          Texto generado<br>
-          <a href="#">Resumen.pdf</a>
+          <strong>Tipo de caso:</strong> 
+          <span id="resultadoClasificacion">-</span>
         </p>
 
-        <button class="btn-primario">Generar Resumen</button>
+        <p><strong>Resumen:</strong></p>
+
+        <textarea id="resultadoResumen" readonly></textarea>
+
+        <button class="btn-primario" onclick="resumir()">Generar Resumen</button>
       </div>
 
       <!-- BORRADORES -->
       <div class="ia-card">
         <h3>Borradores</h3>
+
+        <button class="btn-primario" onclick="descargarBorrador()">Descargar Borrador</button>
 
         <button class="btn-verde">Aprobar</button>
         <button class="btn-primario">Editar</button>
@@ -84,6 +94,9 @@
 <footer class="footer">
   <p>© 2026 SIGJEP - Sistema de Gestión Jurídica</p>
 </footer>
+
+<!-- SCRIPT IA -->
+<script type="module" src="js/ia.js"></script>
 
 </body>
 </html>
