@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGJEP - Reportes</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-izquierda">
+    <img src="assets/Logo.png" alt="SIGJEP" class="logo">
+  </div>
+  <div class="header-derecha">
+    <span class="usuario">Usuario - Abogado 🔔 15</span>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <details open>
+    <summary>☰ Menú</summary>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="expedientes.html">Expedientes</a>
+    <a href="modulo-ia.html">Módulo IA</a>
+    <a href="reportes.html">Reportes</a>
+  </details>
+  <a href="index.html" class="logout">Cerrar sesión</a>
+</aside>
+
+<main class="contenido">
+  <div class="content">
+
+    <h2>Reportes del Sistema</h2>
+
+    <!-- FILTROS -->
+    <div class="filtros">
+      <input type="date" id="fechaInicio">
+      <input type="date" id="fechaFin">
+
+      <select id="tipoReporte">
+        <option value="">Tipo de caso</option>
+        <option value="Tutela">Tutela</option>
+        <option value="Demanda">Demanda</option>
+        <option value="PQRS">PQRS</option>
+      </select>
+
+      <button class="nuevo" onclick="generarReporte()">Generar Reporte</button>
+    </div>
+
+    <!-- TARJETAS -->
+    <div class="tarjetas">
+      <div class="tarjeta verde">
+        <span class="numero" id="totalCasos">0</span>
+        <span class="etiqueta">Casos</span>
+      </div>
+
+      <div class="tarjeta amarilla">
+        <span class="numero" id="totalAlertas">0</span>
+        <span class="etiqueta">Alertas</span>
+      </div>
+
+      <div class="tarjeta roja">
+        <span class="numero" id="totalVencidos">0</span>
+        <span class="etiqueta">Vencidos</span>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="tabla-contenedor">
+      <table>
+        <thead>
+          <tr>
+            <th>Expediente</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th>Vence</th>
+          </tr>
+        </thead>
+        <tbody id="tablaReportes">
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <p>© 2026 SIGJEP - Sistema de Gestión Jurídica</p>
+</footer>
+
+<script src="js/reportes.js"></script>
+
+</body>
+</html>
