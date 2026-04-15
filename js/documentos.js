@@ -4,6 +4,11 @@ const preview = document.getElementById("preview");
 const params = new URLSearchParams(window.location.search);
 const expedienteId = params.get("id");
 
+const id = params.get("id");
+
+document.getElementById("tituloExpediente").innerText =
+  "Documentos del expediente #" + id;
+  
 const titulo = document.getElementById("tituloExpediente");
 titulo.textContent = "Documentos del expediente #" + expedienteId;
 
@@ -112,3 +117,4 @@ inputArchivo.addEventListener("change", (e) => {
     }
   }, 100);
 });
+
