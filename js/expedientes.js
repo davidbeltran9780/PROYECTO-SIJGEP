@@ -77,7 +77,7 @@ fila.innerHTML = `
 });
 
 function verDocumentos(id) {
-  window.location.href = `documentos.html?id=${id}`;
+  window.location.href = "documentos.html?id=" + id;
 }
 
 const checkboxes = document.querySelectorAll(".filtro input[type='checkbox']");
@@ -114,4 +114,5 @@ window.addEventListener("click", (e) => {
     modal.style.display = "none";
   }
 });
+
 
