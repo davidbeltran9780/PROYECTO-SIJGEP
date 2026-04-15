@@ -27,12 +27,24 @@ body { background-color:var(--fondo); color:var(--texto); font-size:13px; margin
   padding: 0 10px;
 }
 .logo {
-  height: 42px;
-  width: 220px;
+  height: 81px;
+  width: auto;
   object-fit: contain;
 }
 .header-derecha { background-color:var(--primario); flex:1; height:100%; display:flex; align-items:center; justify-content:flex-end; padding:0 20px; }
 .usuario { color:var(--blanco); font-size:13px; }
+
+#header-container {
+    height: 50px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    background-color: #D9D9D9;
+}
+
+
 
 /* ── SIDEBAR ── */
 .sidebar {

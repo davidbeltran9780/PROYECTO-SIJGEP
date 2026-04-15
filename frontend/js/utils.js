@@ -153,7 +153,7 @@ function cargarUsuarioHeader() {
 
 function cerrarSesion() {
   localStorage.clear()
-  window.location.href = "index.html"
+  window.location.href = "../index.html"
 }
 
 document.querySelector(".logout").addEventListener("click", cerrarSesion)
