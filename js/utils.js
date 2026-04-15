@@ -152,11 +152,11 @@ function cargarUsuarioHeader() {
 }
 
 function cerrarSesion() {
-  // Borra todos los datos de sesión guardados en localStorage
   localStorage.clear()
-  // Redirige al login
   window.location.href = "index.html"
 }
+
+document.querySelector(".logout").addEventListener("click", cerrarSesion)
 
 function obtenerRol() {
   return localStorage.getItem("rol")
