@@ -1387,7 +1387,7 @@ a.btn-accion-editar {
     margin: 0 auto;
   }
 }
-=======
+
 .form-actions {
   display: flex;
   gap: 12px;
@@ -1452,4 +1452,4 @@ a.btn-accion-editar {
 #tablaPQRS tr:hover {
   background: #f5f7fb;
 }
- main
+ 
