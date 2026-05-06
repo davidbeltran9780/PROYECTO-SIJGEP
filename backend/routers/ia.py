@@ -1,5 +1,4 @@
-﻿
-from fastapi import APIRouter, UploadFile, File, HTTPException
+﻿from fastapi import APIRouter, UploadFile, File, HTTPException
 from dotenv import load_dotenv
 import os
 
@@ -62,9 +61,20 @@ async def resumir_documento(archivo: UploadFile = File(...)):
             return {"archivo": archivo.filename, "resumen": "El documento está vacío o no se pudo leer el texto."}
 
         respuesta = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=f"Resume el siguiente documento jurídico de manera clara y profesional:\n\n{texto[:10000]}"
-        )
+    model="gemini-2.5-flash",
+    contents=f"""Eres un asistente jurídico de una alcaldía colombiana. Analiza el documento y responde en este formato exacto:
+
+TIPO: [Tutela / Demanda / Petición / Queja / Reclamo / Sugerencia / Otro]
+
+RESUMEN: [Máximo 200 palabras. Partes, hechos y solicitud principal.]
+
+NORMAS: [Solo las que apliquen entre estas: Ley 1437 de 2011, Ley 1755 de 2015, Ley 1581 de 2012, Constitución Política artículo 86 para tutelas.]
+
+BORRADOR: [Respuesta institucional formal en nombre de la alcaldía. Máximo 150 palabras.]
+
+Documento:
+{texto[:10000]}"""
+)
 
         return {
             "archivo": archivo.filename,
