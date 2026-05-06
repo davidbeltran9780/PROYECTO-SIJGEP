@@ -11,7 +11,15 @@ function cargarComponente(url, idContenedor) {
         });
 }
 
-cargarComponente('../components/header.html', 'header-container');
+fetch('../components/header.html')
+    .then(response => response.text())
+    .then(html => {
+        const contenedor = document.getElementById('header-container');
+        if (contenedor) {
+            contenedor.innerHTML = html;
+            cargarUsuarioHeader();
+        }
+    });
 cargarComponente('../components/sidebar.html', 'sidebar-container');
 cargarComponente('../components/footer.html', 'footer-container');
 

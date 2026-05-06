@@ -3,7 +3,7 @@ let expedienteSeleccionado = null;
 let archivoActual = null;
 let listaArchivos = [];
 
-const BACKEND_URL = "https://didactic-acorn-97p6p6x969wp39vwv-8000.app.github.dev";
+const BACKEND_URL = "http://127.0.0.1:8000";
 
 // SELECCIONAR EXPEDIENTE
 window.seleccionarExpediente = function() {

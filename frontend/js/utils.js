@@ -165,3 +165,10 @@ function estaAutorizado(rolesPermitidos) {
   let rol = obtenerRol()
   return rolesPermitidos.includes(rol)
 }
+
+
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        cargarUsuarioHeader();
+    }, 500);
+});
