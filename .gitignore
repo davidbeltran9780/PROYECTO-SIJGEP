@@ -414,3 +414,8 @@ $RECYCLE.BIN/
 backend/.env*
 backend/credentials.json
 .vscode/
+
+credentials.json
+backups/
+backups/
+token.pickle
