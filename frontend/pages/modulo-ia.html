@@ -12,66 +12,82 @@
 <div id="header-container"></div>
 <div id="sidebar-container"></div>
 
-<!-- CONTENIDO -->
 <main class="content">
   <div class="contenido">
 
-    <h2>Asistente Jurídico con IA</h2>
+    <h2>⚖️ Asistente Jurídico con IA</h2>
+
+    <!-- AVISO LEGAL -->
+    <div style="background:#fff3cd; border-left:4px solid #ffc107; padding:12px 16px; border-radius:6px; margin-bottom:20px; font-size:13px; color:#856404;">
+      ⚠️ Los borradores generados por IA son documentos de apoyo y requieren revisión y firma de un abogado habilitado antes de tener validez legal. <strong>(Ley 527 de 1999)</strong>
+    </div>
 
     <!-- SELECT EXPEDIENTE -->
-    <select id="expedienteSelect" onchange="seleccionarExpediente()">
-      <option value="">Seleccionar expediente</option>
-      <option value="1">EXP-001</option>
-      <option value="2">EXP-002</option>
-    </select>
+    <div style="margin-bottom:24px;">
+      <label for="expedienteSelect" style="display:block; font-weight:600; margin-bottom:6px; font-size:14px;">Expediente asociado</label>
+      <select id="expedienteSelect" onchange="seleccionarExpediente()" style="padding:10px 14px; border-radius:8px; border:1px solid #ddd; font-size:14px; min-width:250px;">
+        <option value="">Seleccionar expediente</option>
+        <option value="1">EXP-001</option>
+        <option value="2">EXP-002</option>
+      </select>
+    </div>
 
     <div class="ia-panel">
 
       <!-- DOCUMENTOS -->
       <div class="ia-card">
-        <h3>Documentos</h3>
-
-        <p>Documento seleccionado</p>
-        <strong id="docSeleccionado">Ninguno</strong>
+        <h3>📄 Documentos</h3>
+        <div style="margin:12px 0;">
+          <p style="font-size:13px; color:#666; margin-bottom:4px;">Documento seleccionado</p>
+          <strong id="docSeleccionado" style="font-size:14px;">Ninguno</strong>
+        </div>
 
         <input type="file" id="inputArchivo" hidden accept=".txt,.pdf,.docx,.doc,.jpg,.jpeg,.png">
-        <button class="btn-primario" onclick="document.getElementById('inputArchivo').click()">
-          Subir Archivo
+        <button class="btn-primario" onclick="document.getElementById('inputArchivo').click()" style="width:100%; margin-bottom:16px;">
+          📎 Subir Archivo
         </button>
 
-        <h4>Historial de archivos</h4>
+        <h4 style="font-size:13px; color:#666; margin-bottom:8px;">Historial de archivos</h4>
         <div id="listaArchivos"></div>
-
-        <p id="nombreArchivo">Ninguno</p>
+        <p id="nombreArchivo" style="font-size:13px; color:#888; margin-top:8px;">Ninguno</p>
       </div>
 
       <!-- ANÁLISIS IA -->
       <div class="ia-card">
-        <h3>Análisis IA</h3>
+        <h3>🤖 Análisis IA</h3>
 
-        <button class="btn-primario" onclick="clasificar()">Analizar con IA</button>
+        <button class="btn-primario" onclick="clasificar()" style="width:100%; margin-bottom:16px;">
+          🔍 Analizar con IA
+        </button>
 
-        <p>
-          <strong>Tipo de caso:</strong>
-          <span id="resultadoClasificacion">-</span>
-        </p>
+        <div style="background:#f8f9fa; border-radius:8px; padding:12px; margin-bottom:16px;">
+          <p style="font-size:13px; color:#666; margin-bottom:4px;"><strong>Tipo de caso:</strong></p>
+          <span id="resultadoClasificacion" style="font-size:14px; font-weight:600;">-</span>
+        </div>
 
-        <p><strong>Resumen:</strong></p>
+        <p style="font-size:13px; font-weight:600; margin-bottom:8px;">Resumen generado:</p>
+        <textarea id="resultadoResumen" readonly style="width:100%; min-height:140px; border-radius:8px; border:1px solid #ddd; padding:10px; font-size:13px; resize:vertical; background:#fafafa;"></textarea>
 
-        <textarea id="resultadoResumen" readonly></textarea>
-
-        <button class="btn-primario" onclick="resumirArchivo()">Generar Resumen</button>
+        <button class="btn-primario" onclick="resumirArchivo()" style="width:100%; margin-top:12px;">
+          ✨ Generar Resumen
+        </button>
       </div>
 
       <!-- BORRADORES -->
       <div class="ia-card">
-        <h3>Borradores</h3>
+        <h3>📝 Borradores</h3>
 
-        <button class="btn-primario" onclick="descargarBorrador()">Descargar Borrador</button>
+        <p style="font-size:13px; color:#666; margin-bottom:16px;">Gestiona el borrador generado por la IA antes de enviarlo.</p>
 
-        <button class="btn-verde">Aprobar</button>
-        <button class="btn-primario">Editar</button>
-        <button class="btn-rojo">Descartar</button>
+        <button class="btn-primario" onclick="descargarBorrador()" style="width:100%; margin-bottom:12px;">
+          ⬇️ Descargar Borrador
+        </button>
+
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+          <button class="btn-verde" style="width:100%;">✅ Aprobar</button>
+          <button class="btn-primario" style="width:100%;">✏️ Editar</button>
+          <button class="btn-rojo" style="width:100%;">🗑️ Descartar</button>
+        </div>
       </div>
 
     </div>
@@ -81,7 +97,6 @@
 
 <!-- SPINNER -->
 <div id="overlaySpinner" class="overlay-spinner" style="display:none;"></div>
-
 <div id="spinner" class="spinner-contenedor" style="display:none;">
   <div class="spinner"></div>
   <p>Procesando con IA...</p>
@@ -90,6 +105,7 @@
 <div id="footer-container"></div>
 
 <!-- SCRIPTS -->
+<script src="../js/utils.js"></script>
 <script type="module" src="../js/ia.js"></script>
 <script src="../js/components.js"></script>
 

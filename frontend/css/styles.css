@@ -1453,3 +1453,74 @@ a.btn-accion-editar {
   background: #f5f7fb;
 }
  
+
+/* ════════════════════════════════════════ */
+/*   MÓDULO IA                              */
+/* ════════════════════════════════════════ */
+
+.ia-panel {
+  display: flex;
+  gap: 20px;
+  margin-top: 24px;
+  align-items: flex-start;
+}
+
+.ia-card {
+  flex: 1;
+  background: var(--gris-tabla);
+  border: 1px solid var(--gris-tabla);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.ia-card h3 {
+  color: var(--primario);
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--gris-tabla);
+}
+
+.btn-primario {
+  background: var(--primario);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primario:hover { background: var(--azul-hover); }
+
+.btn-verde {
+  background: var(--verde);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-rojo {
+  background: var(--rojo);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .ia-panel {
+    flex-direction: column;
+  }
+}
