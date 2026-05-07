@@ -18,7 +18,7 @@
 
     <!-- Tabs de Administración -->
     <div class="tabs-admin">
-      <button class="tab-admin activa" onclick="cambiarPestana('usuarios')">USUARIOS</button>
+      <button class="tab-admin" onclick="cambiarPestana('usuarios')">USUARIOS</button>
       <button class="tab-admin" onclick="cambiarPestana('backups')">BACKUPS</button>
       <button class="tab-admin" onclick="cambiarPestana('auditoria')">AUDITORÍA</button>
     </div>
@@ -26,7 +26,7 @@
     <hr class="tab-separador">
 
     <!-- Panel 1: USUARIOS -->
-    <div id="panel-usuarios" class="tab-panel activa">
+    <div id="panel-usuarios" class="tab-panel">
       <div class="top">
         <h2>Gestión de Usuarios</h2>
         <button class="nuevo" onclick="abrirModalUsuario()">Nuevo Usuario</button>
@@ -88,7 +88,7 @@
           <h3>Generar Respaldo Manual</h3>
           <p>Crea un respaldo completo de la base de datos y lo sube a Google Drive</p>
         </div>
-        <button class="nuevo">Generar Backup Ahora</button>
+        <button class="nuevo" onclick="generarBackup()">Generar Backup Ahora</button>
       </div>
 
       <!-- Historial de Respaldos -->
@@ -105,30 +105,6 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>15/04/2026</td>
-            <td>10:30</td>
-            <td>12.4 MB</td>
-            <td><span class="badge activo">Exitoso</span></td>
-            <td>Carlos Ruiz</td>
-            <td><a href="#" class="btn-accion-editar">Ver en Drive</a></td>
-          </tr>
-          <tr>
-            <td>14/04/2026</td>
-            <td>18:45</td>
-            <td>11.8 MB</td>
-            <td><span class="badge activo">Exitoso</span></td>
-            <td>María Gómez</td>
-            <td><a href="#" class="btn-accion-editar">Ver en Drive</a></td>
-          </tr>
-          <tr>
-            <td>13/04/2026</td>
-            <td>09:15</td>
-            <td>-</td>
-            <td><span class="badge cerrado">Fallido</span></td>
-            <td>Juan Pérez</td>
-            <td><span class="urgente">Error de conexión</span></td>
-          </tr>
         </tbody>
       </table>
     </div>
@@ -264,6 +240,7 @@
   </div>
 </div>
 
+<script src="../js/utils.js"></script>
 <script src="../js/components.js"></script>
 <script src="../js/admin.js"></script>
 
