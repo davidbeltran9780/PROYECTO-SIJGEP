@@ -1,75 +1,73 @@
 # ⚖️ SIGJEP
 ### Sistema Inteligente de Gestión Jurídica para Entidades Públicas
-
 **SENA — Programación de Software | Código: 223104**
 
 ---
 
-## 📋 ¿Qué es SIGJEP?
-
-SIGJEP es una aplicación web para automatizar la gestión jurídica de alcaldías y entidades públicas colombianas. Permite gestionar expedientes electrónicos de tutelas, demandas y PQRS, clasificar documentos con Inteligencia Artificial, generar resúmenes jurídicos automáticos y alertar sobre vencimientos de tiempos legales.
+## ¿Qué es SIGJEP?
+Aplicación web para automatizar la gestión jurídica de alcaldías colombianas. Gestiona expedientes de tutelas, demandas y PQRS, clasifica documentos con IA, genera resúmenes jurídicos y alerta sobre vencimientos legales.
 
 ---
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
 | Capa | Tecnología |
 |------|-----------|
-| Frontend | HTML5, CSS3, JavaScript ES6+, Bootstrap 5 |
-| Backend | Python 3.13, FastAPI |
-| Base de datos | MySQL local (MySQL Workbench) |
-| Almacenamiento | Carpeta uploads/ local |
-| Autenticación | PyJWT + bcrypt o FastAPI Users (en decision) |
-| Inteligencia Artificial | Google Gemini API (google-genai) |
+| Frontend | React 18 + Vite + PrimeReact + Axios |
+| Backend | Python 3.13 + FastAPI |
+| Base de datos | MySQL local |
+| Autenticación | PyJWT + bcrypt |
+| IA | Google Gemini API |
 | Backups | Google Drive API |
 | Control de versiones | Git / GitHub |
 
 ---
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 PROYECTO-SIGJEP/
 ├── backend/
 │   ├── routers/
-│   │   ├── __init__.py
-│   │   ├── auth.py           # Login y roles
+│   │   ├── auth.py           # Login, registro, recuperar contraseña
 │   │   ├── expedientes.py    # CRUD expedientes
 │   │   ├── casos.py          # CRUD casos
-│   │   ├── documentos.py     # Subir y descargar archivos
+│   │   ├── documentos.py     # Subir archivos
 │   │   ├── usuarios.py       # CRUD usuarios
-│   │   ├── ia.py             # Clasificacion con Gemini
+│   │   ├── ia.py             # Gemini — resumir y clasificar
 │   │   ├── backups.py        # Backups a Google Drive
-│   │   └── reportes.py       # Estadisticas
-│   ├── uploads/              # Archivos subidos por usuarios
-│   ├── main.py               # Archivo principal FastAPI
-│   ├── database.py           # Conexion a MySQL
-│   ├── requirements.txt      # Librerias Python
-│   ├── .env.example          # Plantilla de variables de entorno
-│   └── .gitignore
-├── frontend/
-│   ├── index.html            # Login
-│   ├── pages/                # Paginas de la aplicacion
-│   ├── components/           # Header, sidebar, footer
-│   ├── css/                  # Estilos
-│   └── js/                   # Logica frontend
-├── .github/
-│   └── PULL_REQUEST_TEMPLATE.md
+│   │   ├── pqrs.py           # Módulo PQRS
+│   │   └── reportes.py       # Estadísticas
+│   ├── models/
+│   ├── uploads/
+│   ├── main.py
+│   ├── database.py
+│   ├── schema.sql
+│   ├── requirements.txt
+│   └── .env.example
+├── frontend/                 # HTML original (referencia)
+├── frontend-react/           # Frontend activo en React
+│   ├── src/
+│   │   ├── api/axios.js
+│   │   ├── components/       # Header, Sidebar, Footer
+│   │   ├── pages/            # Login, Dashboard, Admin, etc.
+│   │   └── assets/styles.css
+│   ├── .env.example
+│   └── README.md
 └── README.md
 ```
 
 ---
 
-## ⚙️ Instalación y Configuración
+## Instalación
 
-### Requisitos previos
+### Requisitos
+- Python 3.13
+- Node.js LTS → https://nodejs.org
+- MySQL Workbench
+- Git + VS Code
 
-- Python 3.13 instalado
-- MySQL Workbench instalado
-- Git instalado
-- VS Code (recomendado)
-
-### 1. Configurar el backend
+### Backend
 
 ```bash
 cd backend
@@ -78,140 +76,117 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-> ⚠️ Si aparece ERROR al instalar, ejecuta estos comandos alternativos:
-> ```bash
-> python.exe -m pip install --upgrade pip
-> pip install fastapi "uvicorn[standard]" pymysql fastapi-users bcrypt google-genai python-multipart python-dotenv jinja2 sqlalchemy aiomysql google-api-python-client google-auth-httplib2
-> pip freeze | Out-File -FilePath requirements.txt -Encoding utf8
-> ```
+Crear `backend/.env` basado en `.env.example`.
 
-### 2. Configurar MySQL
-
-#### 2.1 Crear las tablas
-
-Ejecuta el archivo `schema.sql` que está en la carpeta `backend/`:
-
+Crear la base de datos en MySQL Workbench:
 ```
-MySQL Workbench → File → Open SQL Script → selecciona backend/schema.sql → Execute
+File → Open SQL Script → backend/schema.sql → Execute
 ```
 
-O desde la terminal:
-
-```bash
-& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p < schema.sql
-```
-
-#### 3.3 Tablas del sistema
-
-| Tabla | Descripción |
-|-------|-------------|
-| `usuarios` | Usuarios del sistema con roles |
-| `casos` | Casos jurídicos (tutelas, demandas, PQRS) |
-| `expedientes` | Expedientes electrónicos por caso |
-| `documentos` | Archivos subidos por los usuarios |
-| `borradores_respuesta` | Borradores generados por IA |
-| `ia_resumenes` | Resumenes generados por Gemini |
-| `backups_log` | Historial de backups a Google Drive |
-| `pqrs` | Solicitudes de ciudadanos |
-| `alertas` | Alertas de vencimiento de casos |
-| `log_auditoria` | Registro de acciones (Ley 1581) |
-
-#### 3.4 Roles del sistema
-
-| Rol | Permisos |
-|-----|----------|
-| `administrador` | Acceso total al sistema |
-| `abogado` | Gestionar expedientes y casos |
-| `auxiliar` | Apoyo documental |
-| `ciudadano` | Solo PQRS |
-
-### 3. Configurar las variables de entorno
-
-Crea un archivo `.env` dentro de `backend/` basándote en `.env.example`:
-
-```
-MYSQL_HOST=localhost
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=tu_password_mysql
-MYSQL_DB=sigjep_db
-
-GEMINI_API_KEY=tu_clave_gemini
-
-SECRET_KEY=clave_larga_y_segura
-```
-
-> ⚠️ El archivo `.env` nunca se sube a GitHub.
-
-### 4. Arrancar el servidor
-
+Arrancar:
 ```bash
 uvicorn main:app --reload
 ```
+→ http://127.0.0.1:8000
+→ Docs: http://127.0.0.1:8000/docs
 
-El servidor queda disponible en: `http://localhost:8000`
-Documentación de la API: `http://localhost:8000/docs`
+### Frontend React
 
-### Tipos de commit
+```bash
+cd frontend-react
+npm install
+```
+
+Crear `frontend-react/.env`:
+```
+VITE_API_URL=http://127.0.0.1:8000
+```
+
+Arrancar:
+```bash
+npm run dev
+```
+→ http://localhost:5173
+
+---
+
+## En desarrollo — DOS terminales
+
+| Terminal | Comando | Puerto |
+|----------|---------|--------|
+| Backend | `uvicorn main:app --reload` | :8000 |
+| Frontend | `npm run dev` | :5173 |
+
+---
+
+## Base de Datos
+
+| Tabla | Descripción |
+|-------|-------------|
+| `usuarios` | Usuarios con roles |
+| `casos` | Tutelas, demandas, PQRS |
+| `expedientes` | Expedientes por caso |
+| `documentos` | Archivos subidos |
+| `borradores_respuesta` | Borradores IA |
+| `ia_resumenes` | Resúmenes Gemini |
+| `backups_log` | Historial backups Drive |
+| `pqrs` | Solicitudes ciudadanos |
+| `alertas` | Alertas de vencimiento |
+| `log_auditoria` | Registro acciones (Ley 1581) |
+| `password_reset_tokens` | Tokens recuperación contraseña |
+
+### Roles
+
+| Rol | Permisos |
+|-----|----------|
+| `administrador` | Acceso total |
+| `abogado` | Expedientes y casos |
+| `auxiliar` | Apoyo documental |
+| `ciudadano` | Solo PQRS |
+
+---
+
+## Endpoints
+
+| Método | Endpoint | Estado |
+|--------|----------|--------|
+| POST | `/login` | ✅ |
+| POST | `/register` | ✅ |
+| POST | `/recuperar-password` | ✅ |
+| POST | `/reset-password` | ✅ |
+| GET/POST/PUT/DELETE | `/expedientes` | ✅ |
+| GET/POST/PUT/DELETE | `/usuarios` | ✅ |
+| POST | `/ia/resumir` | ✅ |
+| POST | `/ia/clasificar` | ⬜ |
+| POST | `/backups/manual` | ✅ |
+| GET | `/backups/listar` | ✅ |
+| GET/POST | `/pqrs` | ✅ |
+| GET | `/reportes/resumen` | ⬜ |
+| GET/POST/PUT/DELETE | `/casos` | ⬜ |
+| POST | `/documentos/subir` | ⬜ |
+
+---
+
+## Tipos de commit
 
 | Tipo | Uso |
 |------|-----|
 | `feat` | Nueva funcionalidad |
 | `fix` | Corrección de bug |
-| `docs` | Cambios en documentación |
-| `style` | Cambios de formato |
-| `refactor` | Refactorización de código |
+| `docs` | Documentación |
+| `style` | Formato |
+| `refactor` | Refactorización |
 
 ---
 
-## 📦 Librerías Principales
+## Equipo
 
-| Librería | Uso |
-|----------|-----|
-| `fastapi` | Framework principal del backend |
-| `uvicorn` | Servidor ASGI |
-| `pymysql` | Conexión con MySQL |
-| `PyJWT` | Generacion de tokens JWT |
-| `bcrypt` | Encriptar contraseñas |
-| `sqlalchemy` | ORM para base de datos |
-| `aiomysql` | MySQL asíncrono |
-| `google-genai` | Inteligencia Artificial con Gemini |
-| `google-api-python-client` | Google Drive para backups |
-| `google-auth-oauthlib` | OAuth Google Drive |
-| `python-dotenv` | Variables de entorno |
-| `python-multipart` | Subida de archivos |
-| `python-docx` | Generacion de documentos Word |
-| `jinja2` | Plantillas HTML |
-
----
-
-## 🔌 Endpoints Disponibles
-
-| Método | Endpoint | Descripción | Estado |
-|--------|----------|-------------|--------|
-| GET | `/expedientes` | Listar expedientes | ✅ |
-| POST | `/expedientes` | Crear expediente | ✅ |
-| PUT | `/expedientes/{id}` | Editar expediente | ✅ |
-| DELETE | `/expedientes/{id}` | Eliminar expediente | ✅ |
-| GET | `/usuarios` | Listar usuarios | ✅ |
-| POST | `/usuarios` | Crear usuario | ✅ |
-| PUT | `/usuarios/{id}` | Editar usuario | ✅ |
-| DELETE | `/usuarios/{id}` | Eliminar usuario | ✅ |
-| GET/POST/PUT/DELETE | `/casos` | CRUD casos | ⬜ |
-| POST | `/documentos` | Subir archivos | ⬜ |
-| POST | `/ia/clasificar` | Clasificar con Gemini | ⬜ |
-| GET | `/dashboard/resumen` | Datos para graficas | ⬜ |
-
----
-
-## 👥 Equipo de Desarrollo
-
-| Nombre |
-|--------|
-| Valentina Sabogal |
-| Brayan Trujillo |
-| Daniel Dionisio |
-| Miguel Corredor |
+| Nombre | Rol |
+|--------|-----|
+| Daniel Dionisio | Backend, coordinación |
+| Brayan Trujillo | Scrum Master |
+| Valentina Sabogal | Desarrollo |
+| Miguel Corredor | Desarrollo |
 
 **Instructora:** Jenny Guio
 
