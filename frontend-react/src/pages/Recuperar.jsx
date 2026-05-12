@@ -9,7 +9,7 @@ export default function Recuperar() {
   const handleRecuperar = async (e) => {
     e.preventDefault()
     try {
-      await api.post('/auth/recuperar', { email: correo })
+      await api.post('/recuperar-password', { email: correo })
       setMensaje('Enlace enviado a tu correo')
       setTipo('ok')
     } catch {
