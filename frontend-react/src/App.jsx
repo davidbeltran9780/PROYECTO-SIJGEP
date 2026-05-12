@@ -13,6 +13,7 @@ import PQRS from './pages/PQRS'
 import Reportes from './pages/Reportes'
 import ModuloIA from './pages/ModuloIA'
 import Documentos from './pages/Documentos'
+import RutaProtegida from './components/RutaProtegida'
 
 function Layout({ children }) {
   return (
@@ -38,7 +39,11 @@ function App() {
         <Route path="/expedientes" element={<Layout><Expedientes /></Layout>} />
         <Route path="/pqrs" element={<Layout><PQRS /></Layout>} />
         <Route path="/reportes" element={<Layout><Reportes /></Layout>} />
-        <Route path="/ia" element={<Layout><ModuloIA /></Layout>} />
+        <Route path="/ia" element={
+          <RutaProtegida rolesPermitidos={['abogado', 'admin']}>
+            <Layout><ModuloIA /></Layout>
+          </RutaProtegida>
+        } />
         <Route path="/documentos" element={<Layout><Documentos /></Layout>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
