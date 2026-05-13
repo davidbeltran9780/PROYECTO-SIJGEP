@@ -4,7 +4,12 @@ import api from '../api/axios'
 export default function PQRS() {
   const [pqrs, setPqrs] = useState([])
   const [modal, setModal] = useState(false)
-  const [form, setForm] = useState({ nombre: '', correo: '', tipo: '', mensaje: '' })
+const [form, setForm] = useState({
+  nombre_ciudadano: '',
+  correo: '',
+  tipo: '',
+  descripcion: ''
+})
 
   useEffect(() => {
     api.get('/pqrs').then(res => setPqrs(res.data)).catch(console.error)
@@ -31,16 +36,18 @@ export default function PQRS() {
         <thead>
           <tr>
             <th>Nombre</th><th>Correo</th><th>Tipo</th>
-            <th>Mensaje</th><th>Estado</th>
+            <th>Mensaje</th><th>Respuesta</th><th>Estado</th>
           </tr>
         </thead>
         <tbody>
           {pqrs.map((p, i) => (
-            <tr key={i}>
-              <td data-label="Nombre">{p.nombre}</td>
+            <tr key={p.id_pqrs}>
+              <td data-label="Nombre">{p.nombre_ciudadano}</td>
               <td data-label="Correo">{p.correo}</td>
               <td data-label="Tipo">{p.tipo}</td>
-              <td data-label="Mensaje">{p.mensaje}</td>
+              <td data-label="Mensaje">{p.descripcion}</td>
+              <td data-label="Respuesta"></td>
+               <span className="respuesta-pendiente">Pendiente</span>
               <td data-label="Estado">
                 <span className={`estado ${p.estado}`}>{p.estado}</span>
               </td>
@@ -54,8 +61,8 @@ export default function PQRS() {
           <div className="modal-content">
             <h2>Nuevo PQRS</h2>
             <form onSubmit={guardar} className="pqrs-form">
-              <input type="text" placeholder="Nombre" required value={form.nombre}
-                onChange={e => setForm({ ...form, nombre: e.target.value })} />
+              <input type="text" placeholder="Nombre" required value={form.nombre_ciudadano}
+                onChange={e => setForm({ ...form, nombre_ciudadano: e.target.value })} />
               <input type="email" placeholder="Correo" required value={form.correo}
                 onChange={e => setForm({ ...form, correo: e.target.value })} />
               <select required value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value })}>
@@ -65,8 +72,8 @@ export default function PQRS() {
                 <option value="reclamo">Reclamo</option>
                 <option value="sugerencia">Sugerencia</option>
               </select>
-              <textarea placeholder="Escribe tu mensaje" required value={form.mensaje}
-                onChange={e => setForm({ ...form, mensaje: e.target.value })} />
+              <textarea placeholder="Escribe tu mensaje" required value={form.descripcion}
+                onChange={e => setForm({ ...form, descripcion: e.target.value })} />
               <div className="form-actions">
                 <button type="submit" className="btn-guardar">Guardar</button>
                 <button type="button" className="btn-cancelar" onClick={() => setModal(false)}>Cancelar</button>
