@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import api from '../api/axios'
+import Spinner from '../components/Spinner'
 
 export default function ModuloIA() {
   const [expedientes, setExpedientes] = useState([])
@@ -91,14 +92,7 @@ export default function ModuloIA() {
 
           <div className="ia-card">
             <h3>Análisis IA</h3>
-            {cargando && (
-              <div>
-                <p>Procesando con IA...</p>
-                <div className="barra">
-                  <div className="progreso" style={{ width: '100%' }} />
-                </div>
-              </div>
-            )}
+            {cargando && <Spinner />}
             <p><strong>Tipo de caso:</strong> {clasificacion}</p>
             <button className="nuevo" onClick={clasificar} disabled={cargando}>
               Analizar con IA

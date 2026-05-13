@@ -24,7 +24,7 @@ CREATE TABLE `usuarios` (
   `nombre` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `password` varchar(255) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `rol` enum('abogado','secretaria','admin','ciudadano') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `rol` enum('abogado','secretaria','admin', 'administrador','ciudadano') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `estado` enum('activo','inactivo') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'activo',
   PRIMARY KEY (`id_usuarios`),
   UNIQUE KEY `uk_email` (`email`)
