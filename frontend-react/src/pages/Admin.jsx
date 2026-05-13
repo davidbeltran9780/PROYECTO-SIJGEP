@@ -6,11 +6,15 @@ export default function Admin() {
   const [usuarios, setUsuarios] = useState([])
   const [backups, setBackups] = useState([])
   const [modalAbierto, setModalAbierto] = useState(false)
+  const [modalEditar, setModalEditar] = useState(false)
+  const [usuarioEditando, setUsuarioEditando] = useState(null)
   const [nuevoUsuario, setNuevoUsuario] = useState({ nombre: '', email: '', password: '', rol: '' })
 
-  useEffect(() => {
+  const cargarUsuarios = () => {
     api.get('/usuarios').then(res => setUsuarios(res.data)).catch(console.error)
-  }, [])
+  }
+
+  useEffect(() => { cargarUsuarios() }, [])
 
   useEffect(() => {
     if (pestana === 'backups') {
@@ -19,32 +23,49 @@ export default function Admin() {
     localStorage.setItem('pestanaAdmin', pestana)
   }, [pestana])
 
-  const generarBackup = async () => {
-    try {
-      await api.post('/backups/manual')
-      alert('Backup generado correctamente')
-    } catch {
-      alert('Error al generar backup')
-    }
-  }
-
   const guardarUsuario = async (e) => {
     e.preventDefault()
     try {
       await api.post('/usuarios', nuevoUsuario)
       setModalAbierto(false)
-      const res = await api.get('/usuarios')
-      setUsuarios(res.data)
-    } catch {
-      alert('Error al crear usuario')
-    }
+      setNuevoUsuario({ nombre: '', email: '', password: '', rol: '' })
+      cargarUsuarios()
+    } catch { alert('Error al crear usuario') }
+  }
+
+  const abrirEditar = (u) => {
+    setUsuarioEditando({ ...u })
+    setModalEditar(true)
+  }
+
+  const guardarEdicion = async (e) => {
+    e.preventDefault()
+    try {
+      await api.put(`/usuarios/${usuarioEditando.id_usuarios}`, usuarioEditando)
+      setModalEditar(false)
+      cargarUsuarios()
+    } catch { alert('Error al editar usuario') }
+  }
+
+  const eliminarUsuario = async (id) => {
+    if (!confirm('¿Seguro que deseas eliminar este usuario?')) return
+    try {
+      await api.delete(`/usuarios/${id}`)
+      cargarUsuarios()
+    } catch { alert('Error al eliminar usuario') }
+  }
+
+  const generarBackup = async () => {
+    try {
+      await api.post('/backups/manual')
+      alert('Backup generado correctamente')
+    } catch { alert('Error al generar backup') }
   }
 
   return (
     <main className="content">
       <div className="contenido">
 
-        {/* Tabs */}
         <div className="tabs-admin">
           {['usuarios', 'backups', 'auditoria'].map(t => (
             <button key={t} className={`tab-admin ${pestana === t ? 'activa' : ''}`}
@@ -65,11 +86,7 @@ export default function Admin() {
             <table>
               <thead>
                 <tr>
-                  <th>Nombre</th>
-                  <th>Email</th>
-                  <th>Rol</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
+                  <th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -84,8 +101,20 @@ export default function Admin() {
                       </span>
                     </td>
                     <td data-label="Acciones">
-                      <button className="btn-accion-editar">Editar</button>
-                      <button className="btn-accion-eliminar">Desactivar</button>
+                      <button className="btn-accion-editar" onClick={() => abrirEditar(u)}>Editar</button>
+                      {u.estado === 'activo'
+                        ? <button className="btn-accion-eliminar" onClick={async () => {
+                            if (!confirm('¿Desactivar?')) return
+                            await api.patch(`/usuarios/${u.id_usuarios}/desactivar`)
+                            cargarUsuarios()
+                          }}>Desactivar</button>
+                        : <button className="btn-accion-activar" onClick={async () => {
+                            if (!confirm('¿Activar?')) return
+                            await api.patch(`/usuarios/${u.id_usuarios}/activar`)
+                            cargarUsuarios()
+                          }}>Activar</button>
+                      }
+                      <button className="btn-accion-eliminar" onClick={() => eliminarUsuario(u.id_usuarios)}>Eliminar</button>
                     </td>
                   </tr>
                 ))}
@@ -109,9 +138,7 @@ export default function Admin() {
             <h3>Historial de Respaldos</h3>
             <table>
               <thead>
-                <tr>
-                  <th>Fecha</th><th>Hora</th><th>Archivo</th><th>Estado</th><th>Enlace</th>
-                </tr>
+                <tr><th>Fecha</th><th>Hora</th><th>Archivo</th><th>Estado</th><th>Enlace</th></tr>
               </thead>
               <tbody>
                 {backups.map((b, i) => {
@@ -135,7 +162,6 @@ export default function Admin() {
         {pestana === 'auditoria' && (
           <div>
             <h2>Log de Auditoría</h2>
-            <p>Registro de acciones realizadas en el sistema</p>
             <table>
               <thead>
                 <tr>
@@ -190,9 +216,9 @@ export default function Admin() {
                   <select required value={nuevoUsuario.rol}
                     onChange={e => setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })}>
                     <option value="">Seleccionar...</option>
-                    <option value="administrador">Administrador</option>
+                    <option value="admin">Administrador</option>
                     <option value="abogado">Abogado</option>
-                    <option value="auxiliar">Auxiliar</option>
+                    <option value="secretaria">Secretaria</option>
                     <option value="ciudadano">Ciudadano</option>
                   </select>
                 </div>
@@ -200,6 +226,38 @@ export default function Admin() {
               <div className="form-botones">
                 <button type="button" className="btn-cancelar" onClick={() => setModalAbierto(false)}>Cancelar</button>
                 <button type="submit" className="btn-guardar">Guardar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Usuario */}
+      {modalEditar && usuarioEditando && (
+        <div className="modal" style={{ display: 'flex' }} onClick={e => e.target.className === 'modal' && setModalEditar(false)}>
+          <div className="modal-contenido">
+            <h3>Editar Usuario</h3>
+            <form onSubmit={guardarEdicion}>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Nombre</label>
+                  <input type="text" required value={usuarioEditando.nombre}
+                    onChange={e => setUsuarioEditando({ ...usuarioEditando, nombre: e.target.value })} />
+                </div>
+                <div className="form-group">
+                  <label>Rol</label>
+                  <select required value={usuarioEditando.rol}
+                    onChange={e => setUsuarioEditando({ ...usuarioEditando, rol: e.target.value })}>
+                    <option value="admin">Administrador</option>
+                    <option value="abogado">Abogado</option>
+                    <option value="secretaria">Secretaria</option>
+                    <option value="ciudadano">Ciudadano</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-botones">
+                <button type="button" className="btn-cancelar" onClick={() => setModalEditar(false)}>Cancelar</button>
+                <button type="submit" className="btn-guardar">Guardar cambios</button>
               </div>
             </form>
           </div>

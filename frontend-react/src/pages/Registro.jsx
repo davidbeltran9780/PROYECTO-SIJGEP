@@ -11,7 +11,7 @@ export default function Registro() {
     e.preventDefault()
     setError('')
     try {
-      await api.post('/usuarios', { nombre: form.nombre, email: form.correo, password: form.password, rol: form.rol })
+      await api.post('/register', { nombre: form.nombre, email: form.correo, password: form.password, rol: form.rol })
       navigate('/')
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al registrarse')
@@ -32,7 +32,7 @@ export default function Registro() {
             value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
           <select required value={form.rol} onChange={e => setForm({ ...form, rol: e.target.value })}>
             <option value="">Seleccionar rol</option>
-            <option value="administrador">Administrador</option>
+            <option value="admin">Administrador</option>
             <option value="abogado">Abogado</option>
             <option value="ciudadano">Ciudadano</option>
           </select>

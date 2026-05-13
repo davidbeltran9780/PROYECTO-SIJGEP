@@ -1544,3 +1544,20 @@ body {
     margin-left: 0;
   }
 }
+
+.btn-accion-activar {
+  background: var(--verde);
+  border: none;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  margin-right: 5px;
+  transition: background 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-accion-activar:hover {
+  background: #16a34a;
+}

@@ -39,11 +39,12 @@ function App() {
         <Route path="/expedientes" element={<Layout><Expedientes /></Layout>} />
         <Route path="/pqrs" element={<Layout><PQRS /></Layout>} />
         <Route path="/reportes" element={<Layout><Reportes /></Layout>} />
-        <Route path="/ia" element={
-          <RutaProtegida rolesPermitidos={['abogado', 'admin']}>
+        <Route path="/ia" element={<Layout><ModuloIA /></Layout>} />
+        {/* <Route path="/ia" element={
+          <RutaProtegida rolesPermitidos={['abogado', 'admin', 'administrador']}>
             <Layout><ModuloIA /></Layout>
           </RutaProtegida>
-        } />
+        } />*/}
         <Route path="/documentos" element={<Layout><Documentos /></Layout>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

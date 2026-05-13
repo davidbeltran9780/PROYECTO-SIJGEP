@@ -1,6 +1,7 @@
 ﻿from fastapi import APIRouter
 from sqlalchemy import text
 from database import SessionLocal
+import bcrypt
 
 router = APIRouter()
 
@@ -16,9 +17,10 @@ def get_usuarios():
 @router.post("/usuarios")
 def crear_usuario(datos: dict):
     db = SessionLocal()
+    password_hash = bcrypt.hashpw(datos["password"].encode(), bcrypt.gensalt()).decode()
     db.execute(
         text("INSERT INTO usuarios (nombre, email, password, rol, estado) VALUES (:nombre, :email, :password, :rol, 'activo')"),
-        {"nombre": datos["nombre"], "email": datos["email"], "password": datos["password"], "rol": datos["rol"]}
+        {"nombre": datos["nombre"], "email": datos["email"], "password": password_hash, "rol": datos["rol"]}
     )
     db.commit()
     db.close()
@@ -59,3 +61,26 @@ def get_usuario(id: int):
     if not resultado:
         return {"error": "Usuario no encontrado"}
     return dict(resultado._mapping)
+# PATCH — desactivar usuario
+@router.patch("/usuarios/{id}/desactivar")
+def desactivar_usuario(id: int):
+    db = SessionLocal()
+    db.execute(
+        text("UPDATE usuarios SET estado = 'inactivo' WHERE id_usuarios = :id"),
+        {"id": id}
+    )
+    db.commit()
+    db.close()
+    return {"status": "Usuario desactivado ✅"}
+
+# PATCH — activar usuario
+@router.patch("/usuarios/{id}/activar")
+def activar_usuario(id: int):
+    db = SessionLocal()
+    db.execute(
+        text("UPDATE usuarios SET estado = 'activo' WHERE id_usuarios = :id"),
+        {"id": id}
+    )
+    db.commit()
+    db.close()
+    return {"status": "Usuario activado ✅"}
