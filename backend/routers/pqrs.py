@@ -50,11 +50,11 @@ def crear_pqrs(data: PQRSCreate, db: Session = Depends(get_db)):
     }
 
 
-# GET — listar todas (admin, auxiliar, abogado)
+# GET — listar todas (admin, secretaria, abogado)
 @router.get("/pqrs")
 def listar_pqrs(
     db: Session = Depends(get_db),
-    usuario: dict = Depends(requiere_rol("administrador", "admin", "auxiliar", "abogado"))
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
     return db.query(PQRS).order_by(PQRS.id_pqrs.desc()).all()
 

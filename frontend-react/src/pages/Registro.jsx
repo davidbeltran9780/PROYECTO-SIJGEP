@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import api from '../api/axios'
 
 export default function Registro() {
-  const [form, setForm] = useState({ nombre: '', correo: '', password: '', rol: '' })
+  const [form, setForm] = useState({ nombre: '', correo: '', password: '' })
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
@@ -11,7 +11,12 @@ export default function Registro() {
     e.preventDefault()
     setError('')
     try {
-      await api.post('/register', { nombre: form.nombre, email: form.correo, password: form.password, rol: form.rol })
+      await api.post('/register', {
+        nombre: form.nombre,
+        email: form.correo,
+        password: form.password,
+        rol: 'ciudadano'
+      })
       navigate('/')
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al registrarse')
@@ -30,12 +35,6 @@ export default function Registro() {
             value={form.correo} onChange={e => setForm({ ...form, correo: e.target.value })} />
           <input type="password" placeholder="Contraseña" required
             value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
-          <select required value={form.rol} onChange={e => setForm({ ...form, rol: e.target.value })}>
-            <option value="">Seleccionar rol</option>
-            <option value="admin">Administrador</option>
-            <option value="abogado">Abogado</option>
-            <option value="ciudadano">Ciudadano</option>
-          </select>
           {error && <p className="error" style={{ display: 'block' }}>{error}</p>}
           <button type="submit" className="btn-login">Registrarse</button>
         </form>

@@ -15,7 +15,7 @@ UPLOAD_DIR = Path("uploads")
 def get_documentos_por_expediente(
     id_expediente: int,
     db=Depends(get_db),
-    usuario: dict = Depends(requiere_rol("administrador", "admin", "auxiliar", "abogado"))
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
     resultado = db.execute(
         text("""
@@ -35,7 +35,7 @@ def get_documentos_por_expediente(
 def get_documento(
     id: int,
     db=Depends(get_db),
-    usuario: dict = Depends(requiere_rol("administrador", "admin", "auxiliar", "abogado"))
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
     resultado = db.execute(
         text("""
@@ -57,7 +57,7 @@ async def subir_documento(
     id_expediente: int,
     archivo: UploadFile = File(...),
     db=Depends(get_db),
-    usuario: dict = Depends(requiere_rol("administrador", "admin", "auxiliar", "abogado"))
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
     # Validar formato
     extensiones_validas = [".pdf", ".docx", ".doc", ".jpg", ".jpeg", ".png"]
@@ -101,7 +101,7 @@ async def subir_documento(
 def borrar_documento(
     id: int,
     db=Depends(get_db),
-    usuario: dict = Depends(requiere_rol("administrador", "admin", "auxiliar", "abogado"))
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
     # Buscar documento
     doc = db.execute(

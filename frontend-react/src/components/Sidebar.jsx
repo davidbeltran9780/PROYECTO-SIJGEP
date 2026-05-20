@@ -2,14 +2,14 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 
 const MENU_ITEMS = [
-  { to: '/dashboard',   label: 'Dashboard',   roles: ['admin', 'administrador', 'abogado', 'auxiliar', 'ciudadano'] },
+  { to: '/dashboard',   label: 'Dashboard',   roles: ['admin', 'administrador', 'abogado', 'secretaria', 'ciudadano'] },
   { to: '/admin',       label: 'Admin',        roles: ['admin', 'administrador'] },
-  { to: '/expedientes', label: 'Expedientes',  roles: ['admin', 'administrador', 'abogado', 'auxiliar'] },
-  { to: '/documentos',  label: 'Documentos',   roles: ['admin', 'administrador', 'abogado', 'auxiliar'] },
+  { to: '/expedientes', label: 'Expedientes',  roles: ['admin', 'administrador', 'abogado', 'secretaria'] },
+  { to: '/documentos',  label: 'Documentos',   roles: ['admin', 'administrador', 'abogado', 'secretaria'] },
   { to: '/ia',          label: 'Módulo IA',    roles: ['admin', 'administrador', 'abogado'] },
-  { to: '/alertas',     label: 'Alertas',      roles: ['admin', 'administrador', 'abogado', 'auxiliar'] },
+  { to: '/alertas',     label: 'Alertas',      roles: ['admin', 'administrador', 'abogado', 'secretaria'] },
   { to: '/reportes',    label: 'Reportes',     roles: ['admin', 'administrador'] },
-  { to: '/pqrs',        label: 'PQRS',         roles: ['admin', 'administrador', 'abogado', 'auxiliar', 'ciudadano'] },
+  { to: '/pqrs',        label: 'PQRS',         roles: ['admin', 'administrador', 'abogado', 'secretaria', 'ciudadano'] },
 ]
 
 export default function Sidebar() {

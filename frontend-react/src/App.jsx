@@ -36,8 +36,8 @@ function Protegida({ roles, children }) {
   )
 }
 
-const TODOS = ['admin', 'administrador', 'abogado', 'auxiliar', 'ciudadano']
-const INTERNOS = ['admin', 'administrador', 'abogado', 'auxiliar']
+const TODOS = ['admin', 'administrador', 'abogado', 'secretaria', 'ciudadano']
+const INTERNOS = ['admin', 'administrador', 'abogado', 'secretaria']
 const ADMIN = ['admin', 'administrador']
 const JURIDICO = ['admin', 'administrador', 'abogado']
 

@@ -2,35 +2,64 @@ import { useEffect, useState } from 'react'
 import api from '../api/axios'
 
 function calcularDias(fecha) {
+  if (!fecha) return null
   return Math.ceil((new Date(fecha) - new Date()) / (1000 * 60 * 60 * 24))
 }
 
 export default function Expedientes() {
   const [expedientes, setExpedientes] = useState([])
   const [modal, setModal] = useState(false)
-  const [form, setForm] = useState({ tipo: 'Tutela', demandante: '', fecha: '' })
+  const rol = localStorage.getItem('rol') || ''
+  const puedeCrear = ['admin', 'administrador', 'secretaria'].includes(rol)
+  const puedeEliminar = ['admin', 'administrador'].includes(rol)
+  const [form, setForm] = useState({
+    tipo: 'tutela',
+    titulo: '',
+    descripcion: '',
+    fecha_vencimiento: ''
+  })
 
-  useEffect(() => {
+  const cargar = () => {
     api.get('/expedientes').then(res => setExpedientes(res.data)).catch(console.error)
-  }, [])
+  }
+
+  useEffect(() => { cargar() }, [])
 
   const guardar = async (e) => {
     e.preventDefault()
     try {
-      await api.post('/expedientes', form)
+      // 1. Crear caso
+      const resCaso = await api.post('/casos', form)
+      const idCaso = resCaso.data.id_caso
+
+      // 2. Crear expediente vinculado al caso
+      await api.post('/expedientes', { id_caso: idCaso })
+
       setModal(false)
-      const res = await api.get('/expedientes')
-      setExpedientes(res.data)
-    } catch { alert('Error al crear expediente') }
+      setForm({ tipo: 'tutela', titulo: '', descripcion: '', fecha_vencimiento: '' })
+      cargar()
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Error al crear expediente')
+    }
+  }
+
+  const eliminar = async (id) => {
+    if (!confirm('¿Eliminar este expediente?')) return
+    try {
+      await api.delete(`/expedientes/${id}`)
+      cargar()
+    } catch { alert('Error al eliminar') }
   }
 
   const estadoClase = (fecha) => {
     const d = calcularDias(fecha)
+    if (d === null) return 'atiempo'
     return d <= 2 ? 'urgente' : d <= 5 ? 'proximo' : 'atiempo'
   }
 
   const estadoTexto = (fecha) => {
     const d = calcularDias(fecha)
+    if (d === null) return 'Sin fecha'
     return d <= 2 ? 'Urgente' : d <= 5 ? 'Próximo' : 'A tiempo'
   }
 
@@ -38,32 +67,43 @@ export default function Expedientes() {
     <main className="content">
       <div className="top">
         <h2>Gestión de Expedientes</h2>
-        <button className="nuevo" onClick={() => setModal(true)}>Nuevo Expediente</button>
+        {puedeCrear && (
+          <button className="nuevo" onClick={() => setModal(true)}>Nuevo Expediente</button>
+        )}
       </div>
 
       <table>
         <thead>
           <tr>
-            <th>Tipo</th><th>Demandante</th><th>Fecha</th>
-            <th>Vence</th><th>Estado</th><th>Acciones</th>
+            <th>ID</th><th>Tipo</th><th>Título</th><th>Fecha creación</th>
+            <th>Estado caso</th>{puedeEliminar && <th>Acciones</th>}
           </tr>
         </thead>
         <tbody>
-          {expedientes.map(e => (
-            <tr key={e.id_expediente}>
-              <td data-label="Tipo">{e.tipo}</td>
-              <td data-label="Demandante">{e.demandante || '—'}</td>
-              <td data-label="Fecha">{e.fecha_creacion}</td>
-              <td data-label="Vence">{e.fecha_limite ? `${calcularDias(e.fecha_limite)} día(s)` : '—'}</td>
-              <td data-label="Estado">
-                <span className={estadoClase(e.fecha_limite)}>{estadoTexto(e.fecha_limite)}</span>
-              </td>
-              <td data-label="Acciones">
-                <button className="btn-accion-editar">Editar</button>
-                <button className="btn-accion-eliminar">Eliminar</button>
-              </td>
-            </tr>
-          ))}
+          {expedientes.length === 0 ? (
+            <tr><td colSpan={puedeEliminar ? 6 : 5}>No hay expedientes registrados</td></tr>
+          ) : (
+            expedientes.map(e => (
+              <tr key={e.id_expediente}>
+                <td data-label="ID">{e.id_expediente}</td>
+                <td data-label="Tipo">{e.tipo || '—'}</td>
+                <td data-label="Título">{e.titulo || '—'}</td>
+                <td data-label="Fecha">{e.fecha_creacion?.split('T')[0]}</td>
+                <td data-label="Estado">
+                  <span className={estadoClase(e.fecha_vencimiento)}>
+                    {e.estado_caso || 'activo'}
+                  </span>
+                </td>
+                {puedeEliminar && (
+                  <td data-label="Acciones">
+                    <button className="btn-accion-eliminar" onClick={() => eliminar(e.id_expediente)}>
+                      Eliminar
+                    </button>
+                  </td>
+                )}
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
 
@@ -73,22 +113,29 @@ export default function Expedientes() {
             <h3>Nuevo Expediente</h3>
             <form onSubmit={guardar} className="form-grid">
               <div className="form-group">
-                <label>Tipo</label>
+                <label>Tipo de caso</label>
                 <select value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value })}>
-                  <option>Tutela</option>
-                  <option>Demanda</option>
-                  <option>PQRS</option>
+                  <option value="tutela">Tutela</option>
+                  <option value="demanda">Demanda</option>
+                  <option value="derecho_peticion">Derecho de petición</option>
+                  <option value="pqrs">PQRS</option>
+                  <option value="otro">Otro</option>
                 </select>
               </div>
               <div className="form-group">
-                <label>Demandante</label>
-                <input type="text" required value={form.demandante}
-                  onChange={e => setForm({ ...form, demandante: e.target.value })} />
+                <label>Título / Demandante</label>
+                <input type="text" required value={form.titulo}
+                  onChange={e => setForm({ ...form, titulo: e.target.value })} />
               </div>
               <div className="form-group">
-                <label>Fecha límite</label>
-                <input type="date" required value={form.fecha}
-                  onChange={e => setForm({ ...form, fecha: e.target.value })} />
+                <label>Descripción</label>
+                <textarea value={form.descripcion}
+                  onChange={e => setForm({ ...form, descripcion: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label>Fecha vencimiento</label>
+                <input type="date" value={form.fecha_vencimiento}
+                  onChange={e => setForm({ ...form, fecha_vencimiento: e.target.value })} />
               </div>
               <div className="form-botones">
                 <button type="button" className="btn-cancelar" onClick={() => setModal(false)}>Cancelar</button>

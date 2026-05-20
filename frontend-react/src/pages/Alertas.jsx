@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import api from '../api/axios'
 
-function calcularDias(fechaLimite) {
+function calcularDias(fechaVencimiento) {
+  if (!fechaVencimiento) return null
   const hoy = new Date()
-  const limite = new Date(fechaLimite)
-  const diff = Math.ceil((limite - hoy) / (1000 * 60 * 60 * 24))
-  return diff
+  const limite = new Date(fechaVencimiento)
+  return Math.ceil((limite - hoy) / (1000 * 60 * 60 * 24))
 }
 
 function TablaAlertas({ datos, clase, etiqueta }) {
@@ -15,25 +15,25 @@ function TablaAlertas({ datos, clase, etiqueta }) {
       <table>
         <thead>
           <tr>
-            <th>Expediente</th>
+            <th>ID Caso</th>
             <th>Tipo</th>
-            <th>Demandante</th>
-            <th>Fecha límite</th>
+            <th>Título</th>
+            <th>Fecha vencimiento</th>
             <th>Días restantes</th>
           </tr>
         </thead>
         <tbody>
           {datos.length === 0 ? (
-            <tr><td colSpan={5}>Sin expedientes en esta categoría</td></tr>
+            <tr><td colSpan={5}>Sin casos en esta categoría</td></tr>
           ) : (
-            datos.map((exp, i) => (
-              <tr key={i}>
-                <td data-label="Expediente">{exp.id_expediente}</td>
-                <td data-label="Tipo">{exp.tipo}</td>
-                <td data-label="Demandante">{exp.demandante || '—'}</td>
-                <td data-label="Fecha límite">{exp.fecha_limite}</td>
-                <td data-label="Días restantes" className={clase}>
-                  {calcularDias(exp.fecha_limite)} día(s)
+            datos.map((caso) => (
+              <tr key={caso.id_caso}>
+                <td data-label="ID">{caso.id_caso}</td>
+                <td data-label="Tipo">{caso.tipo}</td>
+                <td data-label="Título">{caso.titulo || '—'}</td>
+                <td data-label="Vencimiento">{caso.fecha_vencimiento}</td>
+                <td data-label="Días" className={clase}>
+                  {calcularDias(caso.fecha_vencimiento)} día(s)
                 </td>
               </tr>
             ))
@@ -50,11 +50,17 @@ export default function Alertas() {
   const [atiempo, setAtiempo] = useState([])
 
   useEffect(() => {
-    api.get('/expedientes').then(res => {
-      const todos = res.data
-      setUrgentes(todos.filter(e => calcularDias(e.fecha_limite) <= 2))
-      setProximos(todos.filter(e => calcularDias(e.fecha_limite) > 2 && calcularDias(e.fecha_limite) <= 5))
-      setAtiempo(todos.filter(e => calcularDias(e.fecha_limite) > 5))
+    api.get('/casos').then(res => {
+      // Solo casos con fecha de vencimiento y no cerrados
+      const activos = res.data.filter(c =>
+        c.fecha_vencimiento && c.estado !== 'cerrado' && c.estado !== 'archivado'
+      )
+      setUrgentes(activos.filter(c => calcularDias(c.fecha_vencimiento) <= 2))
+      setProximos(activos.filter(c => {
+        const d = calcularDias(c.fecha_vencimiento)
+        return d > 2 && d <= 5
+      }))
+      setAtiempo(activos.filter(c => calcularDias(c.fecha_vencimiento) > 5))
     }).catch(console.error)
   }, [])
 

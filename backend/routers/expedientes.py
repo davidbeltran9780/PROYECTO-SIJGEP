@@ -6,11 +6,11 @@ from auth_utils import obtener_usuario_actual, requiere_rol
 router = APIRouter()
 
 
-# GET — listar todos (admin, auxiliar, abogado)
+# GET — listar todos (admin, secretaria, abogado)
 @router.get("/expedientes")
 def get_expedientes(
     db=Depends(get_db),
-    usuario: dict = Depends(requiere_rol("administrador", "admin", "auxiliar", "abogado"))
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
     resultado = db.execute(text("""
         SELECT e.*, c.tipo, c.titulo, c.estado AS estado_caso
@@ -26,7 +26,7 @@ def get_expedientes(
 def get_expediente(
     id: int,
     db=Depends(get_db),
-    usuario: dict = Depends(requiere_rol("administrador", "admin", "auxiliar", "abogado"))
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
     resultado = db.execute(
         text("""
@@ -42,12 +42,12 @@ def get_expediente(
     return dict(resultado._mapping)
 
 
-# POST — crear (solo admin y auxiliar)
+# POST — crear (solo admin y secretaria)
 @router.post("/expedientes")
 def crear_expediente(
     datos: dict,
     db=Depends(get_db),
-    usuario: dict = Depends(requiere_rol("administrador", "admin", "auxiliar"))
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria"))
 ):
     db.execute(
         text("INSERT INTO expedientes (id_caso, fecha_creacion) VALUES (:id_caso, NOW())"),
@@ -57,13 +57,13 @@ def crear_expediente(
     return {"status": "Expediente creado"}
 
 
-# PUT — editar (admin, auxiliar, abogado)
+# PUT — editar (admin, secretaria, abogado)
 @router.put("/expedientes/{id}")
 def editar_expediente(
     id: int,
     datos: dict,
     db=Depends(get_db),
-    usuario: dict = Depends(requiere_rol("administrador", "admin", "auxiliar", "abogado"))
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
     db.execute(
         text("UPDATE expedientes SET id_caso = :id_caso WHERE id_expediente = :id"),

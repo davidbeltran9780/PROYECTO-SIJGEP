@@ -26,11 +26,11 @@ class CasoUpdate(BaseModel):
     id_abogado_asignado: Optional[int] = None
 
 
-# GET — listar todos (admin, auxiliar, abogado)
+# GET — listar todos (admin, secretaria, abogado)
 @router.get("/casos")
 def get_casos(
     db=Depends(get_db),
-    usuario: dict = Depends(requiere_rol("administrador", "admin", "auxiliar", "abogado"))
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
     resultado = db.execute(text("""
         SELECT c.*, u.nombre AS creador, a.nombre AS abogado_nombre
@@ -47,7 +47,7 @@ def get_casos(
 def get_caso(
     id: int,
     db=Depends(get_db),
-    usuario: dict = Depends(requiere_rol("administrador", "admin", "auxiliar", "abogado"))
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
     resultado = db.execute(
         text("""
@@ -64,18 +64,18 @@ def get_caso(
     return dict(resultado._mapping)
 
 
-# POST — crear (admin, auxiliar)
+# POST — crear (admin, secretaria)
 @router.post("/casos")
 def crear_caso(
     datos: CasoCreate,
     db=Depends(get_db),
-    usuario: dict = Depends(requiere_rol("administrador", "admin", "auxiliar"))
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria"))
 ):
     tipos_validos = ["tutela", "demanda", "pqrs", "derecho_peticion", "otro"]
     if datos.tipo.lower() not in tipos_validos:
         raise HTTPException(status_code=400, detail=f"Tipo invalido. Validos: {tipos_validos}")
 
-    db.execute(
+    result = db.execute(
         text("""
             INSERT INTO casos (tipo, titulo, descripcion, prioridad, fecha_radicacion,
                                fecha_vencimiento, id_usuario_creador, id_abogado_asignado, estado)
@@ -87,22 +87,22 @@ def crear_caso(
             "titulo": datos.titulo,
             "descripcion": datos.descripcion,
             "prioridad": datos.prioridad or "media",
-            "fecha_vencimiento": datos.fecha_vencimiento,
+            "fecha_vencimiento": datos.fecha_vencimiento or None,
             "id_creador": int(usuario["sub"]),
             "id_abogado": datos.id_abogado_asignado,
         }
     )
     db.commit()
-    return {"status": "Caso creado"}
+    return {"status": "Caso creado", "id_caso": result.lastrowid}
 
 
-# PUT — editar (admin, auxiliar, abogado)
+# PUT — editar (admin, secretaria, abogado)
 @router.put("/casos/{id}")
 def editar_caso(
     id: int,
     datos: CasoUpdate,
     db=Depends(get_db),
-    usuario: dict = Depends(requiere_rol("administrador", "admin", "auxiliar", "abogado"))
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
     campos = []
     valores = {"id": id}

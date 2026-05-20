@@ -73,7 +73,7 @@ export default function Dashboard() {
     )
   }
 
-  // Dashboard interno (admin, abogado, auxiliar)
+  // Dashboard interno (admin, abogado, secretaria)
   const datosTipos = [
     { name: 'Tutela', value: 40 },
     { name: 'Demanda', value: 30 },
