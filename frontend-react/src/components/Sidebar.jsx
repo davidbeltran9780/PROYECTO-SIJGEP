@@ -1,9 +1,21 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 
+const MENU_ITEMS = [
+  { to: '/dashboard',   label: 'Dashboard',   roles: ['admin', 'administrador', 'abogado', 'auxiliar', 'ciudadano'] },
+  { to: '/admin',       label: 'Admin',        roles: ['admin', 'administrador'] },
+  { to: '/expedientes', label: 'Expedientes',  roles: ['admin', 'administrador', 'abogado', 'auxiliar'] },
+  { to: '/documentos',  label: 'Documentos',   roles: ['admin', 'administrador', 'abogado', 'auxiliar'] },
+  { to: '/ia',          label: 'Módulo IA',    roles: ['admin', 'administrador', 'abogado'] },
+  { to: '/alertas',     label: 'Alertas',      roles: ['admin', 'administrador', 'abogado', 'auxiliar'] },
+  { to: '/reportes',    label: 'Reportes',     roles: ['admin', 'administrador'] },
+  { to: '/pqrs',        label: 'PQRS',         roles: ['admin', 'administrador', 'abogado', 'auxiliar', 'ciudadano'] },
+]
+
 export default function Sidebar() {
   const [abierto, setAbierto] = useState(false)
   const navigate = useNavigate()
+  const rol = localStorage.getItem('rol') || ''
 
   useEffect(() => {
     const ajustar = () => setAbierto(window.innerWidth > 768)
@@ -30,6 +42,9 @@ export default function Sidebar() {
     fontWeight: isActive ? 'bold' : 'normal',
   })
 
+  // Filtrar links según rol del usuario
+  const linksVisibles = MENU_ITEMS.filter(item => item.roles.includes(rol))
+
   return (
     <aside className="sidebar">
 
@@ -42,14 +57,11 @@ export default function Sidebar() {
 
       {abierto && (
         <>
-          <NavLink to="/dashboard" style={estiloLink}>Dashboard</NavLink>
-<NavLink to="/admin" style={estiloLink}>Admin</NavLink>
-<NavLink to="/expedientes" style={estiloLink}>Expedientes</NavLink>
-<NavLink to="/ia" style={estiloLink}>Módulo IA</NavLink>
-<NavLink to="/alertas" style={estiloLink}>Alertas</NavLink>
-<NavLink to="/documentos" style={estiloLink}>Documentos</NavLink>
-<NavLink to="/reportes" style={estiloLink}>Reportes</NavLink>
-<NavLink to="/pqrs" style={estiloLink}>PQRS</NavLink>
+          {linksVisibles.map(item => (
+            <NavLink key={item.to} to={item.to} style={estiloLink}>
+              {item.label}
+            </NavLink>
+          ))}
           <button className="logout" onClick={cerrarSesion}>
             Cerrar sesión
           </button>

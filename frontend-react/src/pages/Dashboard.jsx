@@ -5,31 +5,28 @@ import { ProgressSpinner } from 'primereact/progressspinner'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import api from '../api/axios'
 
-const datosTipos = [
-  { name: 'Tutela', value: 40 },
-  { name: 'Demanda', value: 30 },
-  { name: 'PQRS', value: 30 },
-]
-
-const datosMeses = [
-  { mes: 'Ene', casos: 12 },
-  { mes: 'Feb', casos: 19 },
-  { mes: 'Mar', casos: 8 },
-  { mes: 'Abr', casos: 15 },
-  { mes: 'May', casos: 22 },
-]
-
-const COLORES = ['#1E3A8A', '#22C55E', '#F59E0B']
+const COLORES = ['#1E3A8A', '#22C55E', '#F59E0B', '#EF4444']
 
 export default function Dashboard() {
   const [expedientes, setExpedientes] = useState([])
+  const [misPqrs, setMisPqrs] = useState([])
   const [cargando, setCargando] = useState(true)
+  const rol = localStorage.getItem('rol') || ''
+  const nombre = localStorage.getItem('usuario') || ''
+  const esCiudadano = rol === 'ciudadano'
 
   useEffect(() => {
-    api.get('/expedientes')
-      .then(res => setExpedientes(res.data))
-      .catch(err => console.error(err))
-      .finally(() => setCargando(false))
+    if (esCiudadano) {
+      api.get('/pqrs/mis-pqrs')
+        .then(res => setMisPqrs(res.data))
+        .catch(console.error)
+        .finally(() => setCargando(false))
+    } else {
+      api.get('/expedientes')
+        .then(res => setExpedientes(res.data))
+        .catch(console.error)
+        .finally(() => setCargando(false))
+    }
   }, [])
 
   const estadoTemplate = (rowData) => {
@@ -39,6 +36,57 @@ export default function Dashboard() {
       : rowData.estado === 'proximo' ? 'Próximo' : 'A tiempo'
     return <span className={clase}>{texto}</span>
   }
+
+  // Dashboard ciudadano
+  if (esCiudadano) {
+    return (
+      <main className="content">
+        <h2>Bienvenido, {nombre}</h2>
+        <div className="tarjetas">
+          <a href="/pqrs" className="tarjeta verde">
+            <span className="numero">{misPqrs.length}</span>
+            <p className="etiqueta">Mis PQRS</p>
+          </a>
+          <a href="/consulta" className="tarjeta amarilla">
+            <span className="numero">🔍</span>
+            <p className="etiqueta">Consultar por radicado</p>
+          </a>
+        </div>
+
+        <h3 className="seccion-dashboard">Mis solicitudes recientes</h3>
+        {cargando ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+            <ProgressSpinner />
+          </div>
+        ) : misPqrs.length === 0 ? (
+          <p>No tienes PQRS registradas aún.</p>
+        ) : (
+          <DataTable value={misPqrs} paginator rows={5}
+            emptyMessage="No hay PQRS"
+            tableClassName="tabla">
+            <Column field="numero_radicado" header="Radicado" />
+            <Column field="tipo" header="Tipo" />
+            <Column field="estado" header="Estado" />
+          </DataTable>
+        )}
+      </main>
+    )
+  }
+
+  // Dashboard interno (admin, abogado, auxiliar)
+  const datosTipos = [
+    { name: 'Tutela', value: 40 },
+    { name: 'Demanda', value: 30 },
+    { name: 'PQRS', value: 30 },
+  ]
+
+  const datosMeses = [
+    { mes: 'Ene', casos: 12 },
+    { mes: 'Feb', casos: 19 },
+    { mes: 'Mar', casos: 8 },
+    { mes: 'Abr', casos: 15 },
+    { mes: 'May', casos: 22 },
+  ]
 
   return (
     <main className="content">
