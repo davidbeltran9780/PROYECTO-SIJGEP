@@ -4,15 +4,18 @@ import api from '../api/axios'
 export default function PQRS() {
   const [pqrs, setPqrs] = useState([])
   const [modal, setModal] = useState(false)
-const [form, setForm] = useState({
-  nombre_ciudadano: '',
-  correo: '',
-  tipo: '',
-  descripcion: ''
-})
+  const rol = localStorage.getItem('rol') || ''
+  const esCiudadano = rol === 'ciudadano'
+  const [form, setForm] = useState({
+    nombre_ciudadano: '',
+    correo: '',
+    tipo: '',
+    descripcion: ''
+  })
 
   useEffect(() => {
-    api.get('/pqrs').then(res => setPqrs(res.data)).catch(console.error)
+    const endpoint = esCiudadano ? '/pqrs/mis-pqrs' : '/pqrs'
+    api.get(endpoint).then(res => setPqrs(res.data)).catch(console.error)
   }, [])
 
   const guardar = async (e) => {
@@ -20,7 +23,8 @@ const [form, setForm] = useState({
     try {
       await api.post('/pqrs', form)
       setModal(false)
-      const res = await api.get('/pqrs')
+      const endpoint = esCiudadano ? '/pqrs/mis-pqrs' : '/pqrs'
+      const res = await api.get(endpoint)
       setPqrs(res.data)
     } catch { alert('Error al crear PQRS') }
   }
@@ -28,29 +32,46 @@ const [form, setForm] = useState({
   return (
     <main className="content">
       <div className="top">
-        <h2>Lista de PQRS</h2>
+        <h2>{esCiudadano ? 'Mis PQRS' : 'Lista de PQRS'}</h2>
         <button className="nuevo" onClick={() => setModal(true)}>Nuevo PQRS</button>
       </div>
 
       <table id="tablaPQRS">
         <thead>
           <tr>
-            <th>Nombre</th><th>Correo</th><th>Tipo</th>
-            <th>Mensaje</th><th>Respuesta</th><th>Estado</th>
+            {esCiudadano ? (
+              <><th>Radicado</th><th>Tipo</th><th>Descripción</th><th>Estado</th></>
+            ) : (
+              <><th>Nombre</th><th>Correo</th><th>Tipo</th><th>Mensaje</th><th>Respuesta</th><th>Estado</th></>
+            )}
           </tr>
         </thead>
         <tbody>
-          {pqrs.map((p, i) => (
-            <tr key={p.id_pqrs}>
-              <td data-label="Nombre">{p.nombre_ciudadano}</td>
-              <td data-label="Correo">{p.correo}</td>
-              <td data-label="Tipo">{p.tipo}</td>
-              <td data-label="Mensaje">{p.descripcion}</td>
-              <td data-label="Respuesta"></td>
-               <span className="respuesta-pendiente">Pendiente</span>
-              <td data-label="Estado">
-                <span className={`estado ${p.estado}`}>{p.estado}</span>
-              </td>
+          {pqrs.map((p) => (
+            <tr key={p.id_pqrs || p.numero_radicado}>
+              {esCiudadano ? (
+                <>
+                  <td data-label="Radicado">{p.numero_radicado}</td>
+                  <td data-label="Tipo">{p.tipo}</td>
+                  <td data-label="Descripción">{p.descripcion}</td>
+                  <td data-label="Estado">
+                    <span className={`estado ${p.estado}`}>{p.estado}</span>
+                  </td>
+                </>
+              ) : (
+                <>
+                  <td data-label="Nombre">{p.nombre_ciudadano}</td>
+                  <td data-label="Correo">{p.correo}</td>
+                  <td data-label="Tipo">{p.tipo}</td>
+                  <td data-label="Mensaje">{p.descripcion}</td>
+                  <td data-label="Respuesta">
+                    <span className="respuesta-pendiente">Pendiente</span>
+                  </td>
+                  <td data-label="Estado">
+                    <span className={`estado ${p.estado}`}>{p.estado}</span>
+                  </td>
+                </>
+              )}
             </tr>
           ))}
         </tbody>

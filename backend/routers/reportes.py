@@ -1,77 +1,110 @@
-﻿from fastapi import APIRouter, UploadFile, File, HTTPException
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
+from fastapi import APIRouter, Depends
+from sqlalchemy import text
+from database import get_db
+from auth_utils import requiere_rol
 
 router = APIRouter(
-    prefix="/ia",
-    tags=["IA"]
+    prefix="/reportes",
+    tags=["Reportes"]
 )
 
-def extraer_texto(contenido: bytes, filename: str) -> str:
-    ext = filename.lower().split(".")[-1]
 
-    if ext == "txt":
-        return contenido.decode("utf-8", errors="ignore")
-
-    elif ext == "pdf":
-        import fitz
-        doc = fitz.open(stream=contenido, filetype="pdf")
-        texto = ""
-        for pagina in doc:
-            texto += pagina.get_text()
-        return texto
-
-    elif ext in ["docx", "doc"]:
-        from docx import Document
-        import io
-        doc = Document(io.BytesIO(contenido))
-        return "\n".join([p.text for p in doc.paragraphs])
-
-    elif ext in ["jpg", "jpeg", "png"]:
-        from PIL import Image
-        import io
-        img = Image.open(io.BytesIO(contenido))
-        return f"[Imagen recibida: {filename} - {img.size[0]}x{img.size[1]} px]"
-
-    else:
-        raise HTTPException(status_code=400, detail=f"Formato .{ext} no soportado")
+# Solo admin ve reportes
+def solo_admin():
+    return requiere_rol("administrador", "admin")
 
 
-@router.get("/ia-test")
-def prueba_ia():
-    return {"mensaje": "IA funcionando"}
+@router.get("/estadisticas")
+def estadisticas_generales(db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+    """Dashboard principal: totales generales."""
+    total_casos = db.execute(text("SELECT COUNT(*) AS total FROM casos")).scalar()
+    total_expedientes = db.execute(text("SELECT COUNT(*) AS total FROM expedientes")).scalar()
+    total_documentos = db.execute(text("SELECT COUNT(*) AS total FROM documentos")).scalar()
+    total_pqrs = db.execute(text("SELECT COUNT(*) AS total FROM pqrs")).scalar()
+    total_usuarios = db.execute(text("SELECT COUNT(*) AS total FROM usuarios WHERE estado = 'activo'")).scalar()
+
+    return {
+        "total_casos": total_casos,
+        "total_expedientes": total_expedientes,
+        "total_documentos": total_documentos,
+        "total_pqrs": total_pqrs,
+        "total_usuarios": total_usuarios,
+    }
 
 
-@router.post("/resumir")
-async def resumir_documento(archivo: UploadFile = File(...)):
-    try:
-        from google import genai
+@router.get("/casos-por-tipo")
+def casos_por_tipo(db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+    """Para grafica de torta/barras: cantidad de casos por tipo."""
+    resultado = db.execute(text("""
+        SELECT tipo, COUNT(*) AS cantidad
+        FROM casos
+        GROUP BY tipo
+        ORDER BY cantidad DESC
+    """)).fetchall()
+    return [dict(fila._mapping) for fila in resultado]
 
-        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-        contenido = await archivo.read()
-        print(f"Archivo recibido: {archivo.filename}, tamaño: {len(contenido)} bytes")
+@router.get("/casos-por-estado")
+def casos_por_estado(db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+    """Para grafica de barras: cantidad de casos por estado."""
+    resultado = db.execute(text("""
+        SELECT estado, COUNT(*) AS cantidad
+        FROM casos
+        GROUP BY estado
+        ORDER BY cantidad DESC
+    """)).fetchall()
+    return [dict(fila._mapping) for fila in resultado]
 
-        texto = extraer_texto(contenido, archivo.filename)
-        print(f"Texto extraído: {len(texto)} caracteres")
 
-        if not texto.strip():
-            return {"archivo": archivo.filename, "resumen": "El documento está vacío o no se pudo leer el texto."}
+@router.get("/casos-por-mes")
+def casos_por_mes(db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+    """Para grafica de linea: casos creados por mes (ultimos 12 meses)."""
+    resultado = db.execute(text("""
+        SELECT DATE_FORMAT(fecha_radicacion, '%Y-%m') AS mes, COUNT(*) AS cantidad
+        FROM casos
+        WHERE fecha_radicacion >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+        GROUP BY mes
+        ORDER BY mes ASC
+    """)).fetchall()
+    return [dict(fila._mapping) for fila in resultado]
 
-        respuesta = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=f"Resume el siguiente documento jurídico de manera clara y profesional:\n\n{texto[:10000]}"
-        )
 
-        return {
-            "archivo": archivo.filename,
-            "resumen": respuesta.text
-        }
+@router.get("/pqrs-por-estado")
+def pqrs_por_estado(db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+    """Estado de las PQRS para seguimiento."""
+    resultado = db.execute(text("""
+        SELECT estado, COUNT(*) AS cantidad
+        FROM pqrs
+        GROUP BY estado
+        ORDER BY cantidad DESC
+    """)).fetchall()
+    return [dict(fila._mapping) for fila in resultado]
 
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        print(f"ERROR: {str(e)}")
-        return {"error": str(e), "resumen": f"No se pudo generar el resumen: {str(e)}"}
+
+@router.get("/carga-por-abogado")
+def carga_por_abogado(db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+    """Casos asignados a cada abogado (para medir carga de trabajo)."""
+    resultado = db.execute(text("""
+        SELECT u.nombre, COUNT(c.id_caso) AS casos_asignados
+        FROM usuarios u
+        LEFT JOIN casos c ON u.id_usuarios = c.id_abogado_asignado
+        WHERE u.rol IN ('abogado')
+        GROUP BY u.id_usuarios, u.nombre
+        ORDER BY casos_asignados DESC
+    """)).fetchall()
+    return [dict(fila._mapping) for fila in resultado]
+
+
+@router.get("/vencimientos")
+def casos_proximos_vencer(db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+    """Casos que vencen en los proximos 7 dias."""
+    resultado = db.execute(text("""
+        SELECT id_caso, titulo, tipo, estado, fecha_vencimiento,
+               DATEDIFF(fecha_vencimiento, CURDATE()) AS dias_restantes
+        FROM casos
+        WHERE fecha_vencimiento IS NOT NULL
+          AND estado NOT IN ('cerrado', 'archivado')
+          AND fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+        ORDER BY fecha_vencimiento ASC
+    """)).fetchall()
+    return [dict(fila._mapping) for fila in resultado]
