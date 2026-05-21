@@ -195,10 +195,10 @@ export default function Documentos() {
       {puedeSubir && expSeleccionado && (
         <div className="upload-container">
           <label className="custom-file">
-            <input type="file" ref={inputRef} hidden
+            <input type="file"
               accept=".pdf,image/*,.docx,.doc"
               onChange={handleArchivo} />
-            <span onClick={() => inputRef.current.click()}>
+            <span>
               📁 {archivo ? archivo.name : 'Seleccionar archivo'}
             </span>
           </label>

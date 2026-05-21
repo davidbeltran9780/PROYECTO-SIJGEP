@@ -104,13 +104,13 @@ def activar_usuario(id: int, db=Depends(get_db), usuario: dict = Depends(solo_ad
     return {"status": "Usuario activado"}
 
 
-# GET — listar solo abogados activos (para selects de asignación)
+# GET — listar abogados (para selects de asignación)
 @router.get("/abogados")
 def get_abogados(
     db=Depends(get_db),
     usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria"))
 ):
     resultado = db.execute(
-        text("SELECT id_usuarios, nombre, email FROM usuarios WHERE rol = 'abogado' AND estado = 'activo'")
+        text("SELECT id_usuarios, nombre, email, estado FROM usuarios WHERE rol = 'abogado' ORDER BY nombre")
     ).fetchall()
     return [dict(fila._mapping) for fila in resultado]

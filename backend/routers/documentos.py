@@ -70,10 +70,19 @@ async def subir_documento(
     if len(contenido) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Archivo excede 10 MB")
 
-    # Guardar archivo
-    UPLOAD_DIR.mkdir(exist_ok=True)
-    nombre_guardado = f"{id_expediente}_{archivo.filename}"
-    ruta_archivo = UPLOAD_DIR / nombre_guardado
+    # Guardar archivo en subcarpeta por expediente
+    carpeta_expediente = UPLOAD_DIR / f"expediente_{id_expediente}"
+    carpeta_expediente.mkdir(parents=True, exist_ok=True)
+
+    # Si ya existe un archivo con ese nombre, agregar sufijo para no sobreescribir
+    ruta_archivo = carpeta_expediente / archivo.filename
+    if ruta_archivo.exists():
+        from datetime import datetime
+        sufijo = datetime.now().strftime("%Y%m%d%H%M%S")
+        nombre_guardado = f"{Path(archivo.filename).stem}_{sufijo}{extension}"
+        ruta_archivo = carpeta_expediente / nombre_guardado
+    else:
+        nombre_guardado = archivo.filename
 
     with open(ruta_archivo, "wb") as f:
         f.write(contenido)
@@ -86,14 +95,14 @@ async def subir_documento(
         """),
         {
             "id_exp": id_expediente,
-            "nombre": archivo.filename,
+            "nombre": nombre_guardado,
             "tipo": extension.replace(".", ""),
             "ruta": str(ruta_archivo),
             "subido_por": int(usuario["sub"]),
         }
     )
     db.commit()
-    return {"status": "Documento subido", "archivo": archivo.filename}
+    return {"status": "Documento subido", "archivo": nombre_guardado}
 
 
 # PATCH — enviar documento (cambia estado de borrador a enviado)

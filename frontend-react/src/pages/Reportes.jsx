@@ -42,12 +42,16 @@ export default function Reportes() {
         <h2>Reportes del Sistema</h2>
       </div>
 
-      {/* Tarjetas resumen */}
+      {/* 1 — Tarjetas resumen */}
       {stats && (
         <div className="tarjetas">
           <div className="tarjeta verde">
             <span className="numero">{stats.total_casos}</span>
-            <span className="etiqueta">Casos</span>
+            <span className="etiqueta">Casos totales</span>
+          </div>
+          <div className="tarjeta roja">
+            <span className="numero">{stats.casos_cerrados}</span>
+            <span className="etiqueta">Casos cerrados</span>
           </div>
           <div className="tarjeta verde">
             <span className="numero">{stats.total_expedientes}</span>
@@ -58,17 +62,42 @@ export default function Reportes() {
             <span className="etiqueta">PQRS</span>
           </div>
           <div className="tarjeta verde">
-            <span className="numero">{stats.total_documentos}</span>
-            <span className="etiqueta">Documentos</span>
-          </div>
-          <div className="tarjeta verde">
             <span className="numero">{stats.total_usuarios}</span>
             <span className="etiqueta">Usuarios activos</span>
           </div>
         </div>
       )}
 
-      {/* Gráficas */}
+      {/* 2 — Tabla de vencimientos (justo debajo de tarjetas) */}
+      {vencimientos.length > 0 && (
+        <div style={{ marginBottom: '30px' }}>
+          <h3 style={{ margin: '16px 0 10px', fontSize: '15px', color: '#1e3a8a' }}>
+            ⚠️ Casos próximos a vencer
+          </h3>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th><th>Título</th><th>Tipo</th><th>Fecha vencimiento</th><th>Días restantes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {vencimientos.map(v => (
+                <tr key={v.id_caso}>
+                  <td>{v.id_caso}</td>
+                  <td>{v.titulo}</td>
+                  <td>{v.tipo}</td>
+                  <td>{v.fecha_vencimiento}</td>
+                  <td className={v.dias_restantes <= 2 ? 'urgente' : 'proximo'}>
+                    {v.dias_restantes <= 0 ? `Vencido hace ${Math.abs(v.dias_restantes)} día(s)` : `${v.dias_restantes} día(s)`}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* 3 — Gráficas */}
       <div className="graficas-grid">
 
         {porTipo.length > 0 && (
@@ -131,33 +160,6 @@ export default function Reportes() {
         )}
 
       </div>
-
-      {/* Vencimientos próximos */}
-      {vencimientos.length > 0 && (
-        <>
-          <h3 className="seccion-dashboard">Casos próximos a vencer</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th><th>Título</th><th>Tipo</th><th>Vence</th><th>Días</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vencimientos.map(v => (
-                <tr key={v.id_caso}>
-                  <td>{v.id_caso}</td>
-                  <td>{v.titulo}</td>
-                  <td>{v.tipo}</td>
-                  <td>{v.fecha_vencimiento}</td>
-                  <td className={v.dias_restantes <= 2 ? 'urgente' : 'proximo'}>
-                    {v.dias_restantes} día(s)
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      )}
     </main>
   )
 }

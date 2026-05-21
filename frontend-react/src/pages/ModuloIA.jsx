@@ -4,12 +4,10 @@ import Spinner from '../components/Spinner'
 import { jsPDF } from 'jspdf'
 import {
   Document, Packer, Paragraph, TextRun, HeadingLevel,
-  AlignmentType, BorderStyle, Table, TableRow, TableCell,
-  WidthType, ShadingType
+  AlignmentType
 } from 'docx'
 import { saveAs } from 'file-saver'
 
-// Extrae una sección del resumen por su etiqueta (TIPO:, RESUMEN:, NORMAS:, BORRADOR:)
 function extraerSeccion(texto, etiqueta) {
   const regex = new RegExp(`${etiqueta}:\\s*([\\s\\S]*?)(?=\\n[A-ZÁÉÍÓÚ]+:|$)`, 'i')
   const match = texto.match(regex)
@@ -80,7 +78,6 @@ export default function ModuloIA() {
     finally { setCargando(false) }
   }
 
-  // PDF — resumen completo
   const descargarPDF = () => {
     if (!resumen) return alert('Primero genera un resumen')
     const doc = new jsPDF()
@@ -114,7 +111,6 @@ export default function ModuloIA() {
     doc.save(`resumen_juridico_exp${expedienteId || 'sin_exp'}.pdf`)
   }
 
-  // WORD — solo el borrador de respuesta institucional
   const descargarBorradorWord = async () => {
     if (!resumen) return alert('Primero genera un resumen con IA')
 
@@ -127,106 +123,23 @@ export default function ModuloIA() {
       sections: [{
         properties: {},
         children: [
-          // Encabezado institucional
-          new Paragraph({
-            text: 'ALCALDÍA MUNICIPAL',
-            heading: HeadingLevel.HEADING_1,
-            alignment: AlignmentType.CENTER,
-          }),
-          new Paragraph({
-            text: 'Sistema Inteligente de Gestión Jurídica — SIGJEP',
-            alignment: AlignmentType.CENTER,
-            spacing: { after: 200 },
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({ text: 'Fecha: ', bold: true }),
-              new TextRun(fecha),
-            ],
-            spacing: { after: 100 },
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({ text: 'Expediente No.: ', bold: true }),
-              new TextRun(expedienteId || 'Sin expediente asignado'),
-            ],
-            spacing: { after: 100 },
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({ text: 'Tipo de caso: ', bold: true }),
-              new TextRun(clasificacion),
-            ],
-            spacing: { after: 300 },
-          }),
-
-          // Separador
-          new Paragraph({
-            text: '─'.repeat(80),
-            spacing: { after: 200 },
-          }),
-
-          // Resumen del caso
-          new Paragraph({
-            text: 'RESUMEN DEL CASO',
-            heading: HeadingLevel.HEADING_2,
-            spacing: { after: 100 },
-          }),
-          new Paragraph({
-            text: textoResumen || 'No disponible',
-            spacing: { after: 300 },
-          }),
-
-          // Normas aplicables
-          new Paragraph({
-            text: 'NORMAS APLICABLES',
-            heading: HeadingLevel.HEADING_2,
-            spacing: { after: 100 },
-          }),
-          new Paragraph({
-            text: textoNormas || 'No identificadas',
-            spacing: { after: 300 },
-          }),
-
-          // Borrador de respuesta
-          new Paragraph({
-            text: 'BORRADOR DE RESPUESTA INSTITUCIONAL',
-            heading: HeadingLevel.HEADING_2,
-            spacing: { after: 200 },
-          }),
-          new Paragraph({
-            text: textoBorrador || resumen,
-            spacing: { after: 400 },
-          }),
-
-          // Firma
-          new Paragraph({
-            text: '─'.repeat(80),
-            spacing: { after: 300 },
-          }),
-          new Paragraph({
-            text: '_______________________________',
-            spacing: { after: 100 },
-          }),
-          new Paragraph({
-            text: 'Firma del Responsable',
-            spacing: { after: 50 },
-          }),
-          new Paragraph({
-            text: 'Cargo: ____________________________',
-            spacing: { after: 50 },
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: 'Documento generado por IA — Requiere revisión humana antes de ser oficial',
-                italics: true,
-                color: '888888',
-                size: 18,
-              }),
-            ],
-            spacing: { before: 400 },
-          }),
+          new Paragraph({ text: 'ALCALDÍA MUNICIPAL', heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER }),
+          new Paragraph({ text: 'Sistema Inteligente de Gestión Jurídica — SIGJEP', alignment: AlignmentType.CENTER, spacing: { after: 200 } }),
+          new Paragraph({ children: [new TextRun({ text: 'Fecha: ', bold: true }), new TextRun(fecha)], spacing: { after: 100 } }),
+          new Paragraph({ children: [new TextRun({ text: 'Expediente No.: ', bold: true }), new TextRun(expedienteId || 'Sin expediente asignado')], spacing: { after: 100 } }),
+          new Paragraph({ children: [new TextRun({ text: 'Tipo de caso: ', bold: true }), new TextRun(clasificacion)], spacing: { after: 300 } }),
+          new Paragraph({ text: '─'.repeat(80), spacing: { after: 200 } }),
+          new Paragraph({ text: 'RESUMEN DEL CASO', heading: HeadingLevel.HEADING_2, spacing: { after: 100 } }),
+          new Paragraph({ text: textoResumen || 'No disponible', spacing: { after: 300 } }),
+          new Paragraph({ text: 'NORMAS APLICABLES', heading: HeadingLevel.HEADING_2, spacing: { after: 100 } }),
+          new Paragraph({ text: textoNormas || 'No identificadas', spacing: { after: 300 } }),
+          new Paragraph({ text: 'BORRADOR DE RESPUESTA INSTITUCIONAL', heading: HeadingLevel.HEADING_2, spacing: { after: 200 } }),
+          new Paragraph({ text: textoBorrador || resumen, spacing: { after: 400 } }),
+          new Paragraph({ text: '─'.repeat(80), spacing: { after: 300 } }),
+          new Paragraph({ text: '_______________________________', spacing: { after: 100 } }),
+          new Paragraph({ text: 'Firma del Responsable', spacing: { after: 50 } }),
+          new Paragraph({ text: 'Cargo: ____________________________', spacing: { after: 50 } }),
+          new Paragraph({ children: [new TextRun({ text: 'Documento generado por IA — Requiere revisión humana antes de ser oficial', italics: true, color: '888888', size: 18 })], spacing: { before: 400 } }),
         ],
       }],
     })
@@ -307,16 +220,12 @@ export default function ModuloIA() {
             </button>
           </div>
 
-          {/* Card 3 — Descargas y Borrador */}
+          {/* Card 3 — Descargas */}
           <div className="ia-card">
             <h3>Descargas</h3>
 
             {aprobado && (
-              <p style={{
-                color: '#166534', background: '#dcfce7',
-                padding: '8px 12px', borderRadius: '8px',
-                fontSize: '13px', marginBottom: '10px'
-              }}>
+              <p style={{ color: '#166534', background: '#dcfce7', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', marginBottom: '10px' }}>
                 ✅ Borrador revisado — listo para subir al expediente
               </p>
             )}
@@ -338,12 +247,10 @@ export default function ModuloIA() {
             </p>
 
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="btn-guardar" onClick={aprobar}
-                disabled={!resumen || aprobado}>
+              <button className="btn-guardar" onClick={aprobar} disabled={!resumen || aprobado}>
                 {aprobado ? 'Revisado ✅' : 'Marcar revisado'}
               </button>
-              <button className="btn-cancelar" onClick={descartar}
-                disabled={!resumen}>
+              <button className="btn-cancelar" onClick={descartar} disabled={!resumen}>
                 Descartar
               </button>
             </div>

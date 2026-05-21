@@ -28,7 +28,14 @@ export default function Expedientes() {
   useEffect(() => {
     cargar()
     if (puedeCrear) {
-      api.get('/abogados').then(res => setAbogados(res.data)).catch(console.error)
+      api.get('/abogados')
+        .then(res => setAbogados(res.data))
+        .catch(err => {
+          console.error('Error cargando abogados:', err)
+          // Mostrar error real para diagnóstico
+          const detalle = err.response?.data?.detail || err.message || 'Error desconocido'
+          console.warn('Detalle error /abogados:', detalle)
+        })
     }
   }, [])
 
@@ -54,6 +61,17 @@ export default function Expedientes() {
     }
   }
 
+  const asignarAbogado = async (idCaso, idAbogado) => {
+    try {
+      await api.put(`/casos/${idCaso}`, {
+        id_abogado_asignado: idAbogado ? parseInt(idAbogado) : null
+      })
+      cargar()
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Error al asignar abogado')
+    }
+  }
+
   const eliminar = async (id) => {
     if (!confirm('¿Eliminar este expediente?')) return
     try {
@@ -62,16 +80,23 @@ export default function Expedientes() {
     } catch { alert('Error al eliminar') }
   }
 
-  const estadoClase = (fecha) => {
-    const d = calcularDias(fecha)
-    if (d === null) return 'atiempo'
-    return d <= 2 ? 'urgente' : d <= 5 ? 'proximo' : 'atiempo'
+  const estadoClase = (estado) => {
+    switch (estado) {
+      case 'activo':     return 'atiempo'
+      case 'en_proceso': return 'proximo'
+      case 'cerrado':    return 'urgente'
+      case 'archivado':  return 'archivado'
+      default:           return 'atiempo'
+    }
   }
 
-  const estadoTexto = (fecha) => {
-    const d = calcularDias(fecha)
-    if (d === null) return 'Sin fecha'
-    return d <= 2 ? 'Urgente' : d <= 5 ? 'Próximo' : 'A tiempo'
+  const cambiarEstadoCaso = async (idCaso, nuevoEstado) => {
+    try {
+      await api.patch(`/casos/${idCaso}/estado`, { estado: nuevoEstado })
+      cargar()
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Error al cambiar estado')
+    }
   }
 
   return (
@@ -87,31 +112,70 @@ export default function Expedientes() {
         <thead>
           <tr>
             <th>ID</th><th>Tipo</th><th>Título</th><th>Abogado asignado</th>
-            <th>Fecha creación</th><th>Estado caso</th>
-            {puedeEliminar && <th>Acciones</th>}
+            <th>Fecha creación</th><th>Estado</th>
+            {puedeCrear && <th>Acciones</th>}
           </tr>
         </thead>
         <tbody>
           {expedientes.length === 0 ? (
-            <tr><td colSpan={puedeEliminar ? 7 : 6}>No hay expedientes registrados</td></tr>
+            <tr><td colSpan={puedeCrear ? 7 : 6}>No hay expedientes registrados</td></tr>
           ) : (
             expedientes.map(e => (
               <tr key={e.id_expediente}>
                 <td data-label="ID">{e.id_expediente}</td>
                 <td data-label="Tipo">{e.tipo || '—'}</td>
                 <td data-label="Título">{e.titulo || '—'}</td>
-                <td data-label="Abogado">{e.abogado_nombre || <span style={{ color: '#aaa' }}>Sin asignar</span>}</td>
+                <td data-label="Abogado">
+                  {puedeCrear ? (
+                    <select
+                      value={e.id_abogado_asignado || ''}
+                      onChange={ev => asignarAbogado(e.id_caso, ev.target.value)}
+                      style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '12px', minWidth: '130px' }}
+                    >
+                      <option value="">Sin asignar</option>
+                      {abogados.map(a => (
+                        <option key={a.id_usuarios} value={a.id_usuarios}>{a.nombre}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    e.abogado_nombre || <span style={{ color: '#aaa' }}>Sin asignar</span>
+                  )}
+                </td>
                 <td data-label="Fecha">{e.fecha_creacion?.split('T')[0]}</td>
                 <td data-label="Estado">
-                  <span className={estadoClase(e.fecha_vencimiento)}>
+                  <span className={estadoClase(e.estado_caso)}>
                     {e.estado_caso || 'activo'}
                   </span>
                 </td>
-                {puedeEliminar && (
-                  <td data-label="Acciones">
-                    <button className="btn-accion-eliminar" onClick={() => eliminar(e.id_expediente)}>
-                      Eliminar
-                    </button>
+                {puedeCrear && (
+                  <td data-label="Acciones" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    {e.estado_caso !== 'cerrado' && e.estado_caso !== 'archivado' ? (
+                      <button
+                        onClick={() => { if (confirm('¿Cerrar este caso?')) cambiarEstadoCaso(e.id_caso, 'cerrado') }}
+                        style={{
+                          fontSize: '11px', padding: '4px 10px', borderRadius: '4px',
+                          border: '1px solid #9ca3af', background: '#f3f4f6',
+                          color: '#111827', cursor: 'pointer', fontFamily: 'inherit',
+                          fontWeight: '600'
+                        }}
+                      >
+                        Cerrar caso
+                      </button>
+                    ) : (
+                      <button
+                        className="btn-accion-activar"
+                        onClick={() => { if (confirm('¿Reactivar este caso?')) cambiarEstadoCaso(e.id_caso, 'activo') }}
+                        style={{ fontSize: '11px' }}
+                      >
+                        Reactivar
+                      </button>
+                    )}
+                    {puedeEliminar && (
+                      <button className="btn-accion-eliminar" onClick={() => eliminar(e.id_expediente)}
+                        style={{ fontSize: '11px' }}>
+                        Eliminar
+                      </button>
+                    )}
                   </td>
                 )}
               </tr>

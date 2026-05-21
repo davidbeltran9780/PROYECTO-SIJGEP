@@ -99,6 +99,9 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
     if not bcrypt.checkpw(data.password.encode(), usuario.password.encode()):
         raise HTTPException(status_code=401, detail="Contraseña incorrecta")
 
+    if usuario.estado != 'activo':
+        raise HTTPException(status_code=403, detail="Tu cuenta está desactivada. Contacta al administrador.")
+
     token = crear_token({
         "sub": str(usuario.id_usuarios),
         "email": usuario.email,

@@ -1,5 +1,4 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
 
 const MENU_ITEMS = [
   { to: '/dashboard',   label: 'Dashboard',   roles: ['admin', 'administrador', 'abogado', 'secretaria', 'ciudadano'] },
@@ -12,62 +11,47 @@ const MENU_ITEMS = [
   { to: '/pqrs',        label: 'PQRS',         roles: ['admin', 'administrador', 'secretaria', 'abogado', 'ciudadano'] },
 ]
 
+const cerrarMenu = () => document.body.classList.remove('menu-abierto')
+
 export default function Sidebar() {
-  const [abierto, setAbierto] = useState(false)
   const navigate = useNavigate()
   const rol = localStorage.getItem('rol') || ''
-
-  useEffect(() => {
-    const ajustar = () => setAbierto(window.innerWidth > 768)
-    ajustar()
-    window.addEventListener('resize', ajustar)
-    return () => window.removeEventListener('resize', ajustar)
-  }, [])
 
   const cerrarSesion = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('usuario')
     localStorage.removeItem('rol')
+    cerrarMenu()
     navigate('/')
   }
 
-  const estiloLink = ({ isActive }) => ({
-    display: 'block',
-    padding: '12px 20px',
-    color: 'white',
-    textDecoration: 'none',
-    fontSize: '13px',
-    backgroundColor: isActive ? 'var(--azul-hover)' : 'transparent',
-    borderLeft: isActive ? '4px solid #4da3ff' : '4px solid transparent',
-    fontWeight: isActive ? 'bold' : 'normal',
-  })
-
-  // Filtrar links según rol del usuario
   const linksVisibles = MENU_ITEMS.filter(item => item.roles.includes(rol))
 
   return (
-    <aside className="sidebar">
+    <>
+      <div className="sidebar-overlay" onClick={cerrarMenu} />
 
-      <div style={{ background: 'var(--azul-hover)', cursor: 'pointer' }}
-        onClick={() => setAbierto(!abierto)}>
-        <span style={{ color: 'white', padding: '12px 20px', display: 'block', fontWeight: 'bold', fontSize: '13px' }}>
-          ☰ Menú
-        </span>
-      </div>
+      <aside className="sidebar">
+        {/* Logo dentro del sidebar — solo visible en móvil */}
+        <div className="sidebar-logo">
+          <img src="/Logo.png" alt="SIGJEP" style={{ height: '40px', width: 'auto' }} />
+        </div>
 
-      {abierto && (
-        <>
-          {linksVisibles.map(item => (
-            <NavLink key={item.to} to={item.to} style={estiloLink}>
-              {item.label}
-            </NavLink>
-          ))}
-          <button className="logout" onClick={cerrarSesion}>
-            Cerrar sesión
-          </button>
-        </>
-      )}
+        {linksVisibles.map(item => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) => `nav-sidebar-link${isActive ? ' activo' : ''}`}
+            onClick={cerrarMenu}
+          >
+            {item.label}
+          </NavLink>
+        ))}
 
-    </aside>
+        <button className="logout" onClick={cerrarSesion}>
+          Cerrar sesión
+        </button>
+      </aside>
+    </>
   )
 }

@@ -61,9 +61,12 @@ export default function Admin() {
 
   const generarBackup = async () => {
     try {
-      await api.post('/backups/manual')
-      alert('Backup generado correctamente')
-    } catch { alert('Error al generar backup') }
+      const res = await api.post('/backups/manual')
+      alert(res.data.msg || 'Backup generado correctamente')
+      api.get('/backups/listar').then(r => setBackups(r.data)).catch(console.error)
+    } catch (err) {
+      alert('Error al generar backup:\n' + (err.response?.data?.detail || err.message || 'Error desconocido'))
+    }
   }
 
   const claseAccion = (accion) => {

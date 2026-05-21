@@ -18,6 +18,7 @@ def get_expedientes(
         resultado = db.execute(
             text("""
                 SELECT e.*, c.tipo, c.titulo, c.estado AS estado_caso,
+                       c.id_abogado_asignado, c.fecha_vencimiento,
                        a.nombre AS abogado_nombre
                 FROM expedientes e
                 JOIN casos c ON e.id_caso = c.id_caso
@@ -30,6 +31,7 @@ def get_expedientes(
     else:
         resultado = db.execute(text("""
             SELECT e.*, c.tipo, c.titulo, c.estado AS estado_caso,
+                   c.id_abogado_asignado, c.fecha_vencimiento,
                    a.nombre AS abogado_nombre
             FROM expedientes e
             JOIN casos c ON e.id_caso = c.id_caso
@@ -52,6 +54,7 @@ def get_expediente(
     resultado = db.execute(
         text("""
             SELECT e.*, c.tipo, c.titulo, c.estado AS estado_caso,
+                   c.id_abogado_asignado, c.fecha_vencimiento,
                    a.nombre AS abogado_nombre
             FROM expedientes e
             JOIN casos c ON e.id_caso = c.id_caso
