@@ -9,7 +9,7 @@ const MENU_ITEMS = [
   { to: '/ia',          label: 'Módulo IA',    roles: ['admin', 'administrador', 'abogado'] },
   { to: '/alertas',     label: 'Alertas',      roles: ['admin', 'administrador', 'abogado', 'secretaria'] },
   { to: '/reportes',    label: 'Reportes',     roles: ['admin', 'administrador'] },
-  { to: '/pqrs',        label: 'PQRS',         roles: ['admin', 'administrador', 'abogado', 'secretaria', 'ciudadano'] },
+  { to: '/pqrs',        label: 'PQRS',         roles: ['admin', 'administrador', 'secretaria', 'abogado', 'ciudadano'] },
 ]
 
 export default function Sidebar() {

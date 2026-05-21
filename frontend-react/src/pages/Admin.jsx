@@ -5,6 +5,7 @@ export default function Admin() {
   const [pestana, setPestana] = useState(localStorage.getItem('pestanaAdmin') || 'usuarios')
   const [usuarios, setUsuarios] = useState([])
   const [backups, setBackups] = useState([])
+  const [auditoria, setAuditoria] = useState([])
   const [modalAbierto, setModalAbierto] = useState(false)
   const [modalEditar, setModalEditar] = useState(false)
   const [usuarioEditando, setUsuarioEditando] = useState(null)
@@ -19,6 +20,9 @@ export default function Admin() {
   useEffect(() => {
     if (pestana === 'backups') {
       api.get('/backups/listar').then(res => setBackups(res.data)).catch(console.error)
+    }
+    if (pestana === 'auditoria') {
+      api.get('/auditoria/').then(res => setAuditoria(res.data)).catch(console.error)
     }
     localStorage.setItem('pestanaAdmin', pestana)
   }, [pestana])
@@ -60,6 +64,16 @@ export default function Admin() {
       await api.post('/backups/manual')
       alert('Backup generado correctamente')
     } catch { alert('Error al generar backup') }
+  }
+
+  const claseAccion = (accion) => {
+    switch (accion) {
+      case 'CREAR': return 'atiempo'
+      case 'EDITAR': return 'proximo'
+      case 'BORRAR': return 'urgente'
+      case 'LOGIN': return 'atiempo'
+      default: return ''
+    }
   }
 
   return (
@@ -170,18 +184,20 @@ export default function Admin() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>15/04/2026 10:30</td><td>Carlos Ruiz</td><td>Admin</td>
-                  <td className="atiempo">CREAR</td><td>Usuarios</td><td>USR-045</td>
-                </tr>
-                <tr>
-                  <td>15/04/2026 09:15</td><td>María Gómez</td><td>Secretaria</td>
-                  <td className="proximo">EDITAR</td><td>Expedientes</td><td>EXP-123</td>
-                </tr>
-                <tr>
-                  <td>14/04/2026 16:45</td><td>Juan Pérez</td><td>Abogado</td>
-                  <td className="urgente">BORRAR</td><td>Documentos</td><td>DOC-789</td>
-                </tr>
+                {auditoria.length === 0 ? (
+                  <tr><td colSpan={6}>No hay registros de auditoría aún</td></tr>
+                ) : (
+                  auditoria.map(a => (
+                    <tr key={a.id_auditoria}>
+                      <td data-label="Fecha">{new Date(a.fecha).toLocaleString('es-CO')}</td>
+                      <td data-label="Usuario">{a.nombre_usuario}</td>
+                      <td data-label="Rol">{a.rol}</td>
+                      <td data-label="Acción" className={claseAccion(a.accion)}>{a.accion}</td>
+                      <td data-label="Tabla">{a.tabla_afectada}</td>
+                      <td data-label="ID">{a.id_registro}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

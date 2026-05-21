@@ -14,6 +14,7 @@ import Reportes from './pages/Reportes'
 import ModuloIA from './pages/ModuloIA'
 import Documentos from './pages/Documentos'
 import ConsultaEstado from './pages/ConsultaEstado'
+import ConsultaProcesos from './pages/ConsultaProcesos'
 import RutaProtegida from './components/RutaProtegida'
 
 function Layout({ children }) {
@@ -40,6 +41,7 @@ const TODOS = ['admin', 'administrador', 'abogado', 'secretaria', 'ciudadano']
 const INTERNOS = ['admin', 'administrador', 'abogado', 'secretaria']
 const ADMIN = ['admin', 'administrador']
 const JURIDICO = ['admin', 'administrador', 'abogado']
+const SIN_ABOGADO = ['admin', 'administrador', 'secretaria', 'abogado', 'ciudadano']
 
 function App() {
   return (
@@ -49,11 +51,12 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/recuperar" element={<Recuperar />} />
-        <Route path="/consulta" element={<ConsultaEstado />} />
+        <Route path="/consulta" element={<ConsultaProcesos />} />
+        <Route path="/consulta-estado" element={<ConsultaEstado />} />
 
         {/* Todos los logueados */}
         <Route path="/dashboard" element={<Protegida roles={TODOS}><Dashboard /></Protegida>} />
-        <Route path="/pqrs" element={<Protegida roles={TODOS}><PQRS /></Protegida>} />
+        <Route path="/pqrs" element={<Protegida roles={SIN_ABOGADO}><PQRS /></Protegida>} />
 
         {/* Internos (no ciudadano) */}
         <Route path="/expedientes" element={<Protegida roles={INTERNOS}><Expedientes /></Protegida>} />

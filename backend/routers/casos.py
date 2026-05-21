@@ -26,19 +26,35 @@ class CasoUpdate(BaseModel):
     id_abogado_asignado: Optional[int] = None
 
 
-# GET — listar todos (admin, secretaria, abogado)
+# GET — listar (admin/secretaria ven todos, abogado solo los suyos)
 @router.get("/casos")
 def get_casos(
     db=Depends(get_db),
     usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
-    resultado = db.execute(text("""
-        SELECT c.*, u.nombre AS creador, a.nombre AS abogado_nombre
-        FROM casos c
-        JOIN usuarios u ON c.id_usuario_creador = u.id_usuarios
-        LEFT JOIN usuarios a ON c.id_abogado_asignado = a.id_usuarios
-        ORDER BY c.fecha_radicacion DESC
-    """)).fetchall()
+    es_abogado = usuario.get("rol") == "abogado"
+
+    if es_abogado:
+        resultado = db.execute(
+            text("""
+                SELECT c.*, u.nombre AS creador, a.nombre AS abogado_nombre
+                FROM casos c
+                JOIN usuarios u ON c.id_usuario_creador = u.id_usuarios
+                LEFT JOIN usuarios a ON c.id_abogado_asignado = a.id_usuarios
+                WHERE c.id_abogado_asignado = :mi_id
+                ORDER BY c.fecha_radicacion DESC
+            """),
+            {"mi_id": int(usuario["sub"])}
+        ).fetchall()
+    else:
+        resultado = db.execute(text("""
+            SELECT c.*, u.nombre AS creador, a.nombre AS abogado_nombre
+            FROM casos c
+            JOIN usuarios u ON c.id_usuario_creador = u.id_usuarios
+            LEFT JOIN usuarios a ON c.id_abogado_asignado = a.id_usuarios
+            ORDER BY c.fecha_radicacion DESC
+        """)).fetchall()
+
     return [dict(fila._mapping) for fila in resultado]
 
 
@@ -49,6 +65,8 @@ def get_caso(
     db=Depends(get_db),
     usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
+    es_abogado = usuario.get("rol") == "abogado"
+
     resultado = db.execute(
         text("""
             SELECT c.*, u.nombre AS creador, a.nombre AS abogado_nombre
@@ -59,9 +77,17 @@ def get_caso(
         """),
         {"id": id}
     ).fetchone()
+
     if not resultado:
         raise HTTPException(status_code=404, detail="Caso no encontrado")
-    return dict(resultado._mapping)
+
+    resultado = dict(resultado._mapping)
+
+    # Abogado solo puede ver casos asignados a él
+    if es_abogado and resultado.get("id_abogado_asignado") != int(usuario["sub"]):
+        raise HTTPException(status_code=403, detail="No tienes acceso a este caso")
+
+    return resultado
 
 
 # POST — crear (admin, secretaria)
@@ -133,6 +159,26 @@ def editar_caso(
     db.execute(text(query), valores)
     db.commit()
     return {"status": "Caso actualizado"}
+
+
+# PATCH — cambiar estado del caso (solo admin y secretaria)
+@router.patch("/casos/{id}/estado")
+def cambiar_estado_caso(
+    id: int,
+    datos: dict,
+    db=Depends(get_db),
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria"))
+):
+    estados_validos = ["activo", "en_proceso", "cerrado", "archivado"]
+    nuevo_estado = datos.get("estado")
+    if nuevo_estado not in estados_validos:
+        raise HTTPException(status_code=400, detail=f"Estado inválido. Válidos: {estados_validos}")
+    db.execute(
+        text("UPDATE casos SET estado = :estado WHERE id_caso = :id"),
+        {"estado": nuevo_estado, "id": id}
+    )
+    db.commit()
+    return {"status": "Estado actualizado", "nuevo_estado": nuevo_estado}
 
 
 # DELETE — solo admin

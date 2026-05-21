@@ -96,7 +96,41 @@ async def subir_documento(
     return {"status": "Documento subido", "archivo": archivo.filename}
 
 
-# DELETE — borrar documento (dueno o admin)
+# PATCH — enviar documento (cambia estado de borrador a enviado)
+@router.patch("/documentos/{id}/enviar")
+def enviar_documento(
+    id: int,
+    db=Depends(get_db),
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
+):
+    doc = db.execute(
+        text("SELECT id_documento, subido_por, estado FROM documentos WHERE id_documento = :id"),
+        {"id": id}
+    ).fetchone()
+
+    if not doc:
+        raise HTTPException(status_code=404, detail="Documento no encontrado")
+
+    doc = dict(doc._mapping)
+
+    if doc["estado"] == "enviado":
+        raise HTTPException(status_code=400, detail="El documento ya fue enviado")
+
+    es_admin = usuario.get("rol") in ("administrador", "admin")
+    es_dueno = str(doc["subido_por"]) == usuario["sub"]
+
+    if not es_admin and not es_dueno:
+        raise HTTPException(status_code=403, detail="Solo puedes enviar tus propios documentos")
+
+    db.execute(
+        text("UPDATE documentos SET estado = 'enviado' WHERE id_documento = :id"),
+        {"id": id}
+    )
+    db.commit()
+    return {"status": "Documento enviado correctamente"}
+
+
+# DELETE — borrar documento (dueno o admin, con restriccion si esta enviado)
 @router.delete("/documentos/{id}")
 def borrar_documento(
     id: int,
@@ -105,7 +139,7 @@ def borrar_documento(
 ):
     # Buscar documento
     doc = db.execute(
-        text("SELECT id_documento, subido_por, ruta FROM documentos WHERE id_documento = :id"),
+        text("SELECT id_documento, subido_por, ruta, estado FROM documentos WHERE id_documento = :id"),
         {"id": id}
     ).fetchone()
 
@@ -115,6 +149,10 @@ def borrar_documento(
     doc = dict(doc._mapping)
     es_admin = usuario.get("rol") in ("administrador", "admin")
     es_dueno = str(doc["subido_por"]) == usuario["sub"]
+
+    # Si ya fue enviado, solo admin puede borrar
+    if doc["estado"] == "enviado" and not es_admin:
+        raise HTTPException(status_code=403, detail="Este documento ya fue enviado. Solo un administrador puede eliminarlo")
 
     if not es_admin and not es_dueno:
         raise HTTPException(status_code=403, detail="Solo puedes borrar tus propios archivos")

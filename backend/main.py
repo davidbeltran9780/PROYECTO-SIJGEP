@@ -3,10 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from pathlib import Path
+from routers import auditoria
 
 # Routers
 from routers import auth, usuarios, casos, expedientes, documentos, ia, reportes, backups
 from routers import pqrs
+from routers import consulta
 
 # Crear carpeta uploads/ al arrancar
 @asynccontextmanager
@@ -52,6 +54,8 @@ app.include_router(ia.router,          tags=["IA"])
 app.include_router(reportes.router,    tags=["Reportes"])
 app.include_router(backups.router,     tags=["Backups"])
 app.include_router(pqrs.router, tags=["PQRS"])
+app.include_router(auditoria.router, tags=["Auditoria"])
+app.include_router(consulta.router, tags=["Consulta Pública"])
 
 # Ruta de prueba
 @app.get("/")

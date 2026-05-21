@@ -17,6 +17,7 @@ export default function Login() {
       localStorage.setItem('token', res.data.access_token || '')
       localStorage.setItem('rol', res.data.rol || '')
       localStorage.setItem('usuario', res.data.nombre || correo)
+      localStorage.setItem('email', res.data.email || correo)
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al iniciar sesión')
@@ -58,6 +59,11 @@ export default function Login() {
         <p className="registro">
           ¿No tienes cuenta?{' '}
           <Link to="/registro" style={{ color: 'white', fontWeight: 'bold' }}>Regístrate</Link>
+        </p>
+        <p style={{ marginTop: '12px', fontSize: '13px', textAlign: 'center' }}>
+          <Link to="/consulta" style={{ color: 'rgba(255,255,255,0.8)' }}>
+            🔍 Consultar estado de proceso sin cuenta
+          </Link>
         </p>
       </div>
     </div>

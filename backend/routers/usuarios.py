@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
 from database import get_db
 from auth_utils import requiere_rol
+from auditoria_utils import registrar_auditoria
 import bcrypt
 
 router = APIRouter()
@@ -49,7 +50,10 @@ def crear_usuario(datos: dict, db=Depends(get_db), usuario: dict = Depends(solo_
         }
     )
     db.commit()
+    registrar_auditoria(db, usuario, "CREAR", "usuarios", datos["email"], f"Nuevo usuario: {datos['nombre']}")
     return {"status": "Usuario creado"}
+# En crear_usuario, después del db.commit():
+
 
 
 # PUT — editar
@@ -60,7 +64,10 @@ def editar_usuario(id: int, datos: dict, db=Depends(get_db), usuario: dict = Dep
         {"nombre": datos["nombre"], "rol": datos["rol"], "id": id}
     )
     db.commit()
+    registrar_auditoria(db, usuario, "EDITAR", "usuarios", id)
     return {"status": "Usuario actualizado"}
+
+
 
 
 # DELETE — eliminar
@@ -71,6 +78,7 @@ def eliminar_usuario(id: int, db=Depends(get_db), usuario: dict = Depends(solo_a
         {"id": id}
     )
     db.commit()
+    registrar_auditoria(db, usuario, "BORRAR", "usuarios", id)
     return {"status": "Usuario eliminado"}
 
 
@@ -94,3 +102,15 @@ def activar_usuario(id: int, db=Depends(get_db), usuario: dict = Depends(solo_ad
     )
     db.commit()
     return {"status": "Usuario activado"}
+
+
+# GET — listar solo abogados activos (para selects de asignación)
+@router.get("/abogados")
+def get_abogados(
+    db=Depends(get_db),
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria"))
+):
+    resultado = db.execute(
+        text("SELECT id_usuarios, nombre, email FROM usuarios WHERE rol = 'abogado' AND estado = 'activo'")
+    ).fetchall()
+    return [dict(fila._mapping) for fila in resultado]

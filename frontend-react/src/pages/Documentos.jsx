@@ -12,9 +12,11 @@ export default function Documentos() {
   const [documentos, setDocumentos] = useState([])
   const [expedientes, setExpedientes] = useState([])
   const [expSeleccionado, setExpSeleccionado] = useState(expedienteId || '')
+  const [modalEnviar, setModalEnviar] = useState(null) // guarda el doc a enviar
   const inputRef = useRef()
   const rol = localStorage.getItem('rol') || ''
   const puedeSubir = ['admin', 'administrador', 'secretaria', 'abogado'].includes(rol)
+  const esAdmin = ['admin', 'administrador'].includes(rol)
 
   // Cargar lista de expedientes para el selector
   useEffect(() => {
@@ -26,13 +28,17 @@ export default function Documentos() {
   // Cargar documentos del expediente seleccionado
   useEffect(() => {
     if (expSeleccionado) {
-      api.get(`/documentos/expediente/${expSeleccionado}`)
-        .then(res => setDocumentos(res.data))
-        .catch(console.error)
+      cargarDocumentos()
     } else {
       setDocumentos([])
     }
   }, [expSeleccionado])
+
+  const cargarDocumentos = () => {
+    api.get(`/documentos/expediente/${expSeleccionado}`)
+      .then(res => setDocumentos(res.data))
+      .catch(console.error)
+  }
 
   const handleArchivo = (e) => {
     const file = e.target.files[0]
@@ -71,9 +77,7 @@ export default function Documentos() {
       setArchivo(null)
       setPreview(null)
       setProgreso(0)
-      // Recargar documentos
-      const res = await api.get(`/documentos/expediente/${expSeleccionado}`)
-      setDocumentos(res.data)
+      cargarDocumentos()
     } catch (err) {
       alert(err.response?.data?.detail || 'Error al subir el archivo')
     } finally {
@@ -81,12 +85,27 @@ export default function Documentos() {
     }
   }
 
+  const confirmarEnviar = (doc) => {
+    setModalEnviar(doc)
+  }
+
+  const enviarDocumento = async () => {
+    if (!modalEnviar) return
+    try {
+      await api.patch(`/documentos/${modalEnviar.id_documento}/enviar`)
+      setModalEnviar(null)
+      cargarDocumentos()
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Error al enviar el documento')
+      setModalEnviar(null)
+    }
+  }
+
   const eliminar = async (id) => {
     if (!confirm('¿Eliminar este documento?')) return
     try {
       await api.delete(`/documentos/${id}`)
-      const res = await api.get(`/documentos/expediente/${expSeleccionado}`)
-      setDocumentos(res.data)
+      cargarDocumentos()
     } catch (err) {
       alert(err.response?.data?.detail || 'Error al eliminar')
     }
@@ -117,26 +136,56 @@ export default function Documentos() {
         <table style={{ marginBottom: '2rem' }}>
           <thead>
             <tr>
-              <th>Archivo</th><th>Formato</th><th>Subido por</th><th>Fecha</th><th>Acciones</th>
+              <th>Archivo</th><th>Formato</th><th>Subido por</th><th>Fecha</th>
+              <th>Estado</th><th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {documentos.length === 0 ? (
-              <tr><td colSpan={5}>No hay documentos en este expediente</td></tr>
+              <tr><td colSpan={6}>No hay documentos en este expediente</td></tr>
             ) : (
-              documentos.map(d => (
-                <tr key={d.id_documento}>
-                  <td data-label="Archivo">{d.nombre_archivo}</td>
-                  <td data-label="Formato">{d.tipo_formato}</td>
-                  <td data-label="Subido por">{d.subido_por_nombre}</td>
-                  <td data-label="Fecha">{d.fecha_subida?.split('T')[0]}</td>
-                  <td data-label="Acciones">
-                    <button className="btn-accion-eliminar" onClick={() => eliminar(d.id_documento)}>
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))
+              documentos.map(d => {
+                const enviado = d.estado === 'enviado'
+                const puedeEliminar = esAdmin || (!enviado)
+                return (
+                  <tr key={d.id_documento}>
+                    <td data-label="Archivo">{d.nombre_archivo}</td>
+                    <td data-label="Formato">{d.tipo_formato}</td>
+                    <td data-label="Subido por">{d.subido_por_nombre}</td>
+                    <td data-label="Fecha">{d.fecha_subida?.split('T')[0]}</td>
+                    <td data-label="Estado">
+                      <span style={{
+                        padding: '3px 10px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        background: enviado ? '#dcfce7' : '#fef9c3',
+                        color: enviado ? '#166534' : '#854d0e'
+                      }}>
+                        {enviado ? '✅ Enviado' : '📝 Borrador'}
+                      </span>
+                    </td>
+                    <td data-label="Acciones" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {!enviado && (
+                        <button
+                          className="btn-accion-editar"
+                          onClick={() => confirmarEnviar(d)}
+                        >
+                          Enviar
+                        </button>
+                      )}
+                      {puedeEliminar && (
+                        <button
+                          className="btn-accion-eliminar"
+                          onClick={() => eliminar(d.id_documento)}
+                        >
+                          Eliminar
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>
@@ -177,6 +226,26 @@ export default function Documentos() {
             {preview?.tipo === 'otro' && (
               <p>📄 {preview.nombre}</p>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de envío */}
+      {modalEnviar && (
+        <div className="modal" style={{ display: 'flex' }}
+          onClick={e => e.target.className === 'modal' && setModalEnviar(null)}>
+          <div className="modal-contenido" style={{ maxWidth: '420px', textAlign: 'center' }}>
+            <h3>⚠️ Confirmar envío</h3>
+            <p style={{ margin: '1rem 0' }}>
+              Estás a punto de enviar <strong>"{modalEnviar.nombre_archivo}"</strong>.
+            </p>
+            <p style={{ color: '#dc2626', fontWeight: 'bold', marginBottom: '1.5rem' }}>
+              Una vez enviado, no podrás eliminarlo. Solo un administrador podrá hacerlo.
+            </p>
+            <div className="form-botones">
+              <button className="btn-cancelar" onClick={() => setModalEnviar(null)}>Cancelar</button>
+              <button className="btn-guardar" onClick={enviarDocumento}>Sí, enviar</button>
+            </div>
           </div>
         </div>
       )}

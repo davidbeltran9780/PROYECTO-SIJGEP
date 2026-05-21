@@ -6,18 +6,37 @@ from auth_utils import obtener_usuario_actual, requiere_rol
 router = APIRouter()
 
 
-# GET — listar todos (admin, secretaria, abogado)
+# GET — listar (admin/secretaria ven todos, abogado solo los suyos)
 @router.get("/expedientes")
 def get_expedientes(
     db=Depends(get_db),
     usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
-    resultado = db.execute(text("""
-        SELECT e.*, c.tipo, c.titulo, c.estado AS estado_caso
-        FROM expedientes e
-        JOIN casos c ON e.id_caso = c.id_caso
-        ORDER BY e.fecha_creacion DESC
-    """)).fetchall()
+    es_abogado = usuario.get("rol") == "abogado"
+
+    if es_abogado:
+        resultado = db.execute(
+            text("""
+                SELECT e.*, c.tipo, c.titulo, c.estado AS estado_caso,
+                       a.nombre AS abogado_nombre
+                FROM expedientes e
+                JOIN casos c ON e.id_caso = c.id_caso
+                LEFT JOIN usuarios a ON c.id_abogado_asignado = a.id_usuarios
+                WHERE c.id_abogado_asignado = :mi_id
+                ORDER BY e.fecha_creacion DESC
+            """),
+            {"mi_id": int(usuario["sub"])}
+        ).fetchall()
+    else:
+        resultado = db.execute(text("""
+            SELECT e.*, c.tipo, c.titulo, c.estado AS estado_caso,
+                   a.nombre AS abogado_nombre
+            FROM expedientes e
+            JOIN casos c ON e.id_caso = c.id_caso
+            LEFT JOIN usuarios a ON c.id_abogado_asignado = a.id_usuarios
+            ORDER BY e.fecha_creacion DESC
+        """)).fetchall()
+
     return [dict(fila._mapping) for fila in resultado]
 
 
@@ -28,18 +47,30 @@ def get_expediente(
     db=Depends(get_db),
     usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria", "abogado"))
 ):
+    es_abogado = usuario.get("rol") == "abogado"
+
     resultado = db.execute(
         text("""
-            SELECT e.*, c.tipo, c.titulo, c.estado AS estado_caso
+            SELECT e.*, c.tipo, c.titulo, c.estado AS estado_caso,
+                   a.nombre AS abogado_nombre
             FROM expedientes e
             JOIN casos c ON e.id_caso = c.id_caso
+            LEFT JOIN usuarios a ON c.id_abogado_asignado = a.id_usuarios
             WHERE e.id_expediente = :id
         """),
         {"id": id}
     ).fetchone()
+
     if not resultado:
         raise HTTPException(status_code=404, detail="Expediente no encontrado")
-    return dict(resultado._mapping)
+
+    resultado = dict(resultado._mapping)
+
+    # Abogado solo puede ver expedientes asignados a él
+    if es_abogado and resultado.get("id_abogado_asignado") != int(usuario["sub"]):
+        raise HTTPException(status_code=403, detail="No tienes acceso a este expediente")
+
+    return resultado
 
 
 # POST — crear (solo admin y secretaria)
