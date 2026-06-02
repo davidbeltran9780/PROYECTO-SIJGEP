@@ -1,7 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import api from '../api/axios'
 
+const RUTAS = {
+  '/dashboard':    'Dashboard',
+  '/expedientes':  'Expedientes',
+  '/documentos':   'Documentos',
+  '/pqrs':         'PQRS',
+  '/alertas':      'Alertas',
+  '/reportes':     'Reportes',
+  '/ia':           'Módulo IA',
+  '/admin':        'Administración',
+  '/ayuda':        'Ayuda',
+}
+
 export default function Header() {
+  const location = useLocation()
+  const moduloActual = RUTAS[location.pathname] || ''
   const [notifAbierto, setNotifAbierto] = useState(false)
   const [avatarAbierto, setAvatarAbierto] = useState(false)
   const [notificaciones, setNotificaciones] = useState([])
@@ -57,9 +72,24 @@ export default function Header() {
 
       <div className="header-derecha">
         {/* Hamburguesa — solo en móvil (CSS lo oculta en escritorio) */}
-        <button className="btn-hamburguesa" onClick={toggleMenu} aria-label="Abrir menú">
+        <button className="btn-hamburguesa" onClick={toggleMenu} aria-label="Abrir menú" title="Abrir menú">
           ☰
         </button>
+
+        {/* Módulo actual — izquierda del header derecho */}
+        {moduloActual && (
+          <span style={{
+            color: 'rgba(255,255,255,0.5)',
+            fontSize: '12px',
+            fontWeight: '500',
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+            marginRight: 'auto',
+            pointerEvents: 'none',
+          }}>
+            SIGJEP <span style={{ opacity: 0.4 }}>/</span> <span style={{ color: 'white', fontWeight: '700' }}>{moduloActual}</span>
+          </span>
+        )}
 
         {/* Nombre y rol — visible en escritorio, oculto en móvil via CSS */}
         <span className="usuario">{usuario} — {rol}</span>
@@ -70,6 +100,7 @@ export default function Header() {
             className="avatar-btn"
             onClick={() => setAvatarAbierto(!avatarAbierto)}
             title={`${usuario} — ${rol}`}
+            aria-label="Menú de usuario"
           >
             {iniciales || '?'}
           </button>
@@ -86,7 +117,7 @@ export default function Header() {
         {/* Campana — solo roles internos */}
         {esInterno && (
           <div className="notif-wrapper" ref={panelRef}>
-            <button className="notif-boton" onClick={() => setNotifAbierto(!notifAbierto)}>
+            <button className="notif-boton" onClick={() => setNotifAbierto(!notifAbierto)} aria-label="Ver notificaciones" title="Ver notificaciones">
               🔔
               {total > 0 && !leidas && (
                 <span className="notif-badge">{total}</span>

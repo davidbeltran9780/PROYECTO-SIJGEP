@@ -7,6 +7,8 @@ import {
   AlignmentType
 } from 'docx'
 import { saveAs } from 'file-saver'
+import { useToast } from '../context/ToastContext'
+import { useConfirm } from '../components/ConfirmModal'
 
 function extraerSeccion(texto, etiqueta) {
   const regex = new RegExp(`${etiqueta}:\\s*([\\s\\S]*?)(?=\\n[A-ZÁÉÍÓÚ]+:|$)`, 'i')
@@ -15,6 +17,8 @@ function extraerSeccion(texto, etiqueta) {
 }
 
 export default function ModuloIA() {
+  const toast = useToast()
+  const { confirmar, ConfirmUI } = useConfirm()
   const [expedientes, setExpedientes] = useState([])
   const [expedienteId, setExpedienteId] = useState('')
   const [archivo, setArchivo] = useState(null)
@@ -46,7 +50,7 @@ export default function ModuloIA() {
   }
 
   const clasificar = async () => {
-    if (!archivo) return alert('Primero sube un archivo')
+    if (!archivo) return toast.info('Primero sube un archivo')
     setCargando(true)
     try {
       const formData = new FormData()
@@ -59,12 +63,12 @@ export default function ModuloIA() {
       setAprobado(false)
       const match = texto.match(/TIPO:\s*(.+)/i)
       setClasificacion(match ? match[1].trim() : 'No identificado')
-    } catch { alert('Error al analizar') }
+    } catch { toast.error('Error al analizar el documento') }
     finally { setCargando(false) }
   }
 
   const generarResumen = async () => {
-    if (!archivo) return alert('Primero sube un archivo')
+    if (!archivo) return toast.info('Primero sube un archivo')
     setCargando(true)
     try {
       const formData = new FormData()
@@ -74,12 +78,12 @@ export default function ModuloIA() {
       })
       setResumen(res.data.resumen || '')
       setAprobado(false)
-    } catch { alert('Error al generar resumen') }
+    } catch { toast.error('Error al generar resumen') }
     finally { setCargando(false) }
   }
 
   const descargarPDF = () => {
-    if (!resumen) return alert('Primero genera un resumen')
+    if (!resumen) return toast.info('Primero genera un resumen')
     const doc = new jsPDF()
     const margen = 15
     const anchoUtil = doc.internal.pageSize.getWidth() - margen * 2
@@ -109,10 +113,11 @@ export default function ModuloIA() {
     const lineas = doc.splitTextToSize(resumen, anchoUtil)
     doc.text(lineas, margen, 75)
     doc.save(`resumen_juridico_exp${expedienteId || 'sin_exp'}.pdf`)
+    toast.exito('PDF descargado correctamente')
   }
 
   const descargarBorradorWord = async () => {
-    if (!resumen) return alert('Primero genera un resumen con IA')
+    if (!resumen) return toast.info('Primero genera un resumen con IA')
 
     const textoBorrador = extraerSeccion(resumen, 'BORRADOR')
     const textoNormas = extraerSeccion(resumen, 'NORMAS')
@@ -146,27 +151,32 @@ export default function ModuloIA() {
 
     const blob = await Packer.toBlob(doc)
     saveAs(blob, `borrador_respuesta_exp${expedienteId || 'sin_exp'}.docx`)
+    toast.exito('Borrador Word descargado')
   }
 
-  const aprobar = () => {
-    if (!resumen) return alert('No hay resumen que aprobar')
-    if (!confirm('¿Marcar este borrador como revisado?')) return
+  const aprobar = async () => {
+    if (!resumen) return toast.info('No hay resumen que aprobar')
+    const ok = await confirmar('¿Marcar este borrador como revisado?', 'Indica que el borrador fue revisado por un responsable.')
+    if (!ok) return
     setAprobado(true)
-    alert('✅ Borrador marcado como revisado. Descárgalo y súbelo al expediente desde Documentos.')
+    toast.exito('Borrador marcado como revisado. Descárgalo y súbelo al expediente desde Documentos.')
   }
 
-  const descartar = () => {
+  const descartar = async () => {
     if (!resumen) return
-    if (!confirm('¿Descartar el resumen actual? Se perderá el análisis.')) return
+    const ok = await confirmar('¿Descartar el resumen actual?', 'Se perderá el análisis generado.')
+    if (!ok) return
     setResumen('')
     setClasificacion('-')
     setArchivo(null)
     setProgreso(0)
     setAprobado(false)
+    toast.info('Resumen descartado')
   }
 
   return (
     <main className="content">
+      {ConfirmUI}
       <div className="contenido">
         <h2>Asistente Jurídico con IA</h2>
 

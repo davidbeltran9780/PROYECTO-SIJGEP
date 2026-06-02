@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api/axios'
+import { useToast } from '../context/ToastContext'
+import { useConfirm } from '../components/ConfirmModal'
 
 function calcularDias(fecha) {
   if (!fecha) return null
@@ -7,9 +9,12 @@ function calcularDias(fecha) {
 }
 
 export default function Expedientes() {
+  const toast = useToast()
+  const { confirmar, ConfirmUI } = useConfirm()
   const [expedientes, setExpedientes] = useState([])
   const [abogados, setAbogados] = useState([])
   const [modal, setModal] = useState(false)
+  const [busqueda, setBusqueda] = useState('')
   const rol = localStorage.getItem('rol') || ''
   const puedeCrear = ['admin', 'administrador', 'secretaria'].includes(rol)
   const puedeEliminar = ['admin', 'administrador'].includes(rol)
@@ -32,7 +37,6 @@ export default function Expedientes() {
         .then(res => setAbogados(res.data))
         .catch(err => {
           console.error('Error cargando abogados:', err)
-          // Mostrar error real para diagnóstico
           const detalle = err.response?.data?.detail || err.message || 'Error desconocido'
           console.warn('Detalle error /abogados:', detalle)
         })
@@ -42,22 +46,19 @@ export default function Expedientes() {
   const guardar = async (e) => {
     e.preventDefault()
     try {
-      // 1. Crear caso con abogado asignado
       const payload = {
         ...form,
         id_abogado_asignado: form.id_abogado_asignado ? parseInt(form.id_abogado_asignado) : null
       }
       const resCaso = await api.post('/casos', payload)
       const idCaso = resCaso.data.id_caso
-
-      // 2. Crear expediente vinculado al caso
       await api.post('/expedientes', { id_caso: idCaso })
-
       setModal(false)
       setForm({ tipo: 'tutela', titulo: '', descripcion: '', fecha_vencimiento: '', id_abogado_asignado: '' })
       cargar()
+      toast.exito('Expediente creado correctamente')
     } catch (err) {
-      alert(err.response?.data?.detail || 'Error al crear expediente')
+      toast.error(err.response?.data?.detail || 'Error al crear expediente')
     }
   }
 
@@ -67,17 +68,22 @@ export default function Expedientes() {
         id_abogado_asignado: idAbogado ? parseInt(idAbogado) : null
       })
       cargar()
+      toast.exito('Abogado asignado correctamente')
     } catch (err) {
-      alert(err.response?.data?.detail || 'Error al asignar abogado')
+      toast.error(err.response?.data?.detail || 'Error al asignar abogado')
     }
   }
 
   const eliminar = async (id) => {
-    if (!confirm('¿Eliminar este expediente?')) return
+    const ok = await confirmar('¿Eliminar este expediente?', 'Esta acción no se puede deshacer.')
+    if (!ok) return
     try {
       await api.delete(`/expedientes/${id}`)
       cargar()
-    } catch { alert('Error al eliminar') }
+      toast.exito('Expediente eliminado')
+    } catch {
+      toast.error('Error al eliminar')
+    }
   }
 
   const estadoClase = (estado) => {
@@ -95,16 +101,52 @@ export default function Expedientes() {
       await api.patch(`/casos/${idCaso}/estado`, { estado: nuevoEstado })
       cargar()
     } catch (err) {
-      alert(err.response?.data?.detail || 'Error al cambiar estado')
+      toast.error(err.response?.data?.detail || 'Error al cambiar estado')
     }
   }
 
+  const cerrarCaso = async (idCaso) => {
+    const ok = await confirmar('¿Cerrar este caso?', 'El caso pasará a estado cerrado.')
+    if (!ok) return
+    cambiarEstadoCaso(idCaso, 'cerrado')
+  }
+
+  const reactivarCaso = async (idCaso) => {
+    const ok = await confirmar('¿Reactivar este caso?', 'El caso volverá a estado activo.')
+    if (!ok) return
+    cambiarEstadoCaso(idCaso, 'activo')
+  }
+
+  const expedientesFiltrados = expedientes.filter(e => {
+    const q = busqueda.toLowerCase()
+    return (
+      String(e.id_expediente).includes(q) ||
+      (e.titulo || '').toLowerCase().includes(q) ||
+      (e.tipo || '').toLowerCase().includes(q) ||
+      (e.abogado_nombre || '').toLowerCase().includes(q) ||
+      (e.estado_caso || '').toLowerCase().includes(q)
+    )
+  })
+
   return (
     <main className="content">
+      {ConfirmUI}
       <div className="top">
         <h2>Gestión de Expedientes</h2>
         {puedeCrear && (
           <button className="nuevo" onClick={() => setModal(true)}>Nuevo Expediente</button>
+        )}
+      </div>
+
+      <div className="barra-busqueda">
+        <input
+          type="text"
+          placeholder="🔍 Buscar por título, tipo, abogado o estado..."
+          value={busqueda}
+          onChange={e => setBusqueda(e.target.value)}
+        />
+        {busqueda && (
+          <button onClick={() => setBusqueda('')} title="Limpiar búsqueda">✕</button>
         )}
       </div>
 
@@ -117,10 +159,10 @@ export default function Expedientes() {
           </tr>
         </thead>
         <tbody>
-          {expedientes.length === 0 ? (
-            <tr><td colSpan={puedeCrear ? 7 : 6}>No hay expedientes registrados</td></tr>
+          {expedientesFiltrados.length === 0 ? (
+            <tr><td colSpan={puedeCrear ? 7 : 6}>{busqueda ? 'No se encontraron resultados' : 'No hay expedientes registrados'}</td></tr>
           ) : (
-            expedientes.map(e => (
+            expedientesFiltrados.map(e => (
               <tr key={e.id_expediente}>
                 <td data-label="ID">{e.id_expediente}</td>
                 <td data-label="Tipo">{e.tipo || '—'}</td>
@@ -151,7 +193,7 @@ export default function Expedientes() {
                   <td data-label="Acciones" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     {e.estado_caso !== 'cerrado' && e.estado_caso !== 'archivado' ? (
                       <button
-                        onClick={() => { if (confirm('¿Cerrar este caso?')) cambiarEstadoCaso(e.id_caso, 'cerrado') }}
+                        onClick={() => cerrarCaso(e.id_caso)}
                         style={{
                           fontSize: '11px', padding: '4px 10px', borderRadius: '4px',
                           border: '1px solid #9ca3af', background: '#f3f4f6',
@@ -164,7 +206,7 @@ export default function Expedientes() {
                     ) : (
                       <button
                         className="btn-accion-activar"
-                        onClick={() => { if (confirm('¿Reactivar este caso?')) cambiarEstadoCaso(e.id_caso, 'activo') }}
+                        onClick={() => reactivarCaso(e.id_caso)}
                         style={{ fontSize: '11px' }}
                       >
                         Reactivar
@@ -190,8 +232,8 @@ export default function Expedientes() {
             <h3>Nuevo Expediente</h3>
             <form onSubmit={guardar} className="form-grid">
               <div className="form-group">
-                <label>Tipo de caso</label>
-                <select value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value })}>
+                <label htmlFor="exp-tipo">Tipo de caso</label>
+                <select id="exp-tipo" value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value })}>
                   <option value="tutela">Tutela</option>
                   <option value="demanda">Demanda</option>
                   <option value="derecho_peticion">Derecho de petición</option>
@@ -200,24 +242,24 @@ export default function Expedientes() {
                 </select>
               </div>
               <div className="form-group">
-                <label>Título / Demandante</label>
-                <input type="text" required value={form.titulo}
+                <label htmlFor="exp-titulo">Título / Demandante</label>
+                <input id="exp-titulo" type="text" required value={form.titulo}
                   onChange={e => setForm({ ...form, titulo: e.target.value })} />
               </div>
               <div className="form-group">
-                <label>Descripción</label>
-                <textarea value={form.descripcion}
+                <label htmlFor="exp-descripcion">Descripción</label>
+                <textarea id="exp-descripcion" value={form.descripcion}
                   onChange={e => setForm({ ...form, descripcion: e.target.value })} />
               </div>
               <div className="form-group">
-                <label>Fecha vencimiento</label>
-                <input type="date" value={form.fecha_vencimiento}
+                <label htmlFor="exp-vencimiento">Fecha vencimiento</label>
+                <input id="exp-vencimiento" type="date" value={form.fecha_vencimiento}
                   onChange={e => setForm({ ...form, fecha_vencimiento: e.target.value })} />
               </div>
               {puedeCrear && (
                 <div className="form-group">
-                  <label>Abogado asignado</label>
-                  <select value={form.id_abogado_asignado}
+                  <label htmlFor="exp-abogado">Abogado asignado</label>
+                  <select id="exp-abogado" value={form.id_abogado_asignado}
                     onChange={e => setForm({ ...form, id_abogado_asignado: e.target.value })}>
                     <option value="">Sin asignar</option>
                     {abogados.map(a => (

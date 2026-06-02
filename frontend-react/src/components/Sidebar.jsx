@@ -9,6 +9,7 @@ const MENU_ITEMS = [
   { to: '/alertas',     label: 'Alertas',      roles: ['admin', 'administrador', 'abogado', 'secretaria'] },
   { to: '/reportes',    label: 'Reportes',     roles: ['admin', 'administrador'] },
   { to: '/pqrs',        label: 'PQRS',         roles: ['admin', 'administrador', 'secretaria', 'abogado', 'ciudadano'] },
+  { to: '/ayuda',       label: 'Ayuda',        roles: ['admin', 'administrador', 'abogado', 'secretaria', 'ciudadano'] },
 ]
 
 const cerrarMenu = () => document.body.classList.remove('menu-abierto')

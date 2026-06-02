@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
 import api from '../api/axios'
+import { useToast } from '../context/ToastContext'
+import { useConfirm } from '../components/ConfirmModal'
 
 export default function Admin() {
+  const toast = useToast()
+  const { confirmar, ConfirmUI } = useConfirm()
   const [pestana, setPestana] = useState(localStorage.getItem('pestanaAdmin') || 'usuarios')
   const [usuarios, setUsuarios] = useState([])
   const [backups, setBackups] = useState([])
@@ -34,7 +38,7 @@ export default function Admin() {
       setModalAbierto(false)
       setNuevoUsuario({ nombre: '', email: '', password: '', rol: '' })
       cargarUsuarios()
-    } catch { alert('Error al crear usuario') }
+    } catch { toast.error('Error al crear usuario') }
   }
 
   const abrirEditar = (u) => {
@@ -48,24 +52,26 @@ export default function Admin() {
       await api.put(`/usuarios/${usuarioEditando.id_usuarios}`, usuarioEditando)
       setModalEditar(false)
       cargarUsuarios()
-    } catch { alert('Error al editar usuario') }
+    } catch { toast.error('Error al editar usuario') }
   }
 
   const eliminarUsuario = async (id) => {
-    if (!confirm('¿Seguro que deseas eliminar este usuario?')) return
+    const ok = await confirmar('¿Eliminar este usuario?', 'Esta acción no se puede deshacer.')
+    if (!ok) return
     try {
       await api.delete(`/usuarios/${id}`)
       cargarUsuarios()
-    } catch { alert('Error al eliminar usuario') }
+      toast.exito('Usuario eliminado')
+    } catch { toast.error('Error al eliminar usuario') }
   }
 
   const generarBackup = async () => {
     try {
       const res = await api.post('/backups/manual')
-      alert(res.data.msg || 'Backup generado correctamente')
+      toast.exito(res.data.msg || 'Backup generado correctamente')
       api.get('/backups/listar').then(r => setBackups(r.data)).catch(console.error)
     } catch (err) {
-      alert('Error al generar backup:\n' + (err.response?.data?.detail || err.message || 'Error desconocido'))
+      toast.error('Error al generar backup: ' + (err.response?.data?.detail || err.message || 'Error desconocido'))
     }
   }
 
@@ -81,6 +87,7 @@ export default function Admin() {
 
   return (
     <main className="content">
+      {ConfirmUI}
       <div className="contenido">
 
         <div className="tabs-admin">
@@ -121,14 +128,18 @@ export default function Admin() {
                       <button className="btn-accion-editar" onClick={() => abrirEditar(u)}>Editar</button>
                       {u.estado === 'activo'
                         ? <button className="btn-accion-eliminar" onClick={async () => {
-                            if (!confirm('¿Desactivar?')) return
+                            const ok = await confirmar('¿Desactivar este usuario?')
+                            if (!ok) return
                             await api.patch(`/usuarios/${u.id_usuarios}/desactivar`)
                             cargarUsuarios()
+                            toast.exito('Usuario desactivado')
                           }}>Desactivar</button>
                         : <button className="btn-accion-activar" onClick={async () => {
-                            if (!confirm('¿Activar?')) return
+                            const ok = await confirmar('¿Activar este usuario?')
+                            if (!ok) return
                             await api.patch(`/usuarios/${u.id_usuarios}/activar`)
                             cargarUsuarios()
+                            toast.exito('Usuario activado')
                           }}>Activar</button>
                       }
                       <button className="btn-accion-eliminar" onClick={() => eliminarUsuario(u.id_usuarios)}>Eliminar</button>
@@ -216,23 +227,23 @@ export default function Admin() {
             <form onSubmit={guardarUsuario}>
               <div className="form-grid">
                 <div className="form-group">
-                  <label>Nombre</label>
-                  <input type="text" required value={nuevoUsuario.nombre}
+                  <label htmlFor="nu-nombre">Nombre</label>
+                  <input id="nu-nombre" type="text" required value={nuevoUsuario.nombre}
                     onChange={e => setNuevoUsuario({ ...nuevoUsuario, nombre: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label>Email</label>
-                  <input type="email" required value={nuevoUsuario.email}
+                  <label htmlFor="nu-email">Email</label>
+                  <input id="nu-email" type="email" required value={nuevoUsuario.email}
                     onChange={e => setNuevoUsuario({ ...nuevoUsuario, email: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label>Contraseña</label>
-                  <input type="password" required value={nuevoUsuario.password}
+                  <label htmlFor="nu-password">Contraseña</label>
+                  <input id="nu-password" type="password" required value={nuevoUsuario.password}
                     onChange={e => setNuevoUsuario({ ...nuevoUsuario, password: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label>Rol</label>
-                  <select required value={nuevoUsuario.rol}
+                  <label htmlFor="nu-rol">Rol</label>
+                  <select id="nu-rol" required value={nuevoUsuario.rol}
                     onChange={e => setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })}>
                     <option value="">Seleccionar...</option>
                     <option value="admin">Administrador</option>
@@ -259,13 +270,13 @@ export default function Admin() {
             <form onSubmit={guardarEdicion}>
               <div className="form-grid">
                 <div className="form-group">
-                  <label>Nombre</label>
-                  <input type="text" required value={usuarioEditando.nombre}
+                  <label htmlFor="eu-nombre">Nombre</label>
+                  <input id="eu-nombre" type="text" required value={usuarioEditando.nombre}
                     onChange={e => setUsuarioEditando({ ...usuarioEditando, nombre: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label>Rol</label>
-                  <select required value={usuarioEditando.rol}
+                  <label htmlFor="eu-rol">Rol</label>
+                  <select id="eu-rol" required value={usuarioEditando.rol}
                     onChange={e => setUsuarioEditando({ ...usuarioEditando, rol: e.target.value })}>
                     <option value="admin">Administrador</option>
                     <option value="abogado">Abogado</option>

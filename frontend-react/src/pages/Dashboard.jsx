@@ -79,7 +79,11 @@ export default function Dashboard() {
             <span className="numero">{misPqrs.length}</span>
             <p className="etiqueta">Mis PQRS</p>
           </a>
-          <a href="/consulta" className="tarjeta amarilla">
+          <a href="/pqrs-publico" className="tarjeta amarilla">
+            <span className="numero">📨</span>
+            <p className="etiqueta">Radicar nueva PQRS</p>
+          </a>
+          <a href="/consulta" className="tarjeta verde">
             <span className="numero">🔍</span>
             <p className="etiqueta">Consultar por radicado</p>
           </a>

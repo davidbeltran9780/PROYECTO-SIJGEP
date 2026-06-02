@@ -11,6 +11,7 @@ export default function Reportes() {
   const [porMes, setPorMes] = useState([])
   const [pqrsEstado, setPqrsEstado] = useState([])
   const [vencimientos, setVencimientos] = useState([])
+  const [cargaAbogados, setCargaAbogados] = useState([])
   const [cargando, setCargando] = useState(true)
 
   useEffect(() => {
@@ -21,14 +22,16 @@ export default function Reportes() {
       api.get('/reportes/casos-por-mes'),
       api.get('/reportes/pqrs-por-estado'),
       api.get('/reportes/vencimientos'),
+      api.get('/reportes/carga-por-abogado'),
     ])
-      .then(([s, t, e, m, p, v]) => {
+      .then(([s, t, e, m, p, v, a]) => {
         setStats(s.data)
         setPorTipo(t.data)
         setPorEstado(e.data)
         setPorMes(m.data)
         setPqrsEstado(p.data)
         setVencimientos(v.data)
+        setCargaAbogados(a.data)
       })
       .catch(console.error)
       .finally(() => setCargando(false))
@@ -154,6 +157,20 @@ export default function Reportes() {
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="cantidad" fill="#22C55E" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {cargaAbogados.length > 0 && (
+          <div className="grafica-card">
+            <h4>Carga de trabajo por abogado</h4>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={cargaAbogados} layout="vertical">
+                <XAxis type="number" allowDecimals={false} />
+                <YAxis type="category" dataKey="nombre" width={120} tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Bar dataKey="casos_asignados" fill="#8B5CF6" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
 import api from '../api/axios'
+import { useToast } from '../context/ToastContext'
 
 const ESTADOS = ['recibido', 'en_proceso', 'respondido', 'cerrado']
 
 export default function PQRS() {
+  const toast = useToast()
+  const [busqueda, setBusqueda] = useState('')
   const [pqrs, setPqrs] = useState([])
   const [modal, setModal] = useState(false)
   const [modalRespuesta, setModalRespuesta] = useState(null)
   const [textoRespuesta, setTextoRespuesta] = useState('')
   const [guardando, setGuardando] = useState(false)
+  const [radicadoNuevo, setRadicadoNuevo] = useState('')
 
   const rol = localStorage.getItem('rol') || ''
   const emailGuardado = localStorage.getItem('email') || ''
@@ -36,12 +40,13 @@ export default function PQRS() {
   const guardar = async (e) => {
     e.preventDefault()
     try {
-      await api.post('/pqrs', form)
+      const res = await api.post('/pqrs', form)
       setModal(false)
       setForm({ nombre_ciudadano: esCiudadano ? nombreGuardado : '', correo: esCiudadano ? emailGuardado : '', tipo: '', descripcion: '' })
+      setRadicadoNuevo(res.data.numero_radicado || '')
       cargar()
     } catch (err) {
-      alert(err.response?.data?.detail || 'Error al crear PQRS')
+      toast.error(err.response?.data?.detail || 'Error al crear PQRS')
     }
   }
 
@@ -50,7 +55,7 @@ export default function PQRS() {
       await api.patch(`/pqrs/${id}/estado`, { estado: nuevoEstado })
       cargar()
     } catch (err) {
-      alert(err.response?.data?.detail || 'Error al cambiar estado')
+      toast.error(err.response?.data?.detail || 'Error al cambiar estado')
     }
   }
 
@@ -60,7 +65,7 @@ export default function PQRS() {
   }
 
   const guardarRespuesta = async () => {
-    if (!textoRespuesta.trim()) return alert('Escribe una respuesta antes de guardar')
+    if (!textoRespuesta.trim()) return toast.info('Escribe una respuesta antes de guardar')
     setGuardando(true)
     try {
       await api.patch(`/pqrs/${modalRespuesta.id_pqrs}/respuesta`, { respuesta: textoRespuesta })
@@ -68,18 +73,64 @@ export default function PQRS() {
       setModalRespuesta(null)
       cargar()
     } catch (err) {
-      alert(err.response?.data?.detail || 'Error al guardar respuesta')
+      toast.error(err.response?.data?.detail || 'Error al guardar respuesta')
     } finally {
       setGuardando(false)
     }
   }
 
+  const pqrsFiltradas = pqrs.filter(p => {
+    const q = busqueda.toLowerCase()
+    return (
+      (p.numero_radicado || '').toLowerCase().includes(q) ||
+      (p.nombre_ciudadano || '').toLowerCase().includes(q) ||
+      (p.correo || '').toLowerCase().includes(q) ||
+      (p.tipo || '').toLowerCase().includes(q) ||
+      (p.estado || '').toLowerCase().includes(q) ||
+      (p.descripcion || '').toLowerCase().includes(q)
+    )
+  })
+
   return (
     <main className="content">
+      {radicadoNuevo && (
+        <div style={{
+          background: '#f0fdf4', border: '1px solid #86efac',
+          borderRadius: '10px', padding: '14px 18px',
+          marginBottom: '16px', display: 'flex',
+          alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px'
+        }}>
+          <div>
+            <p style={{ margin: 0, fontWeight: '700', color: '#166534', fontSize: '14px' }}>
+              ✅ PQRS radicada correctamente
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#166534' }}>
+              Número de radicado: <strong style={{ fontFamily: 'monospace' }}>{radicadoNuevo}</strong>
+            </p>
+          </div>
+          <button onClick={() => setRadicadoNuevo('')}
+            style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '18px' }}>
+            ✕
+          </button>
+        </div>
+      )}
+
       <div className="top">
         <h2>{esCiudadano ? 'Mis PQRS' : esAbogado ? 'PQRS de mis casos' : 'Lista de PQRS'}</h2>
         {!esAbogado && (
           <button className="nuevo" onClick={() => setModal(true)}>Nuevo PQRS</button>
+        )}
+      </div>
+
+      <div className="barra-busqueda">
+        <input
+          type="text"
+          placeholder="🔍 Buscar por nombre, correo, tipo o estado..."
+          value={busqueda}
+          onChange={e => setBusqueda(e.target.value)}
+        />
+        {busqueda && (
+          <button onClick={() => setBusqueda('')} title="Limpiar búsqueda">✕</button>
         )}
       </div>
 
@@ -90,7 +141,7 @@ export default function PQRS() {
               <><th>Radicado</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th>Respuesta</th></>
             ) : (
               <>
-                <th>Nombre</th><th>Correo</th><th>Tipo</th><th>Mensaje</th>
+                <th>Radicado</th><th>Nombre</th><th>Tipo</th><th>Mensaje</th>
                 <th>Estado</th>
                 {(puedeGestionar || esAbogado) && <th>Acciones</th>}
               </>
@@ -98,9 +149,9 @@ export default function PQRS() {
           </tr>
         </thead>
         <tbody>
-          {pqrs.length === 0 ? (
-            <tr><td colSpan={6}>No hay PQRS registradas</td></tr>
-          ) : pqrs.map((p) => (
+          {pqrsFiltradas.length === 0 ? (
+            <tr><td colSpan={6}>{busqueda ? 'No se encontraron resultados' : 'No hay PQRS registradas'}</td></tr>
+          ) : pqrsFiltradas.map((p) => (
             <tr key={p.id_pqrs || p.numero_radicado}>
               {esCiudadano ? (
                 <>
@@ -125,8 +176,8 @@ export default function PQRS() {
                 </>
               ) : (
                 <>
+                  <td data-label="Radicado" style={{ fontSize: '11px', color: '#6b7280', whiteSpace: 'nowrap' }}>{p.numero_radicado}</td>
                   <td data-label="Nombre">{p.nombre_ciudadano}</td>
-                  <td data-label="Correo">{p.correo}</td>
                   <td data-label="Tipo">{p.tipo}</td>
                   <td data-label="Mensaje" style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {p.descripcion}

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { ToastProvider } from './context/ToastContext'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import Footer from './components/Footer'
@@ -13,8 +14,9 @@ import PQRS from './pages/PQRS'
 import Reportes from './pages/Reportes'
 import ModuloIA from './pages/ModuloIA'
 import Documentos from './pages/Documentos'
-import ConsultaEstado from './pages/ConsultaEstado'
-import ConsultaProcesos from './pages/ConsultaProcesos'
+import ConsultaPublica from './pages/ConsultaPublica'
+import PQRSPublico from './pages/PQRSPublico'
+import Ayuda from './pages/Ayuda'
 import RutaProtegida from './components/RutaProtegida'
 
 function Layout({ children }) {
@@ -45,18 +47,21 @@ const SIN_ABOGADO = ['admin', 'administrador', 'secretaria', 'abogado', 'ciudada
 
 function App() {
   return (
+    <ToastProvider>
     <BrowserRouter>
       <Routes>
         {/* Públicas */}
         <Route path="/" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/recuperar" element={<Recuperar />} />
-        <Route path="/consulta" element={<ConsultaProcesos />} />
-        <Route path="/consulta-estado" element={<ConsultaEstado />} />
+        <Route path="/consulta" element={<ConsultaPublica />} />
+        <Route path="/consulta-estado" element={<ConsultaPublica />} />
+        <Route path="/pqrs-publico" element={<PQRSPublico />} />
 
         {/* Todos los logueados */}
         <Route path="/dashboard" element={<Protegida roles={TODOS}><Dashboard /></Protegida>} />
         <Route path="/pqrs" element={<Protegida roles={SIN_ABOGADO}><PQRS /></Protegida>} />
+        <Route path="/ayuda" element={<Protegida roles={TODOS}><Ayuda /></Protegida>} />
 
         {/* Internos (no ciudadano) */}
         <Route path="/expedientes" element={<Protegida roles={INTERNOS}><Expedientes /></Protegida>} />
@@ -74,6 +79,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
+    </ToastProvider>
   )
 }
 
