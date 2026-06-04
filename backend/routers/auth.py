@@ -36,7 +36,7 @@ class ResetPassword(BaseModel):
 
 
 def enviar_correo_recuperacion(destinatario: str, token: str):
-    frontend_url = "http://127.0.0.1:5500/frontend/pages/reset-password.html"
+    frontend_url = "http://localhost:5173/reset-password"
     link = f"{frontend_url}?token={token}"
 
     msg = EmailMessage()
