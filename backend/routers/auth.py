@@ -11,6 +11,7 @@ import os
 from datetime import datetime, timedelta
 from email.message import EmailMessage
 from dotenv import load_dotenv
+from auth_utils import crear_token
 
 load_dotenv()
 
@@ -86,7 +87,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     return {"msg": "Usuario registrado correctamente"}
 
 
-# LOGIN
+# LOGIN — devuelve JWT
 @router.post("/login")
 def login(data: UserLogin, db: Session = Depends(get_db)):
 
@@ -98,9 +99,22 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
     if not bcrypt.checkpw(data.password.encode(), usuario.password.encode()):
         raise HTTPException(status_code=401, detail="Contraseña incorrecta")
 
+    if usuario.estado != 'activo':
+        raise HTTPException(status_code=403, detail="Tu cuenta está desactivada. Contacta al administrador.")
+
+    token = crear_token({
+        "sub": str(usuario.id_usuarios),
+        "email": usuario.email,
+        "rol": usuario.rol,
+    })
+
     return {
-        "msg": "Login exitoso",
-        "rol": usuario.rol
+        "access_token": token,
+        "token_type": "bearer",
+        "id_usuarios": usuario.id_usuarios,
+        "nombre": usuario.nombre,
+        "email": usuario.email,
+        "rol": usuario.rol,
     }
 
 # SOLICITAR LA RECUPERACION

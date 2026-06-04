@@ -12,6 +12,15 @@
 
 * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', sans-serif; }
 
+@keyframes toastEntrar {
+  from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)     scale(1);    }
+}
+@keyframes toastSalir {
+  from { opacity: 1; transform: translateY(0)    scale(1);    }
+  to   { opacity: 0; transform: translateY(-8px) scale(0.97); }
+}
+
 body { background-color:var(--fondo); color:var(--texto); font-size:13px; margin-top:50px; padding-bottom: 40px; }
 body:not(.login-body) { padding-left: 240px; }
 
@@ -33,7 +42,64 @@ body:not(.login-body) { padding-left: 240px; }
   object-fit: contain;
 }
 .header-derecha { background-color:var(--primario); flex:1; height:100%; display:flex; align-items:center; justify-content:flex-end; padding:0 20px; }
-.usuario { color:var(--blanco); font-size:13px; }
+
+/* Botón hamburguesa — oculto en escritorio, solo visible en móvil */
+.btn-hamburguesa {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.usuario { color:var(--blanco); font-size:13px; text-transform: capitalize; }
+
+/* Logo dentro del header — oculto siempre (solo se usa en móvil si se activa) */
+.logo-movil { display: none; }
+
+/* Logo dentro del sidebar — oculto en escritorio, visible en móvil */
+.sidebar-logo {
+  display: none;
+  padding: 16px 20px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  margin-bottom: 6px;
+}
+
+/* Avatar popup de usuario en móvil */
+.avatar-btn {
+  background: #4da3ff;
+  border: none;
+  color: white;
+  font-weight: bold;
+  font-size: 13px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.avatar-popup {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  background: white;
+  color: #1f2937;
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  font-size: 13px;
+  white-space: nowrap;
+  z-index: 500;
+  min-width: 160px;
+}
+
+.avatar-popup strong { display: block; font-size: 14px; margin-bottom: 2px; text-transform: capitalize; }
+.avatar-popup span { color: #6b7280; font-size: 12px; text-transform: capitalize; }
 
 #header-container {
     height: 50px;
@@ -245,6 +311,8 @@ body:not(.login-body) { padding-left: 240px; }
   display: flex;
   flex-direction: column;
   padding-bottom: 50px;
+  transition: transform 0.28s ease;
+  z-index: 400;
 }
 
 /* ── MENÚ HAMBURGUESA SIN JS ── */
@@ -253,6 +321,28 @@ details summary { list-style:none; background:var(--azul-hover); color:var(--bla
 details summary::-webkit-details-marker { display:none; }
 details a { display:block; padding:12px 20px; color:var(--blanco); text-decoration:none; font-size:13px; }
 details a:hover { background-color:var(--azul-hover); }
+
+/* ── LINKS DEL SIDEBAR ── */
+.nav-sidebar-link {
+  display: block;
+  padding: 12px 20px;
+  color: white;
+  text-decoration: none;
+  font-size: 13px;
+  border-left: 4px solid transparent;
+  transition: background-color 0.18s ease, border-left-color 0.18s ease;
+}
+
+.nav-sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-left-color: rgba(77, 163, 255, 0.6);
+}
+
+.nav-sidebar-link.activo {
+  background-color: var(--azul-hover);
+  border-left-color: #4da3ff;
+  font-weight: bold;
+}
 
 /* ── LOGOUT ── */
 .logout {
@@ -315,9 +405,10 @@ tbody tr:nth-child(even) { background-color:var(--blanco); }
 tbody tr:hover { background-color:#c8d0e8; transition:0.2s; }
 
 /* ── ESTADOS CON COLOR ── */
-.urgente { color:var(--rojo); font-weight:bold; }
-.proximo { color:var(--amarillo); font-weight:bold; }
-.atiempo { color:var(--verde); font-weight:bold; }
+.urgente   { color:var(--rojo);     font-weight:bold; }
+.proximo   { color:var(--amarillo); font-weight:bold; }
+.atiempo   { color:var(--verde);    font-weight:bold; }
+.archivado { color:#9ca3af;         font-weight:bold; }
 .badge { padding:3px 10px; border-radius:4px; color:white; font-size:11px; font-weight:bold; }
 .badge.activo { background:var(--verde); }
 .badge.proceso { background:var(--amarillo); }
@@ -514,71 +605,76 @@ footer {
 /* ── RESPONSIVE MÓVIL ── */
 @media (max-width: 768px) {
 
-  /* HEADER */
-  .header-izquierda {
-    width: 60px;
-    min-width: 60px;
-    background-color: transparent;
+  /* HEADER: todo azul, sin bloque gris */
+  .header { background-color: #1E3A8A; }
+  .header-izquierda { display: none; }
+
+  /* Hamburguesa visible y pegada a la esquina izquierda */
+  .btn-hamburguesa {
+    display: block;
+    margin-right: auto;
+    padding: 10px 14px 10px 6px;
+    font-size: 24px;
+    min-width: 44px;
+    min-height: 44px;
   }
 
-  .header {
-    background-color: #1E3A8A;
+  /* Texto usuario oculto en móvil */
+  .usuario { display: none; }
+
+  /* Logo dentro del sidebar visible en móvil */
+  .sidebar-logo { display: block; }
+
+  /* Avatar y campana juntos a la derecha */
+  .header-derecha {
+    gap: 8px;
+    padding-left: 2px;
+    padding-right: 12px;
   }
 
-  .logo {
-    height: 35px;
-    width: auto;
+  /* Avatar sin margen extra en móvil */
+  .avatar-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
   }
 
-  /* SIDEBAR - se oculta y aparece como menú desplegable */
+  /* SIDEBAR - panel lateral deslizante */
   .sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    top: 0;
-    padding-bottom: 0;
+    transform: translateX(-240px);
+    transition: transform 0.28s ease;
+    z-index: 400;
+    overflow-y: auto;
+    padding-bottom: 60px;
   }
 
-  /* MENÚ CONTRAÍDO POR DEFECTO EN MÓVIL */
-  details {
-    width: 100%;
+  body.menu-abierto .sidebar {
+    transform: translateX(0);
   }
-  
-  details summary {
-    background: var(--azul-hover);
-    color: white;
-    padding: 12px 20px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 13px;
-    list-style: none;
-    margin-bottom: 0;
-  }
-  
-  details summary:hover {
-    background: var(--azul-hover);
-  }
-  
-  details summary::-webkit-details-marker {
+
+  /* Overlay clicable para cerrar */
+  .sidebar-overlay {
     display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 399;
   }
 
-  .logout {
-    margin-top: 0;
-    position: relative;
-    bottom: 0;
+  body.menu-abierto .sidebar-overlay {
+    display: block;
   }
 
-  /* CONTENIDO ocupa todo el ancho */
+  /* CONTENIDO ocupa todo el ancho, sin espacio extra arriba */
   .contenido {
     margin-left: 0;
-    padding: 15px;
+    padding: 10px;
   }
 
   .content {
     margin-left: 0;
-    margin-top: 10px;
-    padding: 15px;
+    margin-top: 0;
+    padding: 10px;
   }
 
   /* TARJETAS en columna */
@@ -769,6 +865,25 @@ footer {
   outline: none;
 }
 
+/* ── VALIDACIÓN DE CAMPOS ── */
+.form-group input.campo-invalido,
+.form-group select.campo-invalido {
+  border-color: #ef4444;
+  background: #fff5f5;
+}
+.form-group input.campo-valido,
+.form-group select.campo-valido {
+  border-color: #22c55e;
+}
+.msg-error {
+  font-size: 11px;
+  color: #ef4444;
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* BOTONES */
 .form-botones {
   grid-column: span 2;
@@ -776,6 +891,42 @@ footer {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 10px;
+}
+
+/* ── BARRA DE BÚSQUEDA ── */
+.barra-busqueda {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  max-width: 420px;
+}
+.barra-busqueda input {
+  flex: 1;
+  padding: 8px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  background: white;
+}
+.barra-busqueda input:focus {
+  border-color: var(--primario);
+  box-shadow: 0 0 0 3px rgba(30,58,138,0.1);
+}
+.barra-busqueda button {
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 6px 10px;
+  transition: background 0.15s;
+}
+.barra-busqueda button:hover {
+  background: #f3f4f6;
 }
 
 .btn-guardar {

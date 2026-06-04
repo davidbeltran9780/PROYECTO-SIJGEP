@@ -1,61 +1,58 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+
+const MENU_ITEMS = [
+  { to: '/dashboard',   label: 'Dashboard',   roles: ['admin', 'administrador', 'abogado', 'secretaria', 'ciudadano'] },
+  { to: '/admin',       label: 'Admin',        roles: ['admin', 'administrador'] },
+  { to: '/expedientes', label: 'Expedientes',  roles: ['admin', 'administrador', 'abogado', 'secretaria'] },
+  { to: '/documentos',  label: 'Documentos',   roles: ['admin', 'administrador', 'abogado', 'secretaria'] },
+  { to: '/ia',          label: 'Módulo IA',    roles: ['admin', 'administrador', 'abogado'] },
+  { to: '/alertas',     label: 'Alertas',      roles: ['admin', 'administrador', 'abogado', 'secretaria'] },
+  { to: '/reportes',    label: 'Reportes',     roles: ['admin', 'administrador'] },
+  { to: '/pqrs',        label: 'PQRS',         roles: ['admin', 'administrador', 'secretaria', 'abogado', 'ciudadano'] },
+  { to: '/ayuda',       label: 'Ayuda',        roles: ['admin', 'administrador', 'abogado', 'secretaria', 'ciudadano'] },
+]
+
+const cerrarMenu = () => document.body.classList.remove('menu-abierto')
 
 export default function Sidebar() {
-  const [abierto, setAbierto] = useState(false)
   const navigate = useNavigate()
-
-  useEffect(() => {
-    const ajustar = () => setAbierto(window.innerWidth > 768)
-    ajustar()
-    window.addEventListener('resize', ajustar)
-    return () => window.removeEventListener('resize', ajustar)
-  }, [])
+  const rol = localStorage.getItem('rol') || ''
 
   const cerrarSesion = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('usuario')
     localStorage.removeItem('rol')
+    cerrarMenu()
     navigate('/')
   }
 
-  const estiloLink = ({ isActive }) => ({
-    display: 'block',
-    padding: '12px 20px',
-    color: 'white',
-    textDecoration: 'none',
-    fontSize: '13px',
-    backgroundColor: isActive ? 'var(--azul-hover)' : 'transparent',
-    borderLeft: isActive ? '4px solid #4da3ff' : '4px solid transparent',
-    fontWeight: isActive ? 'bold' : 'normal',
-  })
+  const linksVisibles = MENU_ITEMS.filter(item => item.roles.includes(rol))
 
   return (
-    <aside className="sidebar">
+    <>
+      <div className="sidebar-overlay" onClick={cerrarMenu} />
 
-      <div style={{ background: 'var(--azul-hover)', cursor: 'pointer' }}
-        onClick={() => setAbierto(!abierto)}>
-        <span style={{ color: 'white', padding: '12px 20px', display: 'block', fontWeight: 'bold', fontSize: '13px' }}>
-          ☰ Menú
-        </span>
-      </div>
+      <aside className="sidebar">
+        {/* Logo dentro del sidebar — solo visible en móvil */}
+        <div className="sidebar-logo">
+          <img src="/Logo.png" alt="SIGJEP" style={{ height: '40px', width: 'auto' }} />
+        </div>
 
-      {abierto && (
-        <>
-          <NavLink to="/dashboard" style={estiloLink}>Dashboard</NavLink>
-<NavLink to="/admin" style={estiloLink}>Admin</NavLink>
-<NavLink to="/expedientes" style={estiloLink}>Expedientes</NavLink>
-<NavLink to="/ia" style={estiloLink}>Módulo IA</NavLink>
-<NavLink to="/alertas" style={estiloLink}>Alertas</NavLink>
-<NavLink to="/documentos" style={estiloLink}>Documentos</NavLink>
-<NavLink to="/reportes" style={estiloLink}>Reportes</NavLink>
-<NavLink to="/pqrs" style={estiloLink}>PQRS</NavLink>
-          <button className="logout" onClick={cerrarSesion}>
-            Cerrar sesión
-          </button>
-        </>
-      )}
+        {linksVisibles.map(item => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) => `nav-sidebar-link${isActive ? ' activo' : ''}`}
+            onClick={cerrarMenu}
+          >
+            {item.label}
+          </NavLink>
+        ))}
 
-    </aside>
+        <button className="logout" onClick={cerrarSesion}>
+          Cerrar sesión
+        </button>
+      </aside>
+    </>
   )
 }

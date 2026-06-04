@@ -141,7 +141,7 @@ npm run dev
 |-----|----------|
 | `administrador` | Acceso total |
 | `abogado` | Expedientes y casos |
-| `auxiliar` | Apoyo documental |
+| `secretaria` | Apoyo documental |
 | `ciudadano` | Solo PQRS |
 
 ---
