@@ -49,16 +49,16 @@ def backup_manual():
         os.makedirs("backups", exist_ok=True)
 
         resultado = subprocess.run([
-            r"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe",
-            "-u", os.getenv("MYSQL_USER", "root"),
-            f"-p{os.getenv('MYSQL_PASSWORD', '')}",
-            os.getenv("MYSQL_DB", "sigjep_db")
-        ], capture_output=True, text=True)
+    r"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe",
+    "-u", os.getenv("MYSQL_USER", "root"),
+    f"-p{os.getenv('MYSQL_PASSWORD', '')}",
+    os.getenv("MYSQL_DB", "sigjep_db")
+], capture_output=True, text=True, encoding="utf-8")
 
         if resultado.returncode != 0:
             raise Exception(f"mysqldump error: {resultado.stderr}")
 
-        with open(ruta_archivo, "w") as f:
+        with open(ruta_archivo, "w", encoding="utf-8") as f:
             f.write(resultado.stdout)
 
         servicio = obtener_servicio_drive()
@@ -91,6 +91,8 @@ def backup_manual():
         }
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/listar")

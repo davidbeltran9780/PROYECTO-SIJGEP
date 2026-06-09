@@ -110,12 +110,13 @@ export default function Admin() {
             <table>
               <thead>
                 <tr>
-                  <th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th>
+                  <th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {usuarios.map(u => (
                   <tr key={u.id_usuarios}>
+                    <td data-label="ID">{u.id_usuarios}</td>
                     <td data-label="Nombre">{u.nombre}</td>
                     <td data-label="Email">{u.email}</td>
                     <td data-label="Rol">{u.rol}</td>
