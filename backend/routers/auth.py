@@ -11,7 +11,7 @@ import os
 from datetime import datetime, timedelta
 from email.message import EmailMessage
 from dotenv import load_dotenv
-from auth_utils import crear_token
+from auth_utils import crear_token, obtener_usuario_actual
 
 load_dotenv()
 
@@ -117,6 +117,17 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
         "rol": usuario.rol,
     }
 
+# RENOVAR TOKEN — extiende la sesión otros 60 min
+@router.post("/renovar-token")
+def renovar_token(usuario: dict = Depends(obtener_usuario_actual)):
+    nuevo_token = crear_token({
+        "sub": usuario["sub"],
+        "email": usuario["email"],
+        "rol": usuario["rol"],
+    })
+    return {"access_token": nuevo_token}
+
+
 # SOLICITAR LA RECUPERACION
 
 @router.post("/recuperar-password")
@@ -199,6 +210,45 @@ def reset_password(data: ResetPassword, db: Session = Depends(get_db)):
     db.commit()
 
     return {"msg": "Contraseña actualizada correctamente"}
+
+@router.get("/perfil")
+def get_perfil(usuario: dict = Depends(obtener_usuario_actual), db: Session = Depends(get_db)):
+    fila = db.execute(
+        text("SELECT id_usuarios, nombre, email, rol FROM usuarios WHERE id_usuarios = :id"),
+        {"id": int(usuario["sub"])}
+    ).fetchone()
+    if not fila:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return dict(fila._mapping)
+
+
+@router.put("/perfil")
+def actualizar_perfil(datos: dict, usuario: dict = Depends(obtener_usuario_actual), db: Session = Depends(get_db)):
+    id_usuario = int(usuario["sub"])
+
+    # Cambiar nombre
+    if "nombre" in datos:
+        db.execute(
+            text("UPDATE usuarios SET nombre = :nombre WHERE id_usuarios = :id"),
+            {"nombre": datos["nombre"], "id": id_usuario}
+        )
+
+    # Cambiar contraseña
+    if "password_actual" in datos and "password_nueva" in datos:
+        fila = db.execute(
+            text("SELECT password FROM usuarios WHERE id_usuarios = :id"), {"id": id_usuario}
+        ).fetchone()
+        if not fila or not bcrypt.checkpw(datos["password_actual"].encode(), fila.password.encode()):
+            raise HTTPException(status_code=400, detail="La contraseña actual es incorrecta")
+        nuevo_hash = bcrypt.hashpw(datos["password_nueva"].encode(), bcrypt.gensalt()).decode()
+        db.execute(
+            text("UPDATE usuarios SET password = :pwd WHERE id_usuarios = :id"),
+            {"pwd": nuevo_hash, "id": id_usuario}
+        )
+
+    db.commit()
+    return {"msg": "Perfil actualizado correctamente"}
+
 
 @router.get("/prueba-auth")
 def prueba_auth():

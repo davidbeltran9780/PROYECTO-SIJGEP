@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import api from '../api/axios'
 import { useToast } from '../context/ToastContext'
 import { useConfirm } from '../components/ConfirmModal'
+import Spinner from '../components/Spinner'
 
 export default function Admin() {
   const toast = useToast()
@@ -10,6 +11,17 @@ export default function Admin() {
   const [usuarios, setUsuarios] = useState([])
   const [backups, setBackups] = useState([])
   const [auditoria, setAuditoria] = useState([])
+  const [filtroFechaDesde, setFiltroFechaDesde] = useState('')
+  const [filtroFechaHasta, setFiltroFechaHasta] = useState('')
+  const [filtroBackupDesde, setFiltroBackupDesde] = useState('')
+  const [filtroBackupHasta, setFiltroBackupHasta] = useState('')
+  const [filtroNombre, setFiltroNombre] = useState('')
+  const [filtroRol, setFiltroRol] = useState('')
+  const [filtroUsuarioId, setFiltroUsuarioId] = useState('')
+  const [filtroUsuarioEmail, setFiltroUsuarioEmail] = useState('')
+  const [filtroUsuarioRol, setFiltroUsuarioRol] = useState('')
+  const [filtroUsuarioEstado, setFiltroUsuarioEstado] = useState('')
+  const [generandoBackup, setGenerandoBackup] = useState(false)
   const [modalAbierto, setModalAbierto] = useState(false)
   const [modalEditar, setModalEditar] = useState(false)
   const [usuarioEditando, setUsuarioEditando] = useState(null)
@@ -66,12 +78,15 @@ export default function Admin() {
   }
 
   const generarBackup = async () => {
+    setGenerandoBackup(true)
     try {
       const res = await api.post('/backups/manual')
       toast.exito(res.data.msg || 'Backup generado correctamente')
       api.get('/backups/listar').then(r => setBackups(r.data)).catch(console.error)
     } catch (err) {
       toast.error('Error al generar backup: ' + (err.response?.data?.detail || err.message || 'Error desconocido'))
+    } finally {
+      setGenerandoBackup(false)
     }
   }
 
@@ -88,6 +103,7 @@ export default function Admin() {
   return (
     <main className="content">
       {ConfirmUI}
+      {generandoBackup && <Spinner texto="Generando backup, por favor espere..." />}
       <div className="contenido">
 
         <div className="tabs-admin">
@@ -107,6 +123,42 @@ export default function Admin() {
               <h2>Gestión de Usuarios</h2>
               <button className="nuevo" onClick={() => setModalAbierto(true)}>Nuevo Usuario</button>
             </div>
+
+            <div className="auditoria-filtros">
+              <div className="auditoria-filtro-grupo">
+                <label>ID</label>
+                <input type="text" placeholder="Buscar ID..." value={filtroUsuarioId}
+                  onChange={e => setFiltroUsuarioId(e.target.value)} />
+              </div>
+              <div className="auditoria-filtro-grupo">
+                <label>Correo</label>
+                <input type="text" placeholder="Buscar correo..." value={filtroUsuarioEmail}
+                  onChange={e => setFiltroUsuarioEmail(e.target.value)} />
+              </div>
+              <div className="auditoria-filtro-grupo">
+                <label>Rol</label>
+                <select value={filtroUsuarioRol} onChange={e => setFiltroUsuarioRol(e.target.value)}>
+                  <option value="">Todos</option>
+                  <option value="admin">Admin</option>
+                  <option value="abogado">Abogado</option>
+                  <option value="secretaria">Secretaria</option>
+                  <option value="ciudadano">Ciudadano</option>
+                </select>
+              </div>
+              <div className="auditoria-filtro-grupo">
+                <label>Estado</label>
+                <select value={filtroUsuarioEstado} onChange={e => setFiltroUsuarioEstado(e.target.value)}>
+                  <option value="">Todos</option>
+                  <option value="activo">Activo</option>
+                  <option value="inactivo">Inactivo</option>
+                </select>
+              </div>
+              <button className="btn-auditoria-limpiar" onClick={() => {
+                setFiltroUsuarioId(''); setFiltroUsuarioEmail('')
+                setFiltroUsuarioRol(''); setFiltroUsuarioEstado('')
+              }}>Limpiar</button>
+            </div>
+
             <table>
               <thead>
                 <tr>
@@ -114,7 +166,13 @@ export default function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {usuarios.map(u => (
+                {usuarios.filter(u => {
+                  if (filtroUsuarioId && !String(u.id_usuarios).includes(filtroUsuarioId)) return false
+                  if (filtroUsuarioEmail && !u.email?.toLowerCase().includes(filtroUsuarioEmail.toLowerCase())) return false
+                  if (filtroUsuarioRol && u.rol !== filtroUsuarioRol) return false
+                  if (filtroUsuarioEstado && u.estado !== filtroUsuarioEstado) return false
+                  return true
+                }).map(u => (
                   <tr key={u.id_usuarios}>
                     <td data-label="ID">{u.id_usuarios}</td>
                     <td data-label="Nombre">{u.nombre}</td>
@@ -126,16 +184,16 @@ export default function Admin() {
                       </span>
                     </td>
                     <td data-label="Acciones">
-                      <button className="btn-accion-editar" onClick={() => abrirEditar(u)}>Editar</button>
+                      <button className="btn-accion-editar" title="Editar usuario" aria-label="Editar usuario" onClick={() => abrirEditar(u)}>Editar</button>
                       {u.estado === 'activo'
-                        ? <button className="btn-accion-eliminar" onClick={async () => {
+                        ? <button className="btn-accion-eliminar" title="Desactivar usuario" aria-label="Desactivar usuario" onClick={async () => {
                             const ok = await confirmar('¿Desactivar este usuario?')
                             if (!ok) return
                             await api.patch(`/usuarios/${u.id_usuarios}/desactivar`)
                             cargarUsuarios()
                             toast.exito('Usuario desactivado')
                           }}>Desactivar</button>
-                        : <button className="btn-accion-activar" onClick={async () => {
+                        : <button className="btn-accion-activar" title="Activar usuario" aria-label="Activar usuario" onClick={async () => {
                             const ok = await confirmar('¿Activar este usuario?')
                             if (!ok) return
                             await api.patch(`/usuarios/${u.id_usuarios}/activar`)
@@ -143,10 +201,19 @@ export default function Admin() {
                             toast.exito('Usuario activado')
                           }}>Activar</button>
                       }
-                      <button className="btn-accion-eliminar" onClick={() => eliminarUsuario(u.id_usuarios)}>Eliminar</button>
+                      <button className="btn-accion-eliminar" title="Eliminar usuario permanentemente" aria-label="Eliminar usuario" onClick={() => eliminarUsuario(u.id_usuarios)}>Eliminar</button>
                     </td>
                   </tr>
                 ))}
+                {usuarios.filter(u => {
+                  if (filtroUsuarioId && !String(u.id_usuarios).includes(filtroUsuarioId)) return false
+                  if (filtroUsuarioEmail && !u.email?.toLowerCase().includes(filtroUsuarioEmail.toLowerCase())) return false
+                  if (filtroUsuarioRol && u.rol !== filtroUsuarioRol) return false
+                  if (filtroUsuarioEstado && u.estado !== filtroUsuarioEstado) return false
+                  return true
+                }).length === 0 && (
+                  <tr><td colSpan={6}>No hay usuarios con esos filtros</td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -165,12 +232,35 @@ export default function Admin() {
               <button className="nuevo" onClick={generarBackup}>Generar Backup Ahora</button>
             </div>
             <h3>Historial de Respaldos</h3>
+
+            <div className="auditoria-filtros">
+              <div className="auditoria-filtro-grupo">
+                <label htmlFor="bk-desde">Desde</label>
+                <input id="bk-desde" type="date" value={filtroBackupDesde}
+                  onChange={e => setFiltroBackupDesde(e.target.value)} />
+              </div>
+              <div className="auditoria-filtro-grupo">
+                <label htmlFor="bk-hasta">Hasta</label>
+                <input id="bk-hasta" type="date" value={filtroBackupHasta}
+                  onChange={e => setFiltroBackupHasta(e.target.value)} />
+              </div>
+              <button className="btn-auditoria-limpiar"
+                onClick={() => { setFiltroBackupDesde(''); setFiltroBackupHasta('') }}>
+                Limpiar
+              </button>
+            </div>
+
             <table>
               <thead>
                 <tr><th>Fecha</th><th>Hora</th><th>Archivo</th><th>Estado</th><th>Enlace</th></tr>
               </thead>
               <tbody>
-                {backups.map((b, i) => {
+                {backups.filter(b => {
+                  const fecha = new Date(b.fecha)
+                  if (filtroBackupDesde && fecha < new Date(filtroBackupDesde)) return false
+                  if (filtroBackupHasta && fecha > new Date(filtroBackupHasta + 'T23:59:59')) return false
+                  return true
+                }).map((b, i) => {
                   const fecha = new Date(b.fecha)
                   return (
                     <tr key={i}>
@@ -190,19 +280,92 @@ export default function Admin() {
         {/* Panel Auditoría */}
         {pestana === 'auditoria' && (
           <div>
-            <h2>Log de Auditoría</h2>
+            <div className="top">
+              <h2>Log de Auditoría</h2>
+              <button className="nuevo" onClick={async () => {
+                const res = await api.get('/auditoria/exportar', { responseType: 'blob' })
+                const url = window.URL.createObjectURL(new Blob([res.data]))
+                const a = document.createElement('a')
+                a.href = url
+                a.download = 'auditoria_sijgep.csv'
+                a.click()
+                window.URL.revokeObjectURL(url)
+              }}>Exportar CSV</button>
+            </div>
+
+            {/* Filtro por fechas */}
+            <div className="auditoria-filtros">
+              <div className="auditoria-filtro-grupo">
+                <label htmlFor="audit-desde">Desde</label>
+                <input
+                  id="audit-desde"
+                  type="date"
+                  value={filtroFechaDesde}
+                  onChange={e => setFiltroFechaDesde(e.target.value)}
+                />
+              </div>
+              <div className="auditoria-filtro-grupo">
+                <label htmlFor="audit-hasta">Hasta</label>
+                <input
+                  id="audit-hasta"
+                  type="date"
+                  value={filtroFechaHasta}
+                  onChange={e => setFiltroFechaHasta(e.target.value)}
+                />
+              </div>
+              <div className="auditoria-filtro-grupo">
+                <label htmlFor="audit-nombre">Usuario</label>
+                <input
+                  id="audit-nombre"
+                  type="text"
+                  placeholder="Buscar usuario..."
+                  value={filtroNombre}
+                  onChange={e => setFiltroNombre(e.target.value)}
+                />
+              </div>
+              <div className="auditoria-filtro-grupo">
+                <label htmlFor="audit-rol">Rol</label>
+                <select
+                  id="audit-rol"
+                  value={filtroRol}
+                  onChange={e => setFiltroRol(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  <option value="admin">Admin</option>
+                  <option value="abogado">Abogado</option>
+                  <option value="secretaria">Secretaria</option>
+                  <option value="ciudadano">Ciudadano</option>
+                </select>
+              </div>
+              <button
+                className="btn-auditoria-limpiar"
+                onClick={() => { setFiltroFechaDesde(''); setFiltroFechaHasta(''); setFiltroNombre(''); setFiltroRol('') }}
+              >
+                Limpiar
+              </button>
+            </div>
+
             <table>
               <thead>
                 <tr>
                   <th>Fecha y Hora</th><th>Usuario</th><th>Rol</th>
-                  <th>Acción</th><th>Tabla afectada</th><th>ID registro</th>
+                  <th>Acción</th><th>Tabla afectada</th><th>ID</th>
+                  <th>Detalle del cambio</th><th>IP</th><th>Resultado</th>
                 </tr>
               </thead>
               <tbody>
-                {auditoria.length === 0 ? (
-                  <tr><td colSpan={6}>No hay registros de auditoría aún</td></tr>
-                ) : (
-                  auditoria.map(a => (
+                {(() => {
+                  const filtrados = auditoria.filter(a => {
+                    const fecha = new Date(a.fecha)
+                    if (filtroFechaDesde && fecha < new Date(filtroFechaDesde)) return false
+                    if (filtroFechaHasta && fecha > new Date(filtroFechaHasta + 'T23:59:59')) return false
+                    if (filtroNombre && !a.nombre_usuario?.toLowerCase().includes(filtroNombre.toLowerCase())) return false
+                    if (filtroRol && a.rol !== filtroRol) return false
+                    return true
+                  })
+                  return filtrados.length === 0 ? (
+                    <tr><td colSpan={9}>No hay registros con esos filtros</td></tr>
+                  ) : filtrados.map(a => (
                     <tr key={a.id_auditoria}>
                       <td data-label="Fecha">{new Date(a.fecha).toLocaleString('es-CO')}</td>
                       <td data-label="Usuario">{a.nombre_usuario}</td>
@@ -210,9 +373,16 @@ export default function Admin() {
                       <td data-label="Acción" className={claseAccion(a.accion)}>{a.accion}</td>
                       <td data-label="Tabla">{a.tabla_afectada}</td>
                       <td data-label="ID">{a.id_registro}</td>
+                      <td data-label="Detalle" style={{ fontSize: '11px', color: '#6b7280' }}>{a.detalle || '—'}</td>
+                      <td data-label="IP" style={{ fontSize: '11px' }}>{a.ip_address || '—'}</td>
+                      <td data-label="Resultado">
+                        <span className={`badge ${a.resultado === 'fallido' ? 'cerrado' : 'activo'}`}>
+                          {a.resultado || 'exitoso'}
+                        </span>
+                      </td>
                     </tr>
                   ))
-                )}
+                })()}
               </tbody>
             </table>
           </div>

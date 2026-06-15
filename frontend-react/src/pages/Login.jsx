@@ -1,9 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import api from '../api/axios'
 
 export default function Login() {
   const [correo, setCorreo] = useState('')
+
+  useEffect(() => {
+    document.body.classList.add('login-body')
+    return () => document.body.classList.remove('login-body')
+  }, [])
   const [password, setPassword] = useState('')
   const [mostrarPass, setMostrarPass] = useState(false)
   const [error, setError] = useState('')
@@ -34,11 +39,12 @@ export default function Login() {
   return (
     <div style={{
       background: 'linear-gradient(90deg, #E5B93D, #1E3A8A)',
-      minHeight: '100vh',
-      width: '100%',
+      position: 'fixed', inset: 0,
+      overflowY: 'auto',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
+      boxSizing: 'border-box',
     }}>
       <div className="login-card">
         <img src="/Logo.png" alt="SIGJEP" className="login-logo" />

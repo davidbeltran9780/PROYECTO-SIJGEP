@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import api from '../api/axios'
 
@@ -8,6 +8,11 @@ function campo(errores, nombre) {
 
 export default function Registro() {
   const [form, setForm] = useState({ nombre: '', correo: '', password: '', confirmar: '' })
+
+  useEffect(() => {
+    document.body.classList.add('login-body')
+    return () => document.body.classList.remove('login-body')
+  }, [])
   const [errores, setErrores] = useState({})
   const [errorServidor, setErrorServidor] = useState('')
   const navigate = useNavigate()
@@ -55,7 +60,7 @@ export default function Registro() {
   }
 
   return (
-    <div style={{ background: 'linear-gradient(90deg, #E5B93D, #1E3A8A)', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div style={{ background: 'linear-gradient(90deg, #E5B93D, #1E3A8A)', position: 'fixed', inset: 0, overflowY: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'center', boxSizing: 'border-box' }}>
       <div className="login-card">
         <img src="/Logo.png" alt="SIGJEP" className="login-logo" />
         <h2>Registro</h2>
