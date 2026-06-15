@@ -1,9 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../api/axios'
 
 export default function Recuperar() {
   const [correo, setCorreo] = useState('')
+
+  useEffect(() => {
+    document.body.classList.add('login-body')
+    return () => document.body.classList.remove('login-body')
+  }, [])
   const [mensaje, setMensaje] = useState('')
   const [tipo, setTipo] = useState('')
   const [cargando, setCargando] = useState(false)
@@ -27,10 +32,12 @@ export default function Recuperar() {
   return (
     <div style={{
       background: 'linear-gradient(90deg, #E5B93D, #1E3A8A)',
-      minHeight: '100vh',
+      position: 'fixed', inset: 0,
+      overflowY: 'auto',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
+      boxSizing: 'border-box',
     }}>
       <div className="login-card">
         <img src="/Logo.png" alt="SIGJEP" className="login-logo" />

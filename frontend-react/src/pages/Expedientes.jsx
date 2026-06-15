@@ -206,6 +206,8 @@ export default function Expedientes() {
                     ) : (
                       <button
                         className="btn-accion-activar"
+                        title="Reactivar expediente"
+                        aria-label="Reactivar expediente"
                         onClick={() => reactivarCaso(e.id_caso)}
                         style={{ fontSize: '11px' }}
                       >
@@ -213,7 +215,7 @@ export default function Expedientes() {
                       </button>
                     )}
                     {puedeEliminar && (
-                      <button className="btn-accion-eliminar" onClick={() => eliminar(e.id_expediente)}
+                      <button className="btn-accion-eliminar" title="Eliminar expediente" aria-label="Eliminar expediente" onClick={() => eliminar(e.id_expediente)}
                         style={{ fontSize: '11px' }}>
                         Eliminar
                       </button>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import api from '../api/axios'
 
 const RUTAS = {
@@ -11,7 +11,8 @@ const RUTAS = {
   '/reportes':     'Reportes',
   '/ia':           'Módulo IA',
   '/admin':        'Administración',
-  '/ayuda':        'Ayuda',
+  '/ayuda':          'Ayuda',
+  '/configuracion':  'Configuración',
 }
 
 export default function Header() {
@@ -25,6 +26,7 @@ export default function Header() {
   const panelRef = useRef(null)
   const avatarRef = useRef(null)
 
+  const navigate = useNavigate()
   const usuario = localStorage.getItem('usuario') || 'Usuario'
   const rol = localStorage.getItem('rol') || 'Sin rol'
   const esInterno = ['admin', 'administrador', 'secretaria', 'abogado'].includes(rol)
@@ -50,9 +52,9 @@ export default function Header() {
   }, [])
 
   const marcarLeidas = () => {
-    setLeidas(true)
+    setNotificaciones([])
     setTotal(0)
-    setNotifAbierto(false)
+    setLeidas(true)
   }
 
   const iniciales = usuario
@@ -76,6 +78,16 @@ export default function Header() {
           ☰
         </button>
 
+        {/* Reabrir sidebar — solo escritorio cuando está oculto */}
+        <button
+          className="btn-reabrir-sidebar"
+          onClick={() => document.body.classList.remove('sidebar-oculto')}
+          title="Abrir menú lateral"
+          aria-label="Abrir menú lateral"
+        >
+          ☰
+        </button>
+
         {/* Módulo actual — izquierda del header derecho */}
         {moduloActual && (
           <span style={{
@@ -90,6 +102,16 @@ export default function Header() {
             SIGJEP <span style={{ opacity: 0.4 }}>/</span> <span style={{ color: 'white', fontWeight: '700' }}>{moduloActual}</span>
           </span>
         )}
+
+        {/* Engranaje — configuración */}
+        <button
+          className="btn-configuracion"
+          onClick={() => navigate('/configuracion')}
+          aria-label="Configuración"
+          title="Configuración"
+        >
+          ⚙️
+        </button>
 
         {/* Nombre y rol — visible en escritorio, oculto en móvil via CSS */}
         <span className="usuario">{usuario} — {rol}</span>
@@ -114,12 +136,12 @@ export default function Header() {
           )}
         </div>
 
-        {/* Campana — solo roles internos */}
+        {/* Campana  solo roles internos */}
         {esInterno && (
           <div className="notif-wrapper" ref={panelRef}>
             <button className="notif-boton" onClick={() => setNotifAbierto(!notifAbierto)} aria-label="Ver notificaciones" title="Ver notificaciones">
               🔔
-              {total > 0 && !leidas && (
+              {total > 0 && (
                 <span className="notif-badge">{total}</span>
               )}
             </button>
@@ -128,9 +150,9 @@ export default function Header() {
               <div className="notif-panel activo">
                 <div className="notif-header">
                   <strong>Notificaciones</strong>
-                  {total > 0 && !leidas && (
+                  {notificaciones.length > 0 && (
                     <button className="notif-marcar-leidas" onClick={marcarLeidas}>
-                      Marcar como leídas
+                      Limpiar todas
                     </button>
                   )}
                 </div>
@@ -140,12 +162,21 @@ export default function Header() {
                       Sin notificaciones pendientes ✅
                     </li>
                   ) : notificaciones.map((n, i) => (
-                    <li key={i} className={`notif-item ${leidas ? '' : 'no-leida'}`}>
+                    <li key={i} className="notif-item no-leida">
                       <span className="notif-icono">{n.icono}</span>
                       <div className="notif-texto">
                         <strong>{n.titulo}</strong>
                         <p>{n.desc}</p>
                       </div>
+                      <button
+                        className="notif-cerrar"
+                        onClick={() => {
+                          const nuevas = notificaciones.filter((_, j) => j !== i)
+                          setNotificaciones(nuevas)
+                          setTotal(nuevas.length)
+                        }}
+                        title="Descartar"
+                      >×</button>
                     </li>
                   ))}
                 </ul>

@@ -17,7 +17,10 @@ import Documentos from './pages/Documentos'
 import ConsultaPublica from './pages/ConsultaPublica'
 import PQRSPublico from './pages/PQRSPublico'
 import Ayuda from './pages/Ayuda'
+import Configuracion from './pages/Configuracion'
 import RutaProtegida from './components/RutaProtegida'
+import Accesibilidad from './components/Accesibilidad'
+import SesionExpirando from './components/SesionExpirando'
 
 function Layout({ children }) {
   return (
@@ -26,6 +29,8 @@ function Layout({ children }) {
       <Sidebar />
       {children}
       <Footer />
+      <Accesibilidad />
+      <SesionExpirando />
     </>
   )
 }
@@ -62,6 +67,7 @@ function App() {
         <Route path="/dashboard" element={<Protegida roles={TODOS}><Dashboard /></Protegida>} />
         <Route path="/pqrs" element={<Protegida roles={SIN_ABOGADO}><PQRS /></Protegida>} />
         <Route path="/ayuda" element={<Protegida roles={TODOS}><Ayuda /></Protegida>} />
+        <Route path="/configuracion" element={<Protegida roles={TODOS}><Configuracion /></Protegida>} />
 
         {/* Internos (no ciudadano) */}
         <Route path="/expedientes" element={<Protegida roles={INTERNOS}><Expedientes /></Protegida>} />

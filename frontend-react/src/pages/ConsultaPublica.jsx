@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
 
@@ -100,6 +100,11 @@ function ResultadoCard({ item }) {
 }
 
 export default function ConsultaPublica() {
+  useEffect(() => {
+    document.body.classList.add('login-body')
+    return () => document.body.classList.remove('login-body')
+  }, [])
+
   const [modo, setModo]         = useState('radicado')
   const [valor, setValor]       = useState('')
   const [tipo, setTipo]         = useState('')
@@ -140,9 +145,11 @@ export default function ConsultaPublica() {
   return (
     <div style={{
       background: 'linear-gradient(135deg, #1E3A8A, #E5B93D)',
-      minHeight: '100vh', width: '100%',
+      position: 'fixed', inset: 0,
+      overflowY: 'auto',
       display: 'flex', justifyContent: 'center',
       alignItems: 'flex-start', padding: '40px 16px',
+      boxSizing: 'border-box',
     }}>
       <div className="login-card" style={{ maxWidth: '580px', width: '100%' }}>
         <img src="/Logo.png" alt="SIGJEP" className="login-logo" />

@@ -262,10 +262,10 @@ export default function Documentos() {
                     </td>
                     <td data-label="Acciones" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                       {!enviado && (
-                        <button className="btn-accion-editar" onClick={() => setModalEnviar(d)}>Enviar</button>
+                        <button className="btn-accion-editar" title="Marcar documento como enviado" aria-label="Enviar documento" onClick={() => setModalEnviar(d)}>Enviar</button>
                       )}
                       {puedeEliminar && (
-                        <button className="btn-accion-eliminar" onClick={() => eliminar(d.id_documento)}>Eliminar</button>
+                        <button className="btn-accion-eliminar" title="Eliminar documento" aria-label="Eliminar documento" onClick={() => eliminar(d.id_documento)}>Eliminar</button>
                       )}
                     </td>
                   </tr>

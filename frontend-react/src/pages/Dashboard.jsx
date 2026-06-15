@@ -15,6 +15,10 @@ export default function Dashboard() {
   const [alertasCount, setAlertasCount] = useState(0)
   const [vencimientosCount, setVencimientosCount] = useState(0)
   const [cargando, setCargando] = useState(true)
+  const [filtroAbogado, setFiltroAbogado] = useState('')
+  const [filtroDesde, setFiltroDesde] = useState('')
+  const [filtroHasta, setFiltroHasta] = useState('')
+  const [filtroEstado, setFiltroEstado] = useState('')
   const rol = localStorage.getItem('rol') || ''
   const nombre = localStorage.getItem('usuario') || ''
   const esCiudadano = rol === 'ciudadano'
@@ -61,12 +65,27 @@ export default function Dashboard() {
     }
   }, [])
 
+  const calcularEstado = (rowData) => {
+    const estadoCaso = rowData.estado_caso
+    if (['cerrado', 'archivado'].includes(estadoCaso)) return estadoCaso
+    if (!rowData.fecha_vencimiento) return 'atiempo'
+    const dias = Math.ceil((new Date(rowData.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24))
+    if (dias <= 2) return 'urgente'
+    if (dias <= 5) return 'proximo'
+    return 'atiempo'
+  }
+
   const estadoTemplate = (rowData) => {
-    const clase = rowData.estado === 'urgente' ? 'urgente'
-      : rowData.estado === 'proximo' ? 'proximo' : 'atiempo'
-    const texto = rowData.estado === 'urgente' ? 'Urgente'
-      : rowData.estado === 'proximo' ? 'Próximo' : 'A tiempo'
-    return <span className={clase}>{texto}</span>
+    const estado = calcularEstado(rowData)
+    const dias = rowData.fecha_vencimiento
+      ? Math.ceil((new Date(rowData.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24))
+      : null
+
+    if (estado === 'urgente') return <span className="urgente">Urgente {dias !== null ? `(${dias}d)` : ''}</span>
+    if (estado === 'proximo') return <span className="proximo">Próximo {dias !== null ? `(${dias}d)` : ''}</span>
+    if (estado === 'cerrado') return <span className="archivado">Cerrado</span>
+    if (estado === 'archivado') return <span className="archivado">Archivado</span>
+    return <span className="atiempo">A tiempo {dias !== null ? `(${dias}d)` : ''}</span>
   }
 
   // Dashboard ciudadano
@@ -137,8 +156,48 @@ export default function Dashboard() {
       ) : (
         <>
           <h3 className="seccion-dashboard">Expedientes recientes</h3>
-          <DataTable value={expedientes} paginator rows={5}
-            emptyMessage="No hay expedientes registrados"
+
+          <div className="auditoria-filtros">
+            <div className="auditoria-filtro-grupo">
+              <label>Abogado</label>
+              <input type="text" placeholder="Buscar abogado..."
+                value={filtroAbogado} onChange={e => setFiltroAbogado(e.target.value)} />
+            </div>
+            <div className="auditoria-filtro-grupo">
+              <label>Desde</label>
+              <input type="date" value={filtroDesde} onChange={e => setFiltroDesde(e.target.value)} />
+            </div>
+            <div className="auditoria-filtro-grupo">
+              <label>Hasta</label>
+              <input type="date" value={filtroHasta} onChange={e => setFiltroHasta(e.target.value)} />
+            </div>
+            <div className="auditoria-filtro-grupo">
+              <label>Estado</label>
+              <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}>
+                <option value="">Todos</option>
+                <option value="urgente">🔴 Urgente</option>
+                <option value="proximo">🟡 Próximo</option>
+                <option value="atiempo">🟢 A tiempo</option>
+                <option value="cerrado">Cerrado</option>
+                <option value="archivado">Archivado</option>
+              </select>
+            </div>
+            <button className="btn-auditoria-limpiar"
+              onClick={() => { setFiltroAbogado(''); setFiltroDesde(''); setFiltroHasta(''); setFiltroEstado('') }}>
+              Limpiar
+            </button>
+          </div>
+
+          <DataTable
+            value={expedientes.filter(e => {
+              if (filtroAbogado && !e.abogado_nombre?.toLowerCase().includes(filtroAbogado.toLowerCase())) return false
+              if (filtroDesde && e.fecha_creacion?.split('T')[0] < filtroDesde) return false
+              if (filtroHasta && e.fecha_creacion?.split('T')[0] > filtroHasta) return false
+              if (filtroEstado && calcularEstado(e) !== filtroEstado) return false
+              return true
+            })}
+            paginator rows={5}
+            emptyMessage="No hay expedientes con esos filtros"
             tableClassName="tabla">
             <Column field="id_expediente" header="Expediente" />
             <Column field="tipo" header="Tipo" />

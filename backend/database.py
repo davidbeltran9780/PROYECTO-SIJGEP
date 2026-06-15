@@ -35,15 +35,3 @@ def get_db():
     finally:
         db.close()
 
-# ─────────────────────────────────────────
-# PRUEBA — ejecutar con: python database.py
-# ─────────────────────────────────────────
-# if __name__ == "__main__":
-#     from sqlalchemy import text
-#     try:
-#         db = SessionLocal()
-#         db.execute(text("SELECT 1"))
-#         print("✅ Conexión a MySQL exitosa!")
-#         db.close()
-#     except Exception as e:
-#         print(f"❌ Error de conexión: {e}")

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import text
 from database import get_db
 from auth_utils import requiere_rol
@@ -10,6 +10,15 @@ router = APIRouter()
 
 def solo_admin():
     return requiere_rol("administrador", "admin")
+
+
+def get_ip(request: Request) -> str:
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    if request.client:
+        return request.client.host
+    return "127.0.0.1"
 
 
 # GET — listar todos
@@ -33,9 +42,9 @@ def get_usuario(id: int, db=Depends(get_db), usuario: dict = Depends(solo_admin(
     return dict(resultado._mapping)
 
 
-# POST — crear usuario (con bcrypt)
+# POST — crear usuario
 @router.post("/usuarios")
-def crear_usuario(datos: dict, db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+def crear_usuario(datos: dict, request: Request, db=Depends(get_db), usuario: dict = Depends(solo_admin())):
     password_hash = bcrypt.hashpw(datos["password"].encode(), bcrypt.gensalt()).decode()
     db.execute(
         text("""
@@ -43,68 +52,93 @@ def crear_usuario(datos: dict, db=Depends(get_db), usuario: dict = Depends(solo_
             VALUES (:nombre, :email, :password, :rol, 'activo')
         """),
         {
-            "nombre": datos["nombre"],
-            "email": datos["email"],
+            "nombre":   datos["nombre"],
+            "email":    datos["email"],
             "password": password_hash,
-            "rol": datos["rol"]
+            "rol":      datos["rol"]
         }
     )
+    nuevo_id = db.execute(text("SELECT LAST_INSERT_ID()")).scalar()
     db.commit()
-    registrar_auditoria(db, usuario, "CREAR", "usuarios", datos["email"], f"Nuevo usuario: {datos['nombre']}")
+    registrar_auditoria(
+        db, usuario, "CREAR", "usuarios", nuevo_id,
+        detalle=f"Nuevo usuario: {datos['nombre']} | email: {datos['email']} | rol: {datos['rol']}",
+        ip=get_ip(request)
+    )
     return {"status": "Usuario creado"}
-# En crear_usuario, después del db.commit():
-
 
 
 # PUT — editar
 @router.put("/usuarios/{id}")
-def editar_usuario(id: int, datos: dict, db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+def editar_usuario(id: int, datos: dict, request: Request, db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+    anterior = db.execute(
+        text("SELECT nombre, rol FROM usuarios WHERE id_usuarios = :id"), {"id": id}
+    ).fetchone()
     db.execute(
         text("UPDATE usuarios SET nombre = :nombre, rol = :rol WHERE id_usuarios = :id"),
         {"nombre": datos["nombre"], "rol": datos["rol"], "id": id}
     )
     db.commit()
-    registrar_auditoria(db, usuario, "EDITAR", "usuarios", id)
+    detalle = ""
+    if anterior:
+        cambios = []
+        if anterior.nombre != datos["nombre"]:
+            cambios.append(f"nombre: '{anterior.nombre}' → '{datos['nombre']}'")
+        if anterior.rol != datos["rol"]:
+            cambios.append(f"rol: '{anterior.rol}' → '{datos['rol']}'")
+        detalle = " | ".join(cambios) if cambios else "Sin cambios detectados"
+    registrar_auditoria(
+        db, usuario, "EDITAR", "usuarios", id,
+        detalle=detalle, ip=get_ip(request)
+    )
     return {"status": "Usuario actualizado"}
-
-
 
 
 # DELETE — eliminar
 @router.delete("/usuarios/{id}")
-def eliminar_usuario(id: int, db=Depends(get_db), usuario: dict = Depends(solo_admin())):
-    db.execute(
-        text("DELETE FROM usuarios WHERE id_usuarios = :id"),
-        {"id": id}
-    )
+def eliminar_usuario(id: int, request: Request, db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+    anterior = db.execute(
+        text("SELECT nombre, email, rol FROM usuarios WHERE id_usuarios = :id"), {"id": id}
+    ).fetchone()
+    if not anterior:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    # Desasignar casos antes de eliminar
+    db.execute(text("UPDATE casos SET id_abogado_asignado = NULL WHERE id_abogado_asignado = :id"), {"id": id})
+    db.execute(text("DELETE FROM usuarios WHERE id_usuarios = :id"), {"id": id})
     db.commit()
-    registrar_auditoria(db, usuario, "BORRAR", "usuarios", id)
+    detalle = f"Usuario eliminado: {anterior.nombre} | {anterior.email} | {anterior.rol}"
+    registrar_auditoria(
+        db, usuario, "BORRAR", "usuarios", id,
+        detalle=detalle, ip=get_ip(request)
+    )
     return {"status": "Usuario eliminado"}
 
 
 # PATCH — desactivar
 @router.patch("/usuarios/{id}/desactivar")
-def desactivar_usuario(id: int, db=Depends(get_db), usuario: dict = Depends(solo_admin())):
-    db.execute(
-        text("UPDATE usuarios SET estado = 'inactivo' WHERE id_usuarios = :id"),
-        {"id": id}
-    )
+def desactivar_usuario(id: int, request: Request, db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+    db.execute(text("UPDATE usuarios SET estado = 'inactivo' WHERE id_usuarios = :id"), {"id": id})
     db.commit()
+    registrar_auditoria(
+        db, usuario, "EDITAR", "usuarios", id,
+        detalle="Estado cambiado: activo → inactivo", ip=get_ip(request)
+    )
     return {"status": "Usuario desactivado"}
 
 
 # PATCH — activar
 @router.patch("/usuarios/{id}/activar")
-def activar_usuario(id: int, db=Depends(get_db), usuario: dict = Depends(solo_admin())):
-    db.execute(
-        text("UPDATE usuarios SET estado = 'activo' WHERE id_usuarios = :id"),
-        {"id": id}
-    )
+def activar_usuario(id: int, request: Request, db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+    db.execute(text("UPDATE usuarios SET estado = 'activo' WHERE id_usuarios = :id"), {"id": id})
     db.commit()
+    registrar_auditoria(
+        db, usuario, "EDITAR", "usuarios", id,
+        detalle="Estado cambiado: inactivo → activo", ip=get_ip(request)
+    )
     return {"status": "Usuario activado"}
 
 
-# GET — listar abogados (para selects de asignación)
+# GET — listar abogados
 @router.get("/abogados")
 def get_abogados(
     db=Depends(get_db),
