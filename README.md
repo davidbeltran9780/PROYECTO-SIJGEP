@@ -49,8 +49,8 @@ PROYECTO-SIGJEP/
 ├── frontend-react/           # Frontend activo en React
 │   ├── src/
 │   │   ├── api/axios.js
-│   │   ├── components/       # Header, Sidebar, Footer
-│   │   ├── pages/            # Login, Dashboard, Admin, etc.
+│   │   ├── components/       # Header, Sidebar, Footer, Accesibilidad, SesionExpirando
+│   │   ├── pages/            # Login, Dashboard, Admin, Configuracion, etc.
 │   │   └── assets/styles.css
 │   ├── .env.example
 │   └── README.md
@@ -154,16 +154,26 @@ npm run dev
 | POST | `/register` | ✅ |
 | POST | `/recuperar-password` | ✅ |
 | POST | `/reset-password` | ✅ |
+| POST | `/renovar-token` | ✅ |
+| GET | `/perfil` | ✅ |
+| PUT | `/perfil` | ✅ |
 | GET/POST/PUT/DELETE | `/expedientes` | ✅ |
 | GET/POST/PUT/DELETE | `/usuarios` | ✅ |
+| PATCH | `/usuarios/{id}/activar` | ✅ |
+| PATCH | `/usuarios/{id}/desactivar` | ✅ |
 | POST | `/ia/resumir` | ✅ |
-| POST | `/ia/clasificar` | ⬜ |
 | POST | `/backups/manual` | ✅ |
 | GET | `/backups/listar` | ✅ |
 | GET/POST | `/pqrs` | ✅ |
-| GET | `/reportes/resumen` | ⬜ |
-| GET/POST/PUT/DELETE | `/casos` | ⬜ |
-| POST | `/documentos/subir` | ⬜ |
+| GET/POST/PUT/DELETE | `/casos` | ✅ |
+| POST | `/documentos/subir` | ✅ |
+| GET | `/auditoria/` | ✅ |
+| GET | `/auditoria/exportar` | ✅ |
+| GET | `/reportes/casos-por-tipo` | ✅ |
+| GET | `/reportes/casos-por-mes` | ✅ |
+| GET | `/reportes/vencimientos` | ✅ |
+| GET | `/reportes/notificaciones` | ✅ |
+| GET | `/consulta/buscar` | ✅ |
 
 ---
 
@@ -189,5 +199,31 @@ npm run dev
 | Miguel Corredor | Desarrollo |
 
 **Instructora:** Jenny Guio
+
+---
+
+## Módulos implementados
+
+| Módulo | Descripción | Estado |
+|--------|-------------|--------|
+| Login / Registro | Autenticación JWT con roles | ✅ |
+| Recuperar contraseña | Envío de correo con token | ✅ |
+| Dashboard | Tarjetas, gráficas y tabla de expedientes con filtros | ✅ |
+| Expedientes | CRUD, asignación de abogado, cierre y reactivación | ✅ |
+| Documentos | Subida de archivos PDF/Word/imagen por expediente | ✅ |
+| Alertas | Tabla de casos por vencimiento (urgente/próximo/a tiempo) | ✅ |
+| PQRS | Gestión interna y radicación pública sin cuenta | ✅ |
+| Módulo IA | Resumen y clasificación de documentos con Gemini | ✅ |
+| Reportes | Gráficas y tabla de vencimientos con filtros | ✅ |
+| Admin — Usuarios | CRUD con activar/desactivar, filtros por rol y estado | ✅ |
+| Admin — Backups | Generar y restaurar copias en Google Drive | ✅ |
+| Admin — Auditoría | Log de acciones con IP, detalle y exportar CSV (Ley 1581) | ✅ |
+| Consulta pública | Búsqueda de procesos sin cuenta por radicado/nombre/tipo | ✅ |
+| Configuración | Cambio de nombre y contraseña desde el perfil | ✅ |
+| Accesibilidad | Widget con fuente, contraste, dislexia, daltonismo, lector | ✅ |
+| Sesión expirando | Aviso 5 min antes con opción de extender sesión | ✅ |
+| Ayuda | Centro de ayuda con descripción de cada módulo | ✅ |
+
+
 
 *SIGJEP — SENA Programación de Software 223104 — 2026*

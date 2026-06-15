@@ -51,6 +51,8 @@ CREATE TABLE `auditoria` (
   `tabla_afectada` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `id_registro` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `detalle` text COLLATE utf8mb4_unicode_ci,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `resultado` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'exitoso',
   PRIMARY KEY (`id_auditoria`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
