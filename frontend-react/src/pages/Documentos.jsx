@@ -261,6 +261,16 @@ export default function Documentos() {
                       </span>
                     </td>
                     <td data-label="Acciones" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <a
+                        href={`${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'}/${d.ruta}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-accion-activar"
+                        title="Ver o descargar documento"
+                        style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                      >
+                        Descargar
+                      </a>
                       {!enviado && (
                         <button className="btn-accion-editar" title="Marcar documento como enviado" aria-label="Enviar documento" onClick={() => setModalEnviar(d)}>Enviar</button>
                       )}
