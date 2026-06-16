@@ -80,14 +80,22 @@ body:not(.login-body) { padding-left: 240px; }
 /* Botón reabrir en header — oculto por defecto, visible cuando sidebar-oculto */
 .btn-reabrir-sidebar {
   display: none;
-  background: none;
-  border: none;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
   color: white;
-  font-size: 22px;
+  font-size: 18px;
+  font-weight: 700;
   cursor: pointer;
-  padding: 0 14px;
+  padding: 6px 12px;
   line-height: 1;
   flex-shrink: 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-reabrir-sidebar:hover {
+  background: rgba(255,255,255,0.25);
+  transform: scale(1.06);
 }
 
 /* Escritorio — sidebar oculto */

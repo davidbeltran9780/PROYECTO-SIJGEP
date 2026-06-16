@@ -69,7 +69,7 @@ export default function PQRS() {
     setGuardando(true)
     try {
       await api.patch(`/pqrs/${modalRespuesta.id_pqrs}/respuesta`, { respuesta: textoRespuesta })
-      await api.patch(`/pqrs/${modalRespuesta.id_pqrs}/estado`, { estado: 'respondido' })
+      toast.exito('Respuesta guardada como borrador')
       setModalRespuesta(null)
       cargar()
     } catch (err) {
@@ -77,6 +77,27 @@ export default function PQRS() {
     } finally {
       setGuardando(false)
     }
+  }
+
+  const enviarRespuestaCorreo = async () => {
+    if (!textoRespuesta.trim()) return toast.info('Escribe una respuesta antes de enviar')
+    setGuardando(true)
+    try {
+      await api.post(`/pqrs/${modalRespuesta.id_pqrs}/enviar-respuesta`, { respuesta: textoRespuesta })
+      toast.exito(`Respuesta enviada al correo de ${modalRespuesta.nombre_ciudadano}`)
+      setModalRespuesta(null)
+      cargar()
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Error al enviar la respuesta')
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  const extraerMensaje = (descripcion = '') => {
+    const idx = descripcion.indexOf('━━━ DESCRIPCIÓN ━━━')
+    if (idx !== -1) return descripcion.slice(idx + '━━━ DESCRIPCIÓN ━━━'.length).trim()
+    return descripcion
   }
 
   const pqrsFiltradas = pqrs.filter(p => {
@@ -157,7 +178,7 @@ export default function PQRS() {
                 <>
                   <td data-label="Radicado">{p.numero_radicado}</td>
                   <td data-label="Tipo">{p.tipo}</td>
-                  <td data-label="Descripción">{p.descripcion}</td>
+                  <td data-label="Descripción">{extraerMensaje(p.descripcion)}</td>
                   <td data-label="Estado">
                     <span className={`estado ${p.estado}`}>{p.estado}</span>
                   </td>
@@ -180,7 +201,7 @@ export default function PQRS() {
                   <td data-label="Nombre">{p.nombre_ciudadano}</td>
                   <td data-label="Tipo">{p.tipo}</td>
                   <td data-label="Mensaje" style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {p.descripcion}
+                    {extraerMensaje(p.descripcion)}
                   </td>
                   <td data-label="Estado">
                     {puedeGestionar ? (
@@ -265,13 +286,21 @@ export default function PQRS() {
               rows={7}
               style={{ width: '100%', padding: '10px', borderRadius: '6px', fontSize: '13px', resize: 'vertical', marginTop: '6px' }}
             />
-            <div className="form-botones" style={{ marginTop: '12px' }}>
+            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '8px', marginBottom: '4px' }}>
+              📧 El ciudadano recibirá la respuesta en: <strong>{modalRespuesta.correo}</strong>
+            </p>
+            <div className="form-botones" style={{ marginTop: '8px', flexWrap: 'wrap', gap: '8px' }}>
               <button className="btn-cancelar" onClick={() => setModalRespuesta(null)}>
                 Cancelar
               </button>
-              <button className="btn-guardar" onClick={guardarRespuesta}
+              <button className="btn-accion-editar" onClick={guardarRespuesta}
+                disabled={guardando || !textoRespuesta.trim()}
+                style={{ fontSize: '13px' }}>
+                {guardando ? 'Guardando...' : '💾 Guardar borrador'}
+              </button>
+              <button className="btn-guardar" onClick={enviarRespuestaCorreo}
                 disabled={guardando || !textoRespuesta.trim()}>
-                {guardando ? 'Guardando...' : '💾 Guardar respuesta'}
+                {guardando ? 'Enviando...' : '📧 Enviar respuesta al ciudadano'}
               </button>
             </div>
           </div>

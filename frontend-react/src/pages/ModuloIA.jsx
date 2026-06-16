@@ -11,7 +11,12 @@ import { useToast } from '../context/ToastContext'
 import { useConfirm } from '../components/ConfirmModal'
 
 function extraerSeccion(texto, etiqueta) {
-  const regex = new RegExp(`${etiqueta}:\\s*([\\s\\S]*?)(?=\\n[A-ZÁÉÍÓÚ]+:|$)`, 'i')
+  if (etiqueta === 'BORRADOR') {
+    const idx = texto.search(/BORRADOR\s*:/i)
+    if (idx === -1) return ''
+    return texto.slice(idx + texto.slice(idx).search(/:/) + 1).trim()
+  }
+  const regex = new RegExp(`${etiqueta}:\\s*([\\s\\S]*?)(?=\\n(?:TIPO|RESUMEN|NORMAS|BORRADOR)\\s*:|$)`, 'i')
   const match = texto.match(regex)
   return match ? match[1].trim() : ''
 }
@@ -27,6 +32,7 @@ export default function ModuloIA() {
   const [cargando, setCargando] = useState(false)
   const [progreso, setProgreso] = useState(0)
   const [aprobado, setAprobado] = useState(false)
+  const [subidoOk, setSubidoOk] = useState(false)
   const inputRef = useRef()
 
   useEffect(() => {
@@ -40,12 +46,16 @@ export default function ModuloIA() {
     setResumen('')
     setClasificacion('-')
     setAprobado(false)
+    setSubidoOk(false)
     setProgreso(0)
     let p = 0
     const intervalo = setInterval(() => {
       p += 10
       setProgreso(p)
-      if (p >= 100) clearInterval(intervalo)
+      if (p >= 100) {
+        clearInterval(intervalo)
+        setSubidoOk(true)
+      }
     }, 100)
   }
 
@@ -85,34 +95,28 @@ export default function ModuloIA() {
   const descargarPDF = () => {
     if (!resumen) return toast.info('Primero genera un resumen')
     const doc = new jsPDF()
-    const margen = 15
+    const margen = 20
     const anchoUtil = doc.internal.pageSize.getWidth() - margen * 2
+    let y = margen
 
-    doc.setFillColor(30, 58, 138)
-    doc.rect(0, 0, doc.internal.pageSize.getWidth(), 30, 'F')
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(16)
-    doc.setFont('helvetica', 'bold')
-    doc.text('SIGJEP — Resumen Jurídico con IA', margen, 20)
-
-    doc.setTextColor(60, 60, 60)
     doc.setFontSize(10)
     doc.setFont('helvetica', 'normal')
-    doc.text(`Expediente: ${expedienteId || 'No seleccionado'}`, margen, 40)
-    doc.text(`Documento: ${archivo?.name || ''}`, margen, 47)
-    doc.text(`Tipo detectado: ${clasificacion}`, margen, 54)
-    doc.text(`Generado: ${new Date().toLocaleString('es-CO')}`, margen, 61)
+    doc.setTextColor(40, 40, 40)
 
-    doc.setDrawColor(30, 58, 138)
-    doc.setLineWidth(0.5)
-    doc.line(margen, 66, doc.internal.pageSize.getWidth() - margen, 66)
+    const textoBorrador = extraerSeccion(resumen, 'BORRADOR')
+    const contenido = textoBorrador || resumen
 
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'normal')
-    doc.setTextColor(30, 30, 30)
-    const lineas = doc.splitTextToSize(resumen, anchoUtil)
-    doc.text(lineas, margen, 75)
-    doc.save(`resumen_juridico_exp${expedienteId || 'sin_exp'}.pdf`)
+    const lineas = doc.splitTextToSize(contenido, anchoUtil)
+    lineas.forEach(linea => {
+      if (y > doc.internal.pageSize.getHeight() - margen) {
+        doc.addPage()
+        y = margen
+      }
+      doc.text(linea, margen, y)
+      y += 6
+    })
+
+    doc.save(`borrador_respuesta_exp${expedienteId || 'sin_exp'}.pdf`)
     toast.exito('PDF descargado correctamente')
   }
 
@@ -124,27 +128,19 @@ export default function ModuloIA() {
     const textoResumen = extraerSeccion(resumen, 'RESUMEN')
     const fecha = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
 
+    const lineasBorrador = (textoBorrador || resumen).split('\n').map(linea =>
+      new Paragraph({ children: [new TextRun({ text: linea, size: 22, font: 'Times New Roman' })], spacing: { after: 120 } })
+    )
+
     const doc = new Document({
       sections: [{
-        properties: {},
+        properties: {
+          page: { margin: { top: 1440, bottom: 1440, left: 1800, right: 1440 } }
+        },
         children: [
-          new Paragraph({ text: 'ALCALDÍA MUNICIPAL', heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER }),
-          new Paragraph({ text: 'Sistema Inteligente de Gestión Jurídica — SIGJEP', alignment: AlignmentType.CENTER, spacing: { after: 200 } }),
-          new Paragraph({ children: [new TextRun({ text: 'Fecha: ', bold: true }), new TextRun(fecha)], spacing: { after: 100 } }),
-          new Paragraph({ children: [new TextRun({ text: 'Expediente No.: ', bold: true }), new TextRun(expedienteId || 'Sin expediente asignado')], spacing: { after: 100 } }),
-          new Paragraph({ children: [new TextRun({ text: 'Tipo de caso: ', bold: true }), new TextRun(clasificacion)], spacing: { after: 300 } }),
-          new Paragraph({ text: '─'.repeat(80), spacing: { after: 200 } }),
-          new Paragraph({ text: 'RESUMEN DEL CASO', heading: HeadingLevel.HEADING_2, spacing: { after: 100 } }),
-          new Paragraph({ text: textoResumen || 'No disponible', spacing: { after: 300 } }),
-          new Paragraph({ text: 'NORMAS APLICABLES', heading: HeadingLevel.HEADING_2, spacing: { after: 100 } }),
-          new Paragraph({ text: textoNormas || 'No identificadas', spacing: { after: 300 } }),
-          new Paragraph({ text: 'BORRADOR DE RESPUESTA INSTITUCIONAL', heading: HeadingLevel.HEADING_2, spacing: { after: 200 } }),
-          new Paragraph({ text: textoBorrador || resumen, spacing: { after: 400 } }),
-          new Paragraph({ text: '─'.repeat(80), spacing: { after: 300 } }),
-          new Paragraph({ text: '_______________________________', spacing: { after: 100 } }),
-          new Paragraph({ text: 'Firma del Responsable', spacing: { after: 50 } }),
-          new Paragraph({ text: 'Cargo: ____________________________', spacing: { after: 50 } }),
-          new Paragraph({ children: [new TextRun({ text: 'Documento generado por IA — Requiere revisión humana antes de ser oficial', italics: true, color: '888888', size: 18 })], spacing: { before: 400 } }),
+          ...lineasBorrador,
+          new Paragraph({ children: [new TextRun({ text: ' ' })], spacing: { after: 400 } }),
+          new Paragraph({ children: [new TextRun({ text: '* Borrador generado por IA - Requiere revision antes de ser oficial', italics: true, size: 18, color: '888888' })] }),
         ],
       }],
     })
@@ -207,6 +203,11 @@ export default function ModuloIA() {
                 <div className="progreso" style={{ width: `${progreso}%` }} />
               </div>
             )}
+            {subidoOk && (
+              <p style={{ color: '#166534', background: '#dcfce7', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', marginTop: '10px' }}>
+                ✅ Archivo cargado — ahora haz clic en "Analizar con IA"
+              </p>
+            )}
           </div>
 
           {/* Card 2 — Análisis IA */}
@@ -224,10 +225,99 @@ export default function ModuloIA() {
               placeholder="El resumen aparecerá aquí después del análisis..."
               style={{ width: '100%', height: '140px', marginTop: '5px', resize: 'vertical' }}
             />
-            <button className="nuevo" onClick={generarResumen} disabled={cargando}
-              style={{ marginTop: '8px' }}>
-              📝 Generar Resumen
-            </button>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+              <button
+                className="nuevo"
+                disabled={!resumen}
+                style={{ flex: 1 }}
+                onClick={() => {
+                  if (!resumen) return
+                  const textoResumen = extraerSeccion(resumen, 'RESUMEN') || ''
+                  const textoNormas = extraerSeccion(resumen, 'NORMAS') || ''
+                  const tipo = extraerSeccion(resumen, 'TIPO') || clasificacion
+                  const fecha = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+                  const doc = new jsPDF()
+                  const margen = 20
+                  const ancho = doc.internal.pageSize.getWidth() - margen * 2
+                  let y = margen
+
+                  const escribir = (texto, bold = false, size = 10) => {
+                    doc.setFontSize(size)
+                    doc.setFont('helvetica', bold ? 'bold' : 'normal')
+                    doc.splitTextToSize(texto, ancho).forEach(l => {
+                      if (y > doc.internal.pageSize.getHeight() - margen) { doc.addPage(); y = margen }
+                      doc.text(l, margen, y); y += size * 0.5 + 2
+                    })
+                  }
+
+                  doc.setTextColor(40, 40, 40)
+                  escribir('SIGJEP — Sistema Inteligente de Gestión Jurídica', true, 13)
+                  y += 2
+                  escribir('Asistente Jurídico con IA para Alcaldías Colombianas', false, 10)
+                  y += 2
+                  escribir(`Fecha: ${fecha}   |   Expediente: ${expedienteId || 'No asignado'}   |   Tipo: ${tipo}`, false, 9)
+                  y += 4
+                  doc.setDrawColor(180, 180, 180); doc.line(margen, y, margen + ancho, y); y += 6
+
+                  escribir('RESUMEN DEL CASO', true, 11); y += 2
+                  escribir(textoResumen || 'No disponible', false, 10); y += 6
+
+                  if (textoNormas) {
+                    doc.setDrawColor(180, 180, 180); doc.line(margen, y, margen + ancho, y); y += 6
+                    escribir('NORMAS APLICABLES', true, 11); y += 2
+                    escribir(textoNormas, false, 10); y += 6
+                  }
+
+                  doc.setDrawColor(180, 180, 180); doc.line(margen, y, margen + ancho, y); y += 4
+                  doc.setFontSize(8); doc.setTextColor(150, 150, 150)
+                  doc.text('Documento generado automáticamente por IA — Requiere revisión humana antes de ser oficial.', margen, y)
+
+                  doc.save(`resumen_exp${expedienteId || 'sin_exp'}.pdf`)
+                }}
+              >
+                📄 Resumen PDF
+              </button>
+              <button
+                className="nuevo"
+                disabled={!resumen}
+                style={{ flex: 1 }}
+                onClick={async () => {
+                  if (!resumen) return
+                  const textoResumen = extraerSeccion(resumen, 'RESUMEN') || ''
+                  const textoNormas = extraerSeccion(resumen, 'NORMAS') || ''
+                  const tipo = extraerSeccion(resumen, 'TIPO') || clasificacion
+                  const fecha = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+
+                  const parrafo = (texto, bold = false, size = 22) =>
+                    new Paragraph({ children: [new TextRun({ text: texto, bold, size, font: 'Times New Roman' })], spacing: { after: 120 } })
+
+                  const doc = new Document({
+                    sections: [{
+                      properties: { page: { margin: { top: 1440, bottom: 1440, left: 1800, right: 1440 } } },
+                      children: [
+                        parrafo('SIGJEP — Sistema Inteligente de Gestión Jurídica', true, 26),
+                        parrafo('Asistente Jurídico con IA para Alcaldías Colombianas', false, 20),
+                        parrafo(`Fecha: ${fecha}   |   Expediente: ${expedienteId || 'No asignado'}   |   Tipo: ${tipo}`, false, 18),
+                        new Paragraph({ children: [new TextRun({ text: ' ' })], spacing: { after: 200 } }),
+                        parrafo('RESUMEN DEL CASO', true, 24),
+                        ...(textoResumen || 'No disponible').split('\n').map(l => parrafo(l)),
+                        new Paragraph({ children: [new TextRun({ text: ' ' })], spacing: { after: 200 } }),
+                        ...(textoNormas ? [
+                          parrafo('NORMAS APLICABLES', true, 24),
+                          ...(textoNormas).split('\n').map(l => parrafo(l)),
+                          new Paragraph({ children: [new TextRun({ text: ' ' })], spacing: { after: 200 } }),
+                        ] : []),
+                        parrafo('Documento generado automáticamente por IA — Requiere revisión humana antes de ser oficial.', false, 16),
+                      ]
+                    }]
+                  })
+                  const blob = await Packer.toBlob(doc)
+                  saveAs(blob, `resumen_exp${expedienteId || 'sin_exp'}.docx`)
+                }}
+              >
+                📝 Resumen Word
+              </button>
+            </div>
           </div>
 
           {/* Card 3 — Descargas */}

@@ -25,16 +25,27 @@ function diasHabilesDesde(dias) {
   return fecha.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
+const estiloLabel = { color: 'rgba(255,255,255,0.85)', fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }
+
 export default function PQRSPublico() {
   useEffect(() => {
     document.body.classList.add('login-body')
     return () => document.body.classList.remove('login-body')
   }, [])
 
-  const [paso, setPaso] = useState(1) // 1 = form, 2 = exitoso
+  // paso: 1 = formulario (con verificación inline), 2 = exitoso
+  const [paso, setPaso] = useState(1)
   const [enviando, setEnviando] = useState(false)
   const [radicado, setRadicado] = useState('')
   const [error, setError] = useState('')
+
+  // Verificación de correo (para anónimos)
+  const [codigoEnviado, setCodigoEnviado] = useState(false)
+  const [codigoVerificado, setCodigoVerificado] = useState(false)
+  const [codigoInput, setCodigoInput] = useState('')
+  const [enviandoCodigo, setEnviandoCodigo] = useState(false)
+  const [verificandoCodigo, setVerificandoCodigo] = useState(false)
+  const [mensajeCodigo, setMensajeCodigo] = useState('')
 
   const [form, setForm] = useState({
     tipo: '',
@@ -53,7 +64,62 @@ export default function PQRSPublico() {
   const tipoInfo = TIPOS.find(t => t.value === form.tipo)
   const puedeAnonima = tipoInfo?.anonima || false
 
-  const set = (campo, valor) => setForm(prev => ({ ...prev, [campo]: valor }))
+  const set = (campo, valor) => {
+    setForm(prev => ({ ...prev, [campo]: valor }))
+    // Si cambia el correo, resetear verificación
+    if (campo === 'correo') {
+      setCodigoEnviado(false)
+      setCodigoVerificado(false)
+      setCodigoInput('')
+      setMensajeCodigo('')
+    }
+    // Si desmarca anónimo, limpiar verificación
+    if (campo === 'anonima' && !valor) {
+      setCodigoEnviado(false)
+      setCodigoVerificado(false)
+      setCodigoInput('')
+      setMensajeCodigo('')
+    }
+  }
+
+  const enviarCodigo = async () => {
+    if (!form.correo.trim()) return setMensajeCodigo('Ingresa el correo primero')
+    setEnviandoCodigo(true)
+    setMensajeCodigo('')
+    try {
+      await axios.post(`${API_URL}/pqrs/verificar-correo`, { correo: form.correo.trim() })
+      setCodigoEnviado(true)
+      setCodigoVerificado(false)
+      setCodigoInput('')
+      setMensajeCodigo('✅ Código enviado al correo')
+    } catch (e) {
+      setMensajeCodigo('❌ ' + (e.response?.data?.detail || 'No se pudo enviar el código'))
+    } finally {
+      setEnviandoCodigo(false)
+    }
+  }
+
+  const verificarCodigo = async () => {
+    if (!codigoInput.trim()) return setMensajeCodigo('Ingresa el código')
+    setVerificandoCodigo(true)
+    setMensajeCodigo('')
+    try {
+      const res = await axios.post(`${API_URL}/pqrs/confirmar-codigo`, {
+        correo: form.correo.trim(),
+        codigo: codigoInput.trim(),
+      })
+      if (res.data.valido) {
+        setCodigoVerificado(true)
+        setMensajeCodigo('✅ Correo verificado correctamente')
+      } else {
+        setMensajeCodigo('❌ ' + (res.data.detalle || 'Código incorrecto'))
+      }
+    } catch (e) {
+      setMensajeCodigo('❌ ' + (e.response?.data?.detail || 'Error al verificar'))
+    } finally {
+      setVerificandoCodigo(false)
+    }
+  }
 
   const enviar = async (e) => {
     e.preventDefault()
@@ -66,8 +132,8 @@ export default function PQRSPublico() {
     if (!form.municipio.trim()) return setError('El municipio es obligatorio')
     if (!form.descripcion.trim()) return setError('Describe tu solicitud')
     if (!form.acepta_datos) return setError('Debes aceptar el tratamiento de datos personales (Ley 1581/2012)')
+    if (form.anonima && !codigoVerificado) return setError('Debes verificar tu correo electrónico antes de radicar una solicitud anónima')
 
-    // Armar descripción con datos adicionales formateados
     const descripcionCompleta = [
       '━━━ DATOS DEL SOLICITANTE ━━━',
       `Municipio: ${form.municipio}`,
@@ -113,7 +179,7 @@ export default function PQRSPublico() {
             <div style={{ fontSize: '48px', marginBottom: '12px' }}>✅</div>
             <h2 style={{ marginBottom: '8px' }}>¡Solicitud enviada!</h2>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', marginBottom: '20px' }}>
-              Tu solicitud ha sido radicada correctamente.
+              Tu solicitud fue radicada correctamente. Se envió el número de radicado a <strong>{form.correo}</strong>.
             </p>
 
             <div style={{
@@ -132,7 +198,7 @@ export default function PQRSPublico() {
                 {radicado}
               </p>
               <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '12px', margin: '4px 0' }}>
-                📧 Guarda este número para consultar el estado de tu solicitud.
+                📧 También te lo enviamos al correo registrado.
               </p>
               <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '12px', margin: '4px 0' }}>
                 ⏱ Fecha estimada de respuesta: <strong style={{ color: 'white' }}>
@@ -162,9 +228,7 @@ export default function PQRSPublico() {
             <form onSubmit={enviar}>
 
               {/* Tipo */}
-              <label style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
-                Tipo de solicitud *
-              </label>
+              <label style={estiloLabel}>Tipo de solicitud *</label>
               <select
                 required
                 value={form.tipo}
@@ -179,7 +243,6 @@ export default function PQRSPublico() {
                 ))}
               </select>
 
-              {/* Plazo legal */}
               {tipoInfo && (
                 <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px', marginBottom: '14px' }}>
                   ⏱ La entidad tiene hasta <strong style={{ color: 'white' }}>{tipoInfo.dias} días hábiles</strong> para responder (Ley 1755/2015)
@@ -200,16 +263,14 @@ export default function PQRSPublico() {
                     style={{ width: '16px', height: '16px' }}
                   />
                   Enviar de forma anónima
-                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>(solo disponible para quejas, reclamos y sugerencias)</span>
+                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>(quejas, reclamos y sugerencias)</span>
                 </label>
               )}
 
-              {/* Datos personales */}
+              {/* Datos personales — solo si no es anónimo */}
               {!form.anonima && (
                 <>
-                  <label style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
-                    Nombre completo *
-                  </label>
+                  <label style={estiloLabel}>Nombre completo *</label>
                   <input
                     type="text"
                     placeholder="Nombre y apellidos"
@@ -220,9 +281,7 @@ export default function PQRSPublico() {
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                     <div>
-                      <label style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
-                        Tipo de documento *
-                      </label>
+                      <label style={estiloLabel}>Tipo de documento *</label>
                       <select
                         value={form.tipo_doc}
                         onChange={e => set('tipo_doc', e.target.value)}
@@ -232,9 +291,7 @@ export default function PQRSPublico() {
                       </select>
                     </div>
                     <div>
-                      <label style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
-                        Número de documento *
-                      </label>
+                      <label style={estiloLabel}>Número de documento *</label>
                       <input
                         type="text"
                         placeholder="Ej: 1234567890"
@@ -248,7 +305,7 @@ export default function PQRSPublico() {
               )}
 
               {/* Correo */}
-              <label style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
+              <label style={estiloLabel}>
                 Correo electrónico * <span style={{ color: 'rgba(255,255,255,0.5)', fontWeight: '400' }}>(recibirás el número de radicado)</span>
               </label>
               <input
@@ -262,9 +319,7 @@ export default function PQRSPublico() {
               {/* Teléfono y Municipio */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                 <div>
-                  <label style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
-                    Teléfono
-                  </label>
+                  <label style={estiloLabel}>Teléfono</label>
                   <input
                     type="tel"
                     placeholder="Ej: 3001234567"
@@ -274,9 +329,7 @@ export default function PQRSPublico() {
                   />
                 </div>
                 <div>
-                  <label style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
-                    Municipio *
-                  </label>
+                  <label style={estiloLabel}>Municipio *</label>
                   <input
                     type="text"
                     placeholder="Ej: Medellín"
@@ -288,9 +341,7 @@ export default function PQRSPublico() {
               </div>
 
               {/* Asunto */}
-              <label style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
-                Asunto (resumen breve)
-              </label>
+              <label style={estiloLabel}>Asunto (resumen breve)</label>
               <input
                 type="text"
                 placeholder="Ej: Solicitud de información sobre impuesto predial"
@@ -300,7 +351,7 @@ export default function PQRSPublico() {
               />
 
               {/* Descripción */}
-              <label style={{ color: 'rgba(255,255,255,0.85)', fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
+              <label style={estiloLabel}>
                 Descripción detallada * <span style={{ color: 'rgba(255,255,255,0.5)', fontWeight: '400' }}>(hechos y solicitud)</span>
               </label>
               <textarea
@@ -312,7 +363,7 @@ export default function PQRSPublico() {
                 style={{ width: '100%', padding: '12px', borderRadius: '8px', fontSize: '13px', resize: 'vertical', marginBottom: '14px' }}
               />
 
-              {/* Tratamiento de datos — Ley 1581/2012 */}
+              {/* Tratamiento de datos */}
               <label style={{
                 display: 'flex', alignItems: 'flex-start', gap: '10px',
                 color: 'rgba(255,255,255,0.8)', fontSize: '12px',
@@ -331,6 +382,89 @@ export default function PQRSPublico() {
                 </span>
               </label>
 
+              {/* ── Verificación de correo (solo anónimos) ── */}
+              {form.anonima && (
+                <div style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  border: codigoVerificado ? '1px solid #86efac' : '1px solid rgba(255,255,255,0.25)',
+                  borderRadius: '10px',
+                  padding: '14px',
+                  marginBottom: '16px',
+                }}>
+                  <p style={{ color: 'white', fontWeight: '600', fontSize: '13px', margin: '0 0 8px' }}>
+                    🔐 Verificación de correo electrónico
+                  </p>
+                  <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', margin: '0 0 12px' }}>
+                    Al ser una solicitud anónima, necesitamos verificar que el correo existe para poder enviarte la respuesta.
+                  </p>
+
+                  {!codigoVerificado ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={enviarCodigo}
+                        disabled={enviandoCodigo || !form.correo.trim()}
+                        style={{
+                          width: '100%', padding: '10px', borderRadius: '8px',
+                          background: '#1e40af', color: 'white', border: 'none',
+                          cursor: 'pointer', fontSize: '13px', fontWeight: '600',
+                          marginBottom: '10px', opacity: (!form.correo.trim() || enviandoCodigo) ? 0.6 : 1
+                        }}
+                      >
+                        {enviandoCodigo ? '⏳ Enviando...' : codigoEnviado ? '🔄 Reenviar código' : '📧 Enviar código de verificación'}
+                      </button>
+
+                      {codigoEnviado && (
+                        <>
+                          <label style={{ ...estiloLabel, marginTop: '4px' }}>
+                            Código de verificación *
+                          </label>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <input
+                              type="text"
+                              placeholder="Código de 6 dígitos"
+                              value={codigoInput}
+                              onChange={e => setCodigoInput(e.target.value)}
+                              style={{
+                                flex: 1, letterSpacing: '0.15em',
+                                fontSize: '18px', textAlign: 'center', marginBottom: 0
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={verificarCodigo}
+                              disabled={verificandoCodigo || !codigoInput.trim()}
+                              style={{
+                                padding: '10px 16px', borderRadius: '8px',
+                                background: '#15803d', color: 'white', border: 'none',
+                                cursor: 'pointer', fontSize: '13px', fontWeight: '600',
+                                whiteSpace: 'nowrap',
+                                opacity: (!codigoInput.trim() || verificandoCodigo) ? 0.6 : 1
+                              }}
+                            >
+                              {verificandoCodigo ? '...' : 'Verificar'}
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <p style={{ color: '#86efac', fontWeight: '600', fontSize: '13px', margin: 0 }}>
+                      ✅ Correo verificado — puedes radicar la solicitud
+                    </p>
+                  )}
+
+                  {mensajeCodigo && (
+                    <p style={{
+                      fontSize: '12px', marginTop: '8px', marginBottom: 0,
+                      color: mensajeCodigo.startsWith('✅') ? '#86efac' : '#fca5a5'
+                    }}>
+                      {mensajeCodigo}
+                    </p>
+                  )}
+                </div>
+              )}
+
               {error && (
                 <p style={{
                   background: 'rgba(220,38,38,0.2)', border: '1px solid rgba(220,38,38,0.4)',
@@ -341,7 +475,12 @@ export default function PQRSPublico() {
                 </p>
               )}
 
-              <button type="submit" className="btn-login" disabled={enviando}>
+              <button
+                type="submit"
+                className="btn-login"
+                disabled={enviando || (form.anonima && !codigoVerificado)}
+                style={{ opacity: (form.anonima && !codigoVerificado) ? 0.5 : 1 }}
+              >
                 {enviando ? '⏳ Enviando...' : '📨 Radicar solicitud'}
               </button>
             </form>

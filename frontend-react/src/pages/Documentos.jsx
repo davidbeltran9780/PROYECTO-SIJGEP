@@ -15,6 +15,7 @@ export default function Documentos() {
   const [preview, setPreview] = useState(null)
   const [progreso, setProgreso] = useState(0)
   const [subiendo, setSubiendo] = useState(false)
+  const [subidoOk, setSubidoOk] = useState(false)
   const [documentos, setDocumentos] = useState([])
   const [expedientes, setExpedientes] = useState([])
   const [expSeleccionado, setExpSeleccionado] = useState(expedienteIdParam || '')
@@ -73,7 +74,8 @@ export default function Documentos() {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       toast.exito('Archivo subido correctamente')
-      setArchivo(null); setPreview(null); setProgreso(0)
+      setArchivo(null); setPreview(null); setProgreso(0); setSubidoOk(true)
+      setTimeout(() => setSubidoOk(false), 6000)
       cargarDocumentos()
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Error al subir el archivo')
@@ -294,10 +296,20 @@ export default function Documentos() {
               {progreso > 0 && (
                 <div className="barra"><div className="progreso" style={{ width: `${progreso}%` }} /></div>
               )}
+              {archivo && progreso >= 100 && !subiendo && (
+                <p style={{ color: '#1e40af', background: '#eff6ff', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', marginTop: '8px' }}>
+                  📎 Archivo listo — presiona "Subir al servidor" para guardarlo
+                </p>
+              )}
               {archivo && (
-                <button className="nuevo" onClick={subirArchivo} disabled={subiendo} style={{ marginTop: '1rem' }}>
+                <button className="nuevo" onClick={subirArchivo} disabled={subiendo} style={{ marginTop: '8px' }}>
                   {subiendo ? 'Subiendo...' : '⬆️ Subir al servidor'}
                 </button>
+              )}
+              {subidoOk && (
+                <p style={{ color: '#166534', background: '#dcfce7', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', marginTop: '10px' }}>
+                  ✅ Documento subido correctamente
+                </p>
               )}
               <div className="preview">
                 {preview?.tipo === 'imagen' && <img src={preview.url} alt="preview" style={{ maxWidth: '300px', borderRadius: '8px' }} />}

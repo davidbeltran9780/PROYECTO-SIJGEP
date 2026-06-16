@@ -19,12 +19,12 @@ const SECCIONES = [
   {
     icono: '💬',
     titulo: 'PQRS',
-    desc: 'Peticiones, Quejas, Reclamos y Sugerencias. Los ciudadanos pueden radicar sin cuenta en la página pública. Los internos gestionan el estado y responden cada solicitud.'
+    desc: 'Peticiones, Quejas, Reclamos y Sugerencias. Los ciudadanos pueden radicar sin cuenta en la página pública. Las quejas, reclamos y sugerencias pueden enviarse de forma anónima previo a verificar el correo con un código. Al radicar, se envía confirmación al correo con el número de radicado. Los funcionarios pueden guardar la respuesta como borrador o enviarla directamente al ciudadano por correo.'
   },
   {
     icono: '🤖',
     titulo: 'Módulo IA',
-    desc: 'Asistente jurídico con inteligencia artificial. Sube un documento (PDF, Word, imagen) y la IA lo analiza, clasifica el tipo de caso, genera un resumen y redacta un borrador de respuesta institucional.'
+    desc: 'Asistente jurídico con inteligencia artificial. Sube un documento (PDF, Word, imagen) y la IA lo clasifica, genera un resumen jurídico y redacta un borrador de respuesta institucional según el tipo de caso (tutela, derecho de petición, queja, etc.). Puedes descargar el borrador en PDF o Word, y también el resumen con encabezado SIGJEP, normas aplicables y pie de página.'
   },
   {
     icono: '⚠️',
@@ -41,20 +41,37 @@ const SECCIONES = [
     titulo: 'Administración',
     desc: 'Panel de administración con tres secciones: Usuarios (crear, editar, activar/desactivar), Backups (generar respaldos a Google Drive) y Auditoría (historial de acciones del sistema).'
   },
+  {
+    icono: '👤',
+    titulo: 'Perfil',
+    desc: 'Permite cambiar el nombre y la contraseña de la cuenta. Al cambiar la contraseña, el sistema envía automáticamente un correo de confirmación al correo registrado como medida de seguridad.'
+  },
 ]
 
 const FAQS = [
   {
     p: '¿Cómo radico una PQRS sin tener cuenta?',
-    r: 'Ve a la página de inicio y haz clic en "📨 Radicar PQRS sin cuenta". Llena el formulario y al final recibirás un número de radicado para hacer seguimiento.'
+    r: 'Ve a la página de inicio y haz clic en "📨 Radicar PQRS sin cuenta". Llena el formulario con tu correo y al finalizar recibirás el número de radicado tanto en pantalla como en tu correo electrónico.'
+  },
+  {
+    p: '¿Puedo enviar una queja de forma anónima?',
+    r: 'Sí. En el formulario público de PQRS, al seleccionar Queja, Reclamo o Sugerencia aparece la opción "Enviar de forma anónima". Al activarla, el sistema pedirá verificar tu correo con un código de 6 dígitos que se envía automáticamente. Una vez verificado, puedes radicar sin proporcionar nombre ni documento.'
+  },
+  {
+    p: '¿Cómo funciona la verificación de correo en PQRS anónimas?',
+    r: 'Al marcar la opción anónima, aparece una sección de verificación. Haz clic en "Enviar código de verificación" y recibirás un código de 6 dígitos válido por 10 minutos. Ingrésalo en el campo correspondiente y haz clic en "Verificar". Una vez confirmado, el botón de radicar se activa.'
   },
   {
     p: '¿Cómo consulto el estado de mi PQRS?',
-    r: 'En la página de inicio haz clic en "🔍 Consultar estado de proceso". Puedes buscar por número de radicado, nombre del demandante o tipo de proceso.'
+    r: 'En la página de inicio haz clic en "🔍 Consultar estado de proceso". Puedes buscar por número de radicado, nombre del demandante o tipo de proceso. También puedes consultar desde la pantalla de confirmación después de radicar.'
+  },
+  {
+    p: '¿Cómo sabe el ciudadano que su PQRS fue respondida?',
+    r: 'Cuando el funcionario hace clic en "📧 Enviar respuesta al ciudadano" en el módulo interno, el sistema envía automáticamente un correo al ciudadano con la respuesta oficial y el número de radicado.'
   },
   {
     p: '¿Cómo recupero mi contraseña?',
-    r: 'En la pantalla de inicio de sesión haz clic en "¿Olvidaste tu contraseña?". Ingresa tu correo y recibirás un enlace para restablecerla.'
+    r: 'En la pantalla de inicio de sesión haz clic en "¿Olvidaste tu contraseña?". Ingresa tu correo y recibirás un enlace para restablecerla. Al cambiar la contraseña desde el perfil, también se envía un correo de confirmación automáticamente.'
   },
   {
     p: '¿Qué formatos acepta el módulo de documentos?',
@@ -67,10 +84,6 @@ const FAQS = [
   {
     p: '¿Cuánto tiempo tiene la entidad para responder una PQRS?',
     r: 'Según la Ley 1755 de 2015: Petición general 15 días hábiles, Derecho de Petición 10 días hábiles, Consultas 30 días hábiles.'
-  },
-  {
-    p: '¿Puedo enviar una queja de forma anónima?',
-    r: 'Sí. En el formulario público de PQRS, al seleccionar Queja, Reclamo o Sugerencia aparece la opción de enviar de forma anónima. Las peticiones formales requieren identificación por ley.'
   },
   {
     p: '¿Cómo genero un backup del sistema?',

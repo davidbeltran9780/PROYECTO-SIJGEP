@@ -36,6 +36,26 @@ class ResetPassword(BaseModel):
     password: str
 
 
+def enviar_correo_cambio_password(destinatario: str, nombre: str):
+    msg = EmailMessage()
+    msg["Subject"] = "Contraseña actualizada - SIGJEP"
+    msg["From"] = os.getenv("MAIL_FROM")
+    msg["To"] = destinatario
+    msg.set_content(f"""
+Hola {nombre},
+
+Te informamos que tu contraseña en SIGJEP fue cambiada exitosamente.
+
+Si no realizaste este cambio, comunícate de inmediato con el administrador del sistema.
+
+Este es un mensaje automático, no respondas a este correo.
+""")
+    with smtplib.SMTP(os.getenv("MAIL_SERVER"), int(os.getenv("MAIL_PORT"))) as smtp:
+        smtp.starttls()
+        smtp.login(os.getenv("MAIL_USERNAME"), os.getenv("MAIL_PASSWORD"))
+        smtp.send_message(msg)
+
+
 def enviar_correo_recuperacion(destinatario: str, token: str):
     frontend_url = "http://localhost:5173/reset-password"
     link = f"{frontend_url}?token={token}"
@@ -234,6 +254,7 @@ def actualizar_perfil(datos: dict, usuario: dict = Depends(obtener_usuario_actua
         )
 
     # Cambiar contraseña
+    cambio_password = False
     if "password_actual" in datos and "password_nueva" in datos:
         fila = db.execute(
             text("SELECT password FROM usuarios WHERE id_usuarios = :id"), {"id": id_usuario}
@@ -245,8 +266,20 @@ def actualizar_perfil(datos: dict, usuario: dict = Depends(obtener_usuario_actua
             text("UPDATE usuarios SET password = :pwd WHERE id_usuarios = :id"),
             {"pwd": nuevo_hash, "id": id_usuario}
         )
+        cambio_password = True
 
     db.commit()
+
+    if cambio_password:
+        try:
+            info = db.execute(
+                text("SELECT nombre, email FROM usuarios WHERE id_usuarios = :id"), {"id": id_usuario}
+            ).fetchone()
+            if info:
+                enviar_correo_cambio_password(info.email, info.nombre)
+        except Exception as e:
+            print(f"No se pudo enviar correo de cambio de contraseña: {e}")
+
     return {"msg": "Perfil actualizado correctamente"}
 
 

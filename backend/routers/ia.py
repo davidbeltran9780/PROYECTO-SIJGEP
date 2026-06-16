@@ -25,9 +25,17 @@ def extraer_texto(contenido: bytes, filename: str) -> str:
 
     elif ext in ["docx", "doc"]:
         from docx import Document
-        import io
-        doc = Document(io.BytesIO(contenido))
-        return "\n".join([p.text for p in doc.paragraphs])
+        import io, zipfile, re
+        try:
+            doc = Document(io.BytesIO(contenido))
+            return "\n".join([p.text for p in doc.paragraphs])
+        except zipfile.BadZipFile:
+            texto_raw = contenido.decode('latin-1', errors='ignore')
+            fragmentos = re.findall(r'[a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9\s\.,;:\-\(\)\"\'\!]{5,}', texto_raw)
+            texto = ' '.join(fragmentos).strip()
+            if len(texto) < 50:
+                raise HTTPException(status_code=400, detail="No se pudo leer el archivo .doc. Conviértelo a .docx o .pdf e inténtalo de nuevo.")
+            return texto
 
     elif ext in ["jpg", "jpeg", "png"]:
         from PIL import Image
@@ -57,6 +65,9 @@ async def resumir_documento(archivo: UploadFile = File(...)):
         texto = extraer_texto(contenido, archivo.filename)
         print(f"Texto extraído: {len(texto)} caracteres")
 
+        if texto == "__DOC_ANTIGUO__":
+            return {"archivo": archivo.filename, "resumen": "TIPO: No procesado\n\nRESUMEN: El archivo .doc es formato Word antiguo y no puede leerse directamente. Por favor guárdalo como .docx (Archivo > Guardar como > Word (.docx)) o expórtalo como .pdf e inténtalo de nuevo.\n\nNORMAS: N/A\n\nBORRADOR: N/A"}
+
         if not texto.strip():
             return {"archivo": archivo.filename, "resumen": "El documento está vacío o no se pudo leer el texto."}
 
@@ -64,13 +75,147 @@ async def resumir_documento(archivo: UploadFile = File(...)):
     model="gemini-2.5-flash",
     contents=f"""Eres un asistente jurídico de una alcaldía colombiana. Analiza el documento y responde en este formato exacto:
 
-TIPO: [Tutela / Demanda / Petición / Queja / Reclamo / Sugerencia / Otro]
+TIPO: [Tutela / Demanda / Peticion / Queja / Reclamo / Sugerencia / Otro]
 
-RESUMEN: [Máximo 200 palabras. Partes, hechos y solicitud principal.]
+RESUMEN: [Maximo 200 palabras. Partes, hechos y solicitud principal.]
 
-NORMAS: [Solo las que apliquen entre estas: Ley 1437 de 2011, Ley 1755 de 2015, Ley 1581 de 2012, Constitución Política artículo 86 para tutelas.]
+NORMAS: [Solo las que apliquen: Ley 1437 de 2011, Ley 1755 de 2015, Ley 1581 de 2012, Constitucion Politica articulo 86 para tutelas, Decreto 2591 de 1991 para tutelas.]
 
-BORRADOR: [Respuesta institucional formal en nombre de la alcaldía. Máximo 150 palabras.]
+BORRADOR:
+[Genera el borrador en texto plano, sin colores, sin negrillas, sin viñetas especiales, sin encabezados con diseño. Solo texto formal corrido con saltos de linea. Sigue la plantilla segun el tipo detectado:
+
+Si es TUTELA, usa esta estructura exacta:
+---
+[Ciudad], [fecha actual]
+
+Señor(a)
+[JUZGADO — deducir del documento o escribir "DESPACHO JUDICIAL"]
+E.S.D.
+
+REFERENCIA: ACCION DE TUTELA
+RADICADO: [numero si aparece en el documento, si no: "Pendiente de asignacion"]
+ACCIONANTE: [nombre del accionante segun el documento]
+ACCIONADA: ALCALDIA MUNICIPAL
+
+Asunto: CONTESTACION ACCION DE TUTELA
+
+El suscrito funcionario, actuando en representacion de la Alcaldia Municipal, dentro del termino legal me permito dar contestacion a la accion de tutela de la referencia, en los siguientes terminos:
+
+I. PRONUNCIAMIENTO FRENTE A LOS HECHOS
+
+[Analizar cada hecho del documento y dar la posicion de la alcaldia frente a el. Ser conciso pero juridicamente solido.]
+
+II. CONSIDERACIONES
+
+[Incluir argumentos juridicos: si hay otros mecanismos de defensa, si no hay vulneracion de derecho fundamental, o si la alcaldia ya actuo conforme a la ley.]
+
+III. FUNDAMENTOS DE DERECHO
+
+Con fundamento en el articulo 86 de la Constitucion Politica, el Decreto 2591 de 1991 y demas normas concordantes.
+
+IV. PRUEBAS
+
+Documentales: las que obren en el expediente administrativo de esta entidad relacionadas con el presente caso.
+
+V. PETICIONES
+
+Con base en lo expuesto, solicito al Despacho declarar IMPROCEDENTE o NEGAR la accion de tutela de la referencia, por las razones expuestas.
+
+VI. NOTIFICACIONES
+
+La Alcaldia Municipal recibira notificaciones en [direccion de la alcaldia].
+
+Cordialmente,
+
+_______________________________
+Firma del funcionario responsable
+Cargo: ____________________________
+ALCALDIA MUNICIPAL
+---
+
+Si es PETICION o DERECHO DE PETICION, usa esta estructura exacta:
+---
+Radicado interno: [numero o "Por asignar"]
+[Ciudad], [fecha actual]
+
+Señor(a)
+[NOMBRE DEL PETICIONARIO segun el documento]
+[Correo si aparece en el documento]
+Ciudad
+
+ASUNTO: Respuesta a derecho de peticion radicado [numero si existe]
+
+Respetado(a) Señor(a):
+
+En atencion a su peticion recibida por esta entidad, nos permitimos dar respuesta en los siguientes terminos:
+
+[Dar respuesta de fondo a lo solicitado segun el contenido del documento. Ser claro y concreto.]
+
+De conformidad con el articulo 14 de la Ley 1437 de 2011, sustituido por el articulo 1 de la Ley 1755 de 2015, toda peticion debera resolverse dentro de los quince (15) dias siguientes a su recepcion.
+
+Es necesario precisar que la respuesta se ofrece dentro del ambito de nuestra competencia.
+
+Atentamente,
+
+_______________________________
+[DEPENDENCIA COMPETENTE]
+ALCALDIA MUNICIPAL
+---
+
+Si es QUEJA o RECLAMO, usa esta estructura exacta:
+---
+Radicado interno: [numero o "Por asignar"]
+[Ciudad], [fecha actual]
+
+Señor(a)
+[NOMBRE segun el documento]
+[Correo si aparece]
+Ciudad
+
+ASUNTO: Respuesta a [queja/reclamo] radicado [numero si existe]
+
+Respetado(a) Señor(a):
+
+En atencion a la [queja/reclamo] presentada ante esta entidad, nos permitimos manifestar:
+
+[Dar respuesta de fondo. Si la queja tiene fundamento, indicar que medidas se tomaran. Si no tiene fundamento, explicar por que con argumentos concretos.]
+
+De conformidad con la Ley 1437 de 2011 y la Ley 1755 de 2015, hemos dado tramite a su solicitud dentro de los terminos legales establecidos.
+
+Atentamente,
+
+_______________________________
+[DEPENDENCIA COMPETENTE]
+ALCALDIA MUNICIPAL
+---
+
+Si es SUGERENCIA, usa esta estructura:
+---
+Radicado interno: [numero o "Por asignar"]
+[Ciudad], [fecha actual]
+
+Señor(a)
+[NOMBRE segun el documento]
+[Correo si aparece]
+Ciudad
+
+ASUNTO: Respuesta a sugerencia radicada [numero si existe]
+
+Respetado(a) Señor(a):
+
+Agradecemos su participacion ciudadana y la sugerencia presentada ante esta entidad.
+
+[Analizar la sugerencia y dar respuesta sobre si sera tenida en cuenta, que area la evaluara, y en que terminos podria implementarse.]
+
+Su sugerencia ha sido remitida a la dependencia competente para su evaluacion y posible implementacion.
+
+Atentamente,
+
+_______________________________
+[DEPENDENCIA COMPETENTE]
+ALCALDIA MUNICIPAL
+---
+]
 
 Documento:
 {texto[:10000]}"""
@@ -84,5 +229,8 @@ Documento:
     except HTTPException as e:
         raise e
     except Exception as e:
-        print(f"ERROR: {str(e)}")
-        return {"error": str(e), "resumen": f"No se pudo generar el resumen: {str(e)}"}
+        msg = str(e)
+        print(f"ERROR: {msg}")
+        if "503" in msg or "UNAVAILABLE" in msg or "high demand" in msg:
+            return {"error": msg, "resumen": "⚠️ El servicio de IA está temporalmente saturado. Por favor intenta de nuevo en unos minutos."}
+        return {"error": msg, "resumen": f"No se pudo generar el análisis: {msg}"}

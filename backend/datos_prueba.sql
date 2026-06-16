@@ -10,83 +10,65 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- 1. USUARIOS
 -- ============================================================
 INSERT INTO `usuarios` (`nombre`, `email`, `password`, `rol`, `estado`) VALUES
-('Manuel Rodríguez',  'admin@sigjep.co',      '$2b$12$/53fbDoy6H2O/cV9l8ssPeOX2WdFBRtHan48hbqZw8TDYfF/Y/t3i', 'administrador', 'activo'),
-('Laura Jiménez',     'abogado@sigjep.co',    '$2b$12$LD/YK3g1WUVEMfrm6ApBOuDNaf8n3U6KavkdIxJd4xtSE4ZDuy2tW', 'abogado',        'activo'),
-('Sofía Morales',     'secretaria@sigjep.co', '$2b$12$U5q61dM7c1M1.2Q2jCgkX.cxOQhGYqwv0h99SSU8SiQRrOMAK.N9e', 'secretaria',     'activo'),
-('Carlos Pérez',      'ciudadano@sigjep.co',  '$2b$12$w5jqHavamidy6Tjb4k8g/.FlpaNLGkbz2bQEprcNRNFxwbhPwHxg.', 'ciudadano',      'activo');
+('Manuel Rodríguez',  'admin@sigjep.co',      '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'administrador', 'activo'),
+('Laura Jiménez',     'abogado@sigjep.co',    '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'abogado',        'activo'),
+('Sofía Morales',     'secretaria@sigjep.co', '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'secretaria',     'activo'),
+('Carlos Pérez',      'ciudadano@sigjep.co',  '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'ciudadano',      'activo');
 
 -- ============================================================
 -- 2. CASOS (distintos tipos y estados de vencimiento)
 -- ============================================================
 INSERT INTO `casos`
-  (`tipo`, `titulo`, `descripcion`, `estado`, `fecha_vencimiento`, `id_abogado_asignado`)
+  (`tipo`, `titulo`, `descripcion`, `estado`, `fecha_radicacion`, `fecha_vencimiento`, `id_abogado_asignado`, `id_usuario_creador`)
 VALUES
 -- Urgentes (vencen en 1-2 días)
 ('tutela',
  'Tutela derecho a la salud — García vs EPS',
  'El accionante solicita amparo del derecho fundamental a la salud por negativa de la EPS a suministrar medicamentos de alto costo.',
- 'activo',
- DATE_ADD(CURDATE(), INTERVAL 1 DAY),
- 2),
+ 'activo', CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 DAY), 2, 1),
 
 ('tutela',
  'Tutela derecho a la vivienda — Familia López',
  'Familia en situación de desplazamiento solicita amparo del derecho a la vivienda digna ante omisión de la alcaldía.',
- 'activo',
- DATE_ADD(CURDATE(), INTERVAL 2 DAY),
- 2),
+ 'activo', CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY), 2, 1),
 
 -- Próximos (vencen en 3-5 días)
 ('demanda',
  'Demanda contencioso-administrativa — Contrato 045',
  'Demanda por incumplimiento de contrato de obra pública número 045 del año 2025 por parte del contratista.',
- 'activo',
- DATE_ADD(CURDATE(), INTERVAL 4 DAY),
- 2),
+ 'activo', CURDATE(), DATE_ADD(CURDATE(), INTERVAL 4 DAY), 2, 1),
 
 ('derecho_peticion',
  'Derecho de petición — Certificado laboral Martínez',
  'Ciudadano solicita certificado de tiempo de servicio ante la negativa reiterada de la entidad de expedir el documento.',
- 'activo',
- DATE_ADD(CURDATE(), INTERVAL 5 DAY),
- 2),
+ 'activo', CURDATE(), DATE_ADD(CURDATE(), INTERVAL 5 DAY), 2, 1),
 
 -- A tiempo (vencen en más de 5 días)
 ('demanda',
  'Demanda ordinaria laboral — Sindicato Municipal',
  'Sindicato de trabajadores municipales interpone demanda por presunto incumplimiento de convención colectiva.',
- 'activo',
- DATE_ADD(CURDATE(), INTERVAL 15 DAY),
- 2),
+ 'activo', CURDATE(), DATE_ADD(CURDATE(), INTERVAL 15 DAY), 2, 1),
 
 ('tutela',
  'Tutela derecho a la educación — Menor Rodríguez',
  'Acción de tutela para garantizar acceso a cupo escolar en institución pública del municipio.',
- 'activo',
- DATE_ADD(CURDATE(), INTERVAL 20 DAY),
- 2),
+ 'activo', CURDATE(), DATE_ADD(CURDATE(), INTERVAL 20 DAY), 2, 1),
 
 ('derecho_peticion',
  'Derecho de petición — Licencia de construcción',
  'Ciudadano solicita información sobre estado de trámite de licencia de construcción radicada hace 45 días.',
- 'activo',
- DATE_ADD(CURDATE(), INTERVAL 10 DAY),
- NULL),
+ 'activo', CURDATE(), DATE_ADD(CURDATE(), INTERVAL 10 DAY), NULL, 1),
 
 -- Cerrados y archivados
 ('tutela',
  'Tutela derecho al agua — Vereda La Esperanza',
  'Comunidad rural solicita amparo del derecho al agua potable. CASO RESUELTO por juez de primera instancia.',
- 'cerrado',
- DATE_ADD(CURDATE(), INTERVAL -10 DAY),
- 2),
+ 'cerrado', DATE_ADD(CURDATE(), INTERVAL -20 DAY), DATE_ADD(CURDATE(), INTERVAL -10 DAY), 2, 1),
 
 ('demanda',
  'Demanda reparación directa — Accidente vía terciaria',
  'Demanda por daños y perjuicios ocasionados en accidente de tránsito en vía a cargo del municipio. ARCHIVADO.',
- 'archivado',
- DATE_ADD(CURDATE(), INTERVAL -30 DAY),
- 2);
+ 'archivado', DATE_ADD(CURDATE(), INTERVAL -40 DAY), DATE_ADD(CURDATE(), INTERVAL -30 DAY), 2, 1);
 
 -- ============================================================
 -- 3. EXPEDIENTES (uno por caso)
@@ -98,48 +80,28 @@ INSERT INTO `expedientes` (`id_caso`) VALUES
 -- 4. PQRS
 -- ============================================================
 INSERT INTO `pqrs`
-  (`numero_radicado`, `tipo`, `nombre_solicitante`, `tipo_documento`,
-   `numero_documento`, `correo`, `municipio`, `descripcion`, `estado`)
+  (`numero_radicado`, `tipo`, `nombre_ciudadano`, `correo`, `descripcion`, `estado`)
 VALUES
-('PQRS-20260601-001', 'peticion',   'Carlos Pérez',      'cedula', '10234567',
- 'ciudadano@sigjep.co', 'Medellín',
- 'Solicito información sobre el estado de mi pensión de jubilación radicada el pasado mes de febrero.',
- 'recibido'),
-
-('PQRS-20260603-002', 'queja',      'Ana Gómez',         'cedula', '20345678',
- 'ana.gomez@gmail.com', 'Bello',
- 'Presento queja formal por mal estado de la vía principal del barrio Las Flores. Lleva 3 meses sin reparación.',
- 'en_proceso'),
-
-('PQRS-20260605-003', 'reclamo',    'Pedro Ramírez',     'cedula', '30456789',
- 'pedro.ramirez@outlook.com', 'Itagüí',
- 'Reclamo por cobro indebido en el recibo del impuesto predial del primer trimestre del año 2026.',
- 'respondido'),
-
-('PQRS-20260608-004', 'sugerencia', 'María Torres',      'cedula', '40567890',
- 'maria.torres@yahoo.com', 'Envigado',
- 'Sugiero implementar un sistema de turnos en línea para la atención en la secretaría de hacienda.',
- 'recibido'),
-
-('PQRS-20260610-005', 'peticion',   'Luis Herrera',      'cedula', '50678901',
- 'luis.herrera@gmail.com', 'Sabaneta',
- 'Solicito copia del acta de la última sesión del concejo municipal.',
- 'cerrado');
+('PQRS-20260601-001', 'peticion',   'Carlos Pérez',   'ciudadano@sigjep.co',      'Solicito información sobre el estado de mi pensión de jubilación radicada el pasado mes de febrero.', 'recibido'),
+('PQRS-20260603-002', 'queja',      'Ana Gómez',      'ana.gomez@gmail.com',       'Presento queja formal por mal estado de la vía principal del barrio Las Flores. Lleva 3 meses sin reparación.', 'en_proceso'),
+('PQRS-20260605-003', 'reclamo',    'Pedro Ramírez',  'pedro.ramirez@outlook.com', 'Reclamo por cobro indebido en el recibo del impuesto predial del primer trimestre del año 2026.', 'respondido'),
+('PQRS-20260608-004', 'sugerencia', 'María Torres',   'maria.torres@yahoo.com',    'Sugiero implementar un sistema de turnos en línea para la atención en la secretaría de hacienda.', 'recibido'),
+('PQRS-20260610-005', 'peticion',   'Luis Herrera',   'luis.herrera@gmail.com',    'Solicito copia del acta de la última sesión del concejo municipal.', 'cerrado');
 
 -- ============================================================
 -- 5. DOCUMENTOS (vinculados a expedientes)
 -- ============================================================
 INSERT INTO `documentos`
-  (`nombre_archivo`, `ruta_archivo`, `tipo_archivo`, `id_expediente`, `enviado`)
+  (`nombre_archivo`, `ruta`, `tipo_formato`, `id_expediente`, `subido_por`, `estado`)
 VALUES
-('tutela_garcia_eps.pdf',          'uploads/tutela_garcia_eps.pdf',          'application/pdf', 1, 0),
-('poder_notarial_garcia.pdf',      'uploads/poder_notarial_garcia.pdf',      'application/pdf', 1, 0),
-('tutela_familia_lopez.pdf',       'uploads/tutela_familia_lopez.pdf',       'application/pdf', 2, 1),
-('demanda_contrato_045.pdf',       'uploads/demanda_contrato_045.pdf',       'application/pdf', 3, 0),
-('contrato_045_original.pdf',      'uploads/contrato_045_original.pdf',      'application/pdf', 3, 0),
-('derecho_peticion_martinez.docx', 'uploads/derecho_peticion_martinez.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 4, 0),
-('demanda_sindicato.pdf',          'uploads/demanda_sindicato.pdf',          'application/pdf', 5, 1),
-('tutela_educacion_rodriguez.pdf', 'uploads/tutela_educacion_rodriguez.pdf', 'application/pdf', 6, 0);
+('tutela_garcia_eps.pdf',          'uploads/tutela_garcia_eps.pdf',          'pdf',  1, 1, 'borrador'),
+('poder_notarial_garcia.pdf',      'uploads/poder_notarial_garcia.pdf',      'pdf',  1, 1, 'borrador'),
+('tutela_familia_lopez.pdf',       'uploads/tutela_familia_lopez.pdf',       'pdf',  2, 3, 'enviado'),
+('demanda_contrato_045.pdf',       'uploads/demanda_contrato_045.pdf',       'pdf',  3, 3, 'borrador'),
+('contrato_045_original.pdf',      'uploads/contrato_045_original.pdf',      'pdf',  3, 3, 'borrador'),
+('derecho_peticion_martinez.docx', 'uploads/derecho_peticion_martinez.docx', 'docx', 4, 3, 'borrador'),
+('demanda_sindicato.pdf',          'uploads/demanda_sindicato.pdf',          'pdf',  5, 2, 'enviado'),
+('tutela_educacion_rodriguez.pdf', 'uploads/tutela_educacion_rodriguez.pdf', 'pdf',  6, 2, 'borrador');
 
 -- ============================================================
 -- 6. AUDITORÍA
@@ -160,11 +122,11 @@ VALUES
 -- 7. BACKUPS LOG
 -- ============================================================
 INSERT INTO `backups_log`
-  (`nombre_archivo`, `link_drive`, `fecha_creacion`)
+  (`archivo`, `link_drive`, `creado_por`, `estado`, `fecha`)
 VALUES
-('backup_sigjep_20260601.sql', 'https://drive.google.com/file/d/ejemplo1', '2026-06-01 08:00:00'),
-('backup_sigjep_20260608.sql', 'https://drive.google.com/file/d/ejemplo2', '2026-06-08 08:00:00'),
-('backup_sigjep_20260615.sql', 'https://drive.google.com/file/d/ejemplo3', '2026-06-15 08:00:00');
+('backup_sigjep_20260601.sql', 'https://drive.google.com/file/d/ejemplo1', 1, 'exitoso', '2026-06-01 08:00:00'),
+('backup_sigjep_20260608.sql', 'https://drive.google.com/file/d/ejemplo2', 1, 'exitoso', '2026-06-08 08:00:00'),
+('backup_sigjep_20260615.sql', 'https://drive.google.com/file/d/ejemplo3', 1, 'exitoso', '2026-06-15 08:00:00');
 
 SET FOREIGN_KEY_CHECKS = 1;
 

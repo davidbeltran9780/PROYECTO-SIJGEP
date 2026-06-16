@@ -106,15 +106,19 @@ export default function Header() {
         {/* Engranaje — configuración */}
         <button
           className="btn-configuracion"
-          onClick={() => navigate('/configuracion')}
+          onClick={() => location.pathname === '/configuracion' ? navigate(-1) : navigate('/configuracion')}
           aria-label="Configuración"
-          title="Configuración"
+          title={location.pathname === '/configuracion' ? 'Cerrar configuración' : 'Configuración'}
+          style={{ opacity: location.pathname === '/configuracion' ? 0.7 : 1 }}
         >
           ⚙️
         </button>
 
         {/* Nombre y rol — visible en escritorio, oculto en móvil via CSS */}
-        <span className="usuario">{usuario} — {rol}</span>
+        <span className="usuario" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: 1.3 }}>
+          <span style={{ fontWeight: '600', fontSize: '13px' }}>{usuario}</span>
+          <span style={{ fontSize: '11px', opacity: 0.65, textTransform: 'capitalize', letterSpacing: '0.03em' }}>{rol}</span>
+        </span>
 
         {/* Avatar — en escritorio muestra texto, en móvil muestra popup al presionar */}
         <div ref={avatarRef} style={{ position: 'relative', flexShrink: 0 }}>
