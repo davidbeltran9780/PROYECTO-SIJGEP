@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts'
 import api from '../api/axios'
 
-const COLORES = ['#1E3A8A', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4']
+const COLORES = ['#1E3A8A', '#16a34a', '#b45309', '#dc2626', '#6d28d9', '#0e7490']
 
 export default function Reportes() {
   const [stats, setStats] = useState(null)
@@ -10,6 +10,8 @@ export default function Reportes() {
   const [porEstado, setPorEstado] = useState([])
   const [porMes, setPorMes] = useState([])
   const [pqrsEstado, setPqrsEstado] = useState([])
+  const [pqrsTipo, setPqrsTipo] = useState([])
+  const [pqrsAlertas, setPqrsAlertas] = useState([])
   const [vencimientos, setVencimientos] = useState([])
   const [cargaAbogados, setCargaAbogados] = useState([])
   const [cargando, setCargando] = useState(true)
@@ -24,15 +26,19 @@ export default function Reportes() {
       api.get('/reportes/casos-por-estado'),
       api.get('/reportes/casos-por-mes'),
       api.get('/reportes/pqrs-por-estado'),
+      api.get('/reportes/pqrs-por-tipo'),
+      api.get('/reportes/pqrs-alertas'),
       api.get('/reportes/vencimientos'),
       api.get('/reportes/carga-por-abogado'),
     ])
-      .then(([s, t, e, m, p, v, a]) => {
+      .then(([s, t, e, m, pe, pt, pa, v, a]) => {
         setStats(s.data)
         setPorTipo(t.data)
         setPorEstado(e.data)
         setPorMes(m.data)
-        setPqrsEstado(p.data)
+        setPqrsEstado(pe.data)
+        setPqrsTipo(pt.data)
+        setPqrsAlertas(pa.data)
         setVencimientos(v.data)
         setCargaAbogados(a.data)
       })
@@ -138,7 +144,41 @@ export default function Reportes() {
         </table>
       </div>
 
-      {/* 3 — Gráficas */}
+      {/* 3 — PQRS vencidas o próximas a vencer */}
+      {pqrsAlertas.length > 0 && (
+        <div style={{ marginBottom: '30px' }}>
+          <h3 style={{ margin: '0 0 10px', fontSize: '15px', color: '#1e3a8a' }}>
+            💬 PQRS pendientes de respuesta
+          </h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Radicado</th><th>Tipo</th><th>Solicitante</th><th>Fecha límite</th><th>Días restantes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pqrsAlertas.map(p => (
+                <tr key={p.id_pqrs}>
+                  <td style={{ fontFamily: 'monospace', fontWeight: '700', color: '#1e3a8a', fontSize: '12px' }}>
+                    {p.numero_radicado}
+                  </td>
+                  <td>{p.tipo}</td>
+                  <td>{p.nombre_ciudadano || 'Anónimo'}</td>
+                  <td>{p.fecha_limite?.split('T')[0]}</td>
+                  <td className={p.dias_restantes < 0 ? 'urgente' : p.dias_restantes <= 3 ? 'proximo' : ''}>
+                    {p.dias_restantes < 0
+                      ? `Vencida hace ${Math.abs(p.dias_restantes)} día(s)`
+                      : p.dias_restantes === 0 ? 'Vence hoy'
+                      : `${p.dias_restantes} día(s)`}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* 4 — Gráficas */}
       <div className="graficas-grid">
 
         {porTipo.length > 0 && (
@@ -196,6 +236,23 @@ export default function Reportes() {
                 <Tooltip />
                 <Bar dataKey="cantidad" fill="#22C55E" radius={[4, 4, 0, 0]} />
               </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {pqrsTipo.length > 0 && (
+          <div className="grafica-card">
+            <h4>PQRS por tipo</h4>
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie data={pqrsTipo} dataKey="cantidad" nameKey="tipo" cx="50%" cy="50%" outerRadius={90} label>
+                  {pqrsTipo.map((_, i) => (
+                    <Cell key={i} fill={COLORES[i % COLORES.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
             </ResponsiveContainer>
           </div>
         )}

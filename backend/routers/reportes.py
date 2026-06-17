@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
+from datetime import date
 from database import get_db
 from auth_utils import requiere_rol
+from fechas_utils import agregar_dias_habiles
 
 router = APIRouter(
     prefix="/reportes",
@@ -73,7 +75,6 @@ def casos_por_mes(db=Depends(get_db), usuario: dict = Depends(solo_admin())):
 
 @router.get("/pqrs-por-estado")
 def pqrs_por_estado(db=Depends(get_db), usuario: dict = Depends(solo_admin())):
-    """Estado de las PQRS para seguimiento."""
     resultado = db.execute(text("""
         SELECT estado, COUNT(*) AS cantidad
         FROM pqrs
@@ -81,6 +82,51 @@ def pqrs_por_estado(db=Depends(get_db), usuario: dict = Depends(solo_admin())):
         ORDER BY cantidad DESC
     """)).fetchall()
     return [dict(fila._mapping) for fila in resultado]
+
+
+@router.get("/pqrs-por-tipo")
+def pqrs_por_tipo(db=Depends(get_db), usuario: dict = Depends(solo_admin())):
+    resultado = db.execute(text("""
+        SELECT tipo, COUNT(*) AS cantidad
+        FROM pqrs
+        GROUP BY tipo
+        ORDER BY cantidad DESC
+    """)).fetchall()
+    return [dict(fila._mapping) for fila in resultado]
+
+
+@router.get("/pqrs-alertas")
+def pqrs_alertas(
+    db=Depends(get_db),
+    usuario: dict = Depends(requiere_rol("administrador", "admin", "secretaria"))
+):
+    """PQRS pendientes con plazo legal real: 15 días hábiles excluyendo fines de semana y festivos colombianos."""
+    filas = db.execute(text("""
+        SELECT id_pqrs, numero_radicado, tipo, nombre_ciudadano, correo, estado, fecha_creacion
+        FROM pqrs
+        WHERE estado NOT IN ('respondido', 'cerrado')
+        ORDER BY fecha_creacion ASC
+    """)).fetchall()
+
+    hoy = date.today()
+    resultado = []
+    for f in filas:
+        fila = dict(f._mapping)
+        fecha_creacion = fila["fecha_creacion"]
+        if hasattr(fecha_creacion, "date"):
+            fecha_creacion = fecha_creacion.date()
+        elif isinstance(fecha_creacion, str):
+            fecha_creacion = date.fromisoformat(fecha_creacion[:10])
+
+        fecha_limite = agregar_dias_habiles(fecha_creacion, 15)
+        dias_restantes = (fecha_limite - hoy).days
+
+        fila["fecha_limite"] = fecha_limite.isoformat()
+        fila["dias_restantes"] = dias_restantes
+        resultado.append(fila)
+
+    resultado.sort(key=lambda x: x["dias_restantes"])
+    return resultado
 
 
 @router.get("/carga-por-abogado")
@@ -146,16 +192,38 @@ def notificaciones(
                            "titulo": f"Vence en {dias} día(s)",
                            "desc": f'"{titulo}"'})
 
-    # PQRS sin responder (solo admin y secretaria)
+    # PQRS próximas a vencer su plazo legal (solo admin y secretaria)
     if rol in ("administrador", "admin", "secretaria"):
-        pendientes = db.execute(text("""
-            SELECT COUNT(*) FROM pqrs
-            WHERE respuesta IS NULL OR respuesta = ''
-        """)).scalar()
-        if pendientes and pendientes > 0:
-            notifs.append({"tipo": "info", "icono": "💬",
-                           "titulo": "PQRS sin responder",
-                           "desc": f"{pendientes} PQRS pendiente(s) de respuesta"})
+        pqrs_pendientes = db.execute(text("""
+            SELECT numero_radicado, fecha_creacion
+            FROM pqrs
+            WHERE estado NOT IN ('respondido', 'cerrado')
+            ORDER BY fecha_creacion ASC
+        """)).fetchall()
+        hoy = date.today()
+        for p in pqrs_pendientes:
+            fc = p._mapping["fecha_creacion"]
+            if hasattr(fc, "date"):
+                fc = fc.date()
+            elif isinstance(fc, str):
+                fc = date.fromisoformat(fc[:10])
+            fecha_limite = agregar_dias_habiles(fc, 15)
+            dias = (fecha_limite - hoy).days
+            if dias > 5:
+                continue
+            radicado = p._mapping["numero_radicado"]
+            if dias < 0:
+                notifs.append({"tipo": "urgente", "icono": "🔴",
+                               "titulo": "PQRS vencida",
+                               "desc": f"{radicado} — venció hace {abs(dias)} día(s)"})
+            elif dias == 0:
+                notifs.append({"tipo": "urgente", "icono": "🔴",
+                               "titulo": "PQRS vence hoy",
+                               "desc": f"{radicado} — plazo legal se agota hoy"})
+            else:
+                notifs.append({"tipo": "aviso", "icono": "💬",
+                               "titulo": f"PQRS vence en {dias} día(s)",
+                               "desc": f"{radicado} — pendiente de respuesta"})
 
     return {"total": len(notifs), "items": notifs}
 

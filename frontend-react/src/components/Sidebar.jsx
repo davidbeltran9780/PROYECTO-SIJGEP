@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 
 const MENU_ITEMS = [
   { to: '/dashboard',   label: 'Dashboard',   title: 'Ir al panel principal',          roles: ['admin', 'administrador', 'abogado', 'secretaria', 'ciudadano'] },
@@ -17,6 +17,7 @@ const toggleSidebarDesktop = () => document.body.classList.toggle('sidebar-ocult
 
 export default function Sidebar() {
   const navigate = useNavigate()
+  const location = useLocation()
   const rol = localStorage.getItem('rol') || ''
 
   const cerrarSesion = () => {
@@ -61,6 +62,15 @@ export default function Sidebar() {
             {item.label}
           </NavLink>
         ))}
+
+        {/* Configuración — solo visible en móvil via CSS */}
+        <NavLink
+          to="/configuracion"
+          className={({ isActive }) => `nav-sidebar-link nav-config-movil${isActive ? ' activo' : ''}`}
+          onClick={cerrarMenu}
+        >
+          ⚙️ Configuración
+        </NavLink>
 
         <button className="logout" onClick={cerrarSesion}>
           Cerrar sesión

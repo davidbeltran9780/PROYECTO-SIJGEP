@@ -114,10 +114,10 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
     usuario = db.query(User).filter(User.email == data.email).first()
 
     if not usuario:
-        raise HTTPException(status_code=401, detail="Usuario no existe")
+        raise HTTPException(status_code=401, detail="Credenciales incorrectas")
 
     if not bcrypt.checkpw(data.password.encode(), usuario.password.encode()):
-        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+        raise HTTPException(status_code=401, detail="Credenciales incorrectas")
 
     if usuario.estado != 'activo':
         raise HTTPException(status_code=403, detail="Tu cuenta está desactivada. Contacta al administrador.")
@@ -281,8 +281,3 @@ def actualizar_perfil(datos: dict, usuario: dict = Depends(obtener_usuario_actua
             print(f"No se pudo enviar correo de cambio de contraseña: {e}")
 
     return {"msg": "Perfil actualizado correctamente"}
-
-
-@router.get("/prueba-auth")
-def prueba_auth():
-    return {"msg": "auth actualizado"}

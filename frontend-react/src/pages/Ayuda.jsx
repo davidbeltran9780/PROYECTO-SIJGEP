@@ -145,7 +145,7 @@ export default function Ayuda() {
           gap: '14px'
         }}>
           {SECCIONES.map((s, i) => (
-            <div key={i} style={{
+            <div key={i} className="ayuda-modulo-card" style={{
               background: 'white', border: '1px solid #e5e7eb',
               borderRadius: '10px', padding: '16px',
               borderLeft: '4px solid #1e3a8a'
@@ -174,7 +174,7 @@ export default function Ayuda() {
         <h3 style={{ fontSize: '15px', color: '#1e3a8a', marginBottom: '16px' }}>
           📬 Contacto y soporte
         </h3>
-        <div style={{
+        <div className="ayuda-contacto-card" style={{
           background: '#eff6ff', border: '1px solid #bfdbfe',
           borderRadius: '10px', padding: '20px'
         }}>

@@ -79,13 +79,12 @@ export default function PQRS() {
     }
   }
 
-  const enviarRespuestaCorreo = async () => {
-    if (!textoRespuesta.trim()) return toast.info('Escribe una respuesta antes de enviar')
+  const enviarRespuestaCorreo = async (p) => {
+    if (!p.respuesta?.trim()) return toast.info('Guarda un borrador de respuesta primero')
     setGuardando(true)
     try {
-      await api.post(`/pqrs/${modalRespuesta.id_pqrs}/enviar-respuesta`, { respuesta: textoRespuesta })
-      toast.exito(`Respuesta enviada al correo de ${modalRespuesta.nombre_ciudadano}`)
-      setModalRespuesta(null)
+      await api.post(`/pqrs/${p.id_pqrs}/enviar-respuesta`, { respuesta: p.respuesta })
+      toast.exito(`Respuesta enviada al correo de ${p.nombre_ciudadano}`)
       cargar()
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Error al enviar la respuesta')
@@ -218,11 +217,32 @@ export default function PQRS() {
                   </td>
                   {(puedeGestionar || esAbogado) && (
                     <td data-label="Acciones">
-                      <button className="btn-accion-editar"
-                        onClick={() => abrirResponder(p)}
-                        style={{ fontSize: '12px' }}>
-                        {p.respuesta ? '✏️ Ver/Editar' : '💬 Responder'}
-                      </button>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
+                        <button
+                          onClick={() => abrirResponder(p)}
+                          style={{
+                            width: '100px', fontSize: '11px', fontWeight: '600', padding: '4px 0',
+                            borderRadius: '6px', border: '1px solid #3b82f6',
+                            background: 'white', color: '#1e40af', cursor: 'pointer', lineHeight: 1.4,
+                          }}>
+                          {p.respuesta ? '✏️ Editar' : '💬 Responder'}
+                        </button>
+                        <button
+                          onClick={() => enviarRespuestaCorreo(p)}
+                          disabled={guardando || !p.respuesta?.trim() || ['respondido', 'cerrado'].includes(p.estado)}
+                          title={!p.respuesta?.trim() ? 'Guarda un borrador primero' : p.estado === 'respondido' ? 'Ya fue enviada' : 'Enviar al ciudadano'}
+                          style={{
+                            width: '100px', fontSize: '11px', fontWeight: '600', padding: '4px 0',
+                            borderRadius: '6px',
+                            border: (p.respuesta?.trim() && !['respondido', 'cerrado'].includes(p.estado)) ? '1px solid #1e3a8a' : '1px solid #d1d5db',
+                            background: (p.respuesta?.trim() && !['respondido', 'cerrado'].includes(p.estado)) ? '#1e3a8a' : 'white',
+                            color: (p.respuesta?.trim() && !['respondido', 'cerrado'].includes(p.estado)) ? 'white' : '#9ca3af',
+                            cursor: (p.respuesta?.trim() && !['respondido', 'cerrado'].includes(p.estado)) ? 'pointer' : 'not-allowed',
+                            lineHeight: 1.4,
+                          }}>
+                          📧 Enviar
+                        </button>
+                      </div>
                     </td>
                   )}
                 </>
@@ -287,20 +307,15 @@ export default function PQRS() {
               style={{ width: '100%', padding: '10px', borderRadius: '6px', fontSize: '13px', resize: 'vertical', marginTop: '6px' }}
             />
             <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '8px', marginBottom: '4px' }}>
-              📧 El ciudadano recibirá la respuesta en: <strong>{modalRespuesta.correo}</strong>
+              📧 La respuesta se enviará al correo: <strong>{modalRespuesta.correo}</strong>
             </p>
-            <div className="form-botones" style={{ marginTop: '8px', flexWrap: 'wrap', gap: '8px' }}>
+            <div className="form-botones" style={{ marginTop: '8px', gap: '8px' }}>
               <button className="btn-cancelar" onClick={() => setModalRespuesta(null)}>
                 Cancelar
               </button>
-              <button className="btn-accion-editar" onClick={guardarRespuesta}
-                disabled={guardando || !textoRespuesta.trim()}
-                style={{ fontSize: '13px' }}>
-                {guardando ? 'Guardando...' : '💾 Guardar borrador'}
-              </button>
-              <button className="btn-guardar" onClick={enviarRespuestaCorreo}
+              <button className="btn-guardar" onClick={guardarRespuesta}
                 disabled={guardando || !textoRespuesta.trim()}>
-                {guardando ? 'Enviando...' : '📧 Enviar respuesta al ciudadano'}
+                {guardando ? 'Guardando...' : '💾 Guardar borrador'}
               </button>
             </div>
           </div>

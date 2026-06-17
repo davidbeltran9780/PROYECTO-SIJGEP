@@ -9,7 +9,7 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
-EXPIRACION_MINUTOS = 60
+EXPIRACION_MINUTOS = 180
 
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY no esta definido en .env")

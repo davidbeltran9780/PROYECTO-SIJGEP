@@ -73,13 +73,6 @@ export default function PQRSPublico() {
       setCodigoInput('')
       setMensajeCodigo('')
     }
-    // Si desmarca anónimo, limpiar verificación
-    if (campo === 'anonima' && !valor) {
-      setCodigoEnviado(false)
-      setCodigoVerificado(false)
-      setCodigoInput('')
-      setMensajeCodigo('')
-    }
   }
 
   const enviarCodigo = async () => {
@@ -132,7 +125,7 @@ export default function PQRSPublico() {
     if (!form.municipio.trim()) return setError('El municipio es obligatorio')
     if (!form.descripcion.trim()) return setError('Describe tu solicitud')
     if (!form.acepta_datos) return setError('Debes aceptar el tratamiento de datos personales (Ley 1581/2012)')
-    if (form.anonima && !codigoVerificado) return setError('Debes verificar tu correo electrónico antes de radicar una solicitud anónima')
+    if (!codigoVerificado) return setError('Debes verificar tu correo electrónico antes de radicar la solicitud')
 
     const descripcionCompleta = [
       '━━━ DATOS DEL SOLICITANTE ━━━',
@@ -294,9 +287,10 @@ export default function PQRSPublico() {
                       <label style={estiloLabel}>Número de documento *</label>
                       <input
                         type="text"
+                        inputMode="numeric"
                         placeholder="Ej: 1234567890"
                         value={form.numero_doc}
-                        onChange={e => set('numero_doc', e.target.value)}
+                        onChange={e => set('numero_doc', e.target.value.replace(/\D/g, ''))}
                         style={{ width: '100%' }}
                       />
                     </div>
@@ -322,9 +316,10 @@ export default function PQRSPublico() {
                   <label style={estiloLabel}>Teléfono</label>
                   <input
                     type="tel"
+                    inputMode="numeric"
                     placeholder="Ej: 3001234567"
                     value={form.telefono}
-                    onChange={e => set('telefono', e.target.value)}
+                    onChange={e => set('telefono', e.target.value.replace(/\D/g, ''))}
                     style={{ width: '100%' }}
                   />
                 </div>
@@ -332,9 +327,9 @@ export default function PQRSPublico() {
                   <label style={estiloLabel}>Municipio *</label>
                   <input
                     type="text"
-                    placeholder="Ej: Medellín"
+                    placeholder="Ej: Bogotá"
                     value={form.municipio}
-                    onChange={e => set('municipio', e.target.value)}
+                    onChange={e => set('municipio', e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, ''))}
                     style={{ width: '100%' }}
                   />
                 </div>
@@ -382,8 +377,8 @@ export default function PQRSPublico() {
                 </span>
               </label>
 
-              {/* ── Verificación de correo (solo anónimos) ── */}
-              {form.anonima && (
+              {/* ── Verificación de correo ── */}
+              {(
                 <div style={{
                   background: 'rgba(255,255,255,0.1)',
                   border: codigoVerificado ? '1px solid #86efac' : '1px solid rgba(255,255,255,0.25)',
@@ -395,7 +390,7 @@ export default function PQRSPublico() {
                     🔐 Verificación de correo electrónico
                   </p>
                   <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', margin: '0 0 12px' }}>
-                    Al ser una solicitud anónima, necesitamos verificar que el correo existe para poder enviarte la respuesta.
+                    Necesitamos verificar que el correo es válido para poder enviarte el radicado y la respuesta.
                   </p>
 
                   {!codigoVerificado ? (

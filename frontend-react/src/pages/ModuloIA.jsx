@@ -176,22 +176,12 @@ export default function ModuloIA() {
       <div className="contenido">
         <h2>Asistente Jurídico con IA</h2>
 
-        <select value={expedienteId} onChange={e => setExpedienteId(e.target.value)}
-          style={{ marginBottom: '1rem', padding: '8px', width: '100%' }}>
-          <option value="">Seleccionar expediente (opcional)</option>
-          {expedientes.map(e => (
-            <option key={e.id_expediente} value={e.id_expediente}>
-              EXP-{e.id_expediente} — {e.titulo || e.tipo || 'Sin título'}
-            </option>
-          ))}
-        </select>
-
-        <div className="ia-panel">
+<div className="ia-panel">
 
           {/* Card 1 — Documentos */}
           <div className="ia-card">
             <h3>Documentos</h3>
-            <p><strong>{archivo ? archivo.name : 'Ninguno seleccionado'}</strong></p>
+            <p style={{ marginBottom: '12px' }}><strong>{archivo ? archivo.name : 'Ninguno seleccionado'}</strong></p>
             <input type="file" ref={inputRef} hidden
               accept=".txt,.pdf,.docx,.doc,.jpg,.jpeg,.png"
               onChange={handleArchivo} />
@@ -214,7 +204,7 @@ export default function ModuloIA() {
           <div className="ia-card">
             <h3>Análisis IA</h3>
             {cargando && <Spinner />}
-            <p><strong>Tipo de caso:</strong> {clasificacion}</p>
+            <p style={{ marginBottom: '12px' }}><strong>Tipo de caso:</strong> {clasificacion}</p>
             <button className="nuevo" onClick={clasificar} disabled={cargando}>
               🤖 Analizar con IA
             </button>
@@ -240,7 +230,6 @@ export default function ModuloIA() {
                   const margen = 20
                   const ancho = doc.internal.pageSize.getWidth() - margen * 2
                   let y = margen
-
                   const escribir = (texto, bold = false, size = 10) => {
                     doc.setFontSize(size)
                     doc.setFont('helvetica', bold ? 'bold' : 'normal')
@@ -249,29 +238,21 @@ export default function ModuloIA() {
                       doc.text(l, margen, y); y += size * 0.5 + 2
                     })
                   }
-
                   doc.setTextColor(40, 40, 40)
-                  escribir('SIGJEP — Sistema Inteligente de Gestión Jurídica', true, 13)
-                  y += 2
-                  escribir('Asistente Jurídico con IA para Alcaldías Colombianas', false, 10)
-                  y += 2
-                  escribir(`Fecha: ${fecha}   |   Expediente: ${expedienteId || 'No asignado'}   |   Tipo: ${tipo}`, false, 9)
-                  y += 4
+                  escribir('SIGJEP — Sistema Inteligente de Gestión Jurídica', true, 13); y += 2
+                  escribir('Asistente Jurídico con IA para Alcaldías Colombianas', false, 10); y += 2
+                  escribir(`Fecha: ${fecha}   |   Expediente: ${expedienteId || 'No asignado'}   |   Tipo: ${tipo}`, false, 9); y += 4
                   doc.setDrawColor(180, 180, 180); doc.line(margen, y, margen + ancho, y); y += 6
-
                   escribir('RESUMEN DEL CASO', true, 11); y += 2
                   escribir(textoResumen || 'No disponible', false, 10); y += 6
-
                   if (textoNormas) {
                     doc.setDrawColor(180, 180, 180); doc.line(margen, y, margen + ancho, y); y += 6
                     escribir('NORMAS APLICABLES', true, 11); y += 2
                     escribir(textoNormas, false, 10); y += 6
                   }
-
                   doc.setDrawColor(180, 180, 180); doc.line(margen, y, margen + ancho, y); y += 4
                   doc.setFontSize(8); doc.setTextColor(150, 150, 150)
                   doc.text('Documento generado automáticamente por IA — Requiere revisión humana antes de ser oficial.', margen, y)
-
                   doc.save(`resumen_exp${expedienteId || 'sin_exp'}.pdf`)
                 }}
               >
@@ -287,29 +268,24 @@ export default function ModuloIA() {
                   const textoNormas = extraerSeccion(resumen, 'NORMAS') || ''
                   const tipo = extraerSeccion(resumen, 'TIPO') || clasificacion
                   const fecha = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
-
                   const parrafo = (texto, bold = false, size = 22) =>
                     new Paragraph({ children: [new TextRun({ text: texto, bold, size, font: 'Times New Roman' })], spacing: { after: 120 } })
-
                   const doc = new Document({
-                    sections: [{
-                      properties: { page: { margin: { top: 1440, bottom: 1440, left: 1800, right: 1440 } } },
-                      children: [
-                        parrafo('SIGJEP — Sistema Inteligente de Gestión Jurídica', true, 26),
-                        parrafo('Asistente Jurídico con IA para Alcaldías Colombianas', false, 20),
-                        parrafo(`Fecha: ${fecha}   |   Expediente: ${expedienteId || 'No asignado'}   |   Tipo: ${tipo}`, false, 18),
+                    sections: [{ properties: { page: { margin: { top: 1440, bottom: 1440, left: 1800, right: 1440 } } }, children: [
+                      parrafo('SIGJEP — Sistema Inteligente de Gestión Jurídica', true, 26),
+                      parrafo('Asistente Jurídico con IA para Alcaldías Colombianas', false, 20),
+                      parrafo(`Fecha: ${fecha}   |   Expediente: ${expedienteId || 'No asignado'}   |   Tipo: ${tipo}`, false, 18),
+                      new Paragraph({ children: [new TextRun({ text: ' ' })], spacing: { after: 200 } }),
+                      parrafo('RESUMEN DEL CASO', true, 24),
+                      ...(textoResumen || 'No disponible').split('\n').map(l => parrafo(l)),
+                      new Paragraph({ children: [new TextRun({ text: ' ' })], spacing: { after: 200 } }),
+                      ...(textoNormas ? [
+                        parrafo('NORMAS APLICABLES', true, 24),
+                        ...(textoNormas).split('\n').map(l => parrafo(l)),
                         new Paragraph({ children: [new TextRun({ text: ' ' })], spacing: { after: 200 } }),
-                        parrafo('RESUMEN DEL CASO', true, 24),
-                        ...(textoResumen || 'No disponible').split('\n').map(l => parrafo(l)),
-                        new Paragraph({ children: [new TextRun({ text: ' ' })], spacing: { after: 200 } }),
-                        ...(textoNormas ? [
-                          parrafo('NORMAS APLICABLES', true, 24),
-                          ...(textoNormas).split('\n').map(l => parrafo(l)),
-                          new Paragraph({ children: [new TextRun({ text: ' ' })], spacing: { after: 200 } }),
-                        ] : []),
-                        parrafo('Documento generado automáticamente por IA — Requiere revisión humana antes de ser oficial.', false, 16),
-                      ]
-                    }]
+                      ] : []),
+                      parrafo('Documento generado automáticamente por IA — Requiere revisión humana antes de ser oficial.', false, 16),
+                    ]}]
                   })
                   const blob = await Packer.toBlob(doc)
                   saveAs(blob, `resumen_exp${expedienteId || 'sin_exp'}.docx`)
@@ -324,36 +300,21 @@ export default function ModuloIA() {
           <div className="ia-card">
             <h3>Descargas</h3>
 
-            {aprobado && (
-              <p style={{ color: '#166534', background: '#dcfce7', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', marginBottom: '10px' }}>
-                ✅ Borrador revisado — listo para subir al expediente
-              </p>
-            )}
-
             <button className="nuevo" onClick={descargarPDF}
               style={{ marginBottom: '8px', width: '100%' }}
               disabled={!resumen}>
-              📄 Descargar Resumen en PDF
+              📄 Descargar borrador PDF
             </button>
 
             <button className="nuevo" onClick={descargarBorradorWord}
-              style={{ marginBottom: '16px', width: '100%', background: '#1d4ed8' }}
+              style={{ width: '100%', background: '#1d4ed8' }}
               disabled={!resumen}>
-              📝 Descargar Borrador en Word
+              📝 Descargar borrador Word
             </button>
 
-            <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '12px' }}>
-              Descarga el Word, revísalo y súbelo al expediente desde el módulo Documentos.
+            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '12px', lineHeight: '1.5' }}>
+              ⚠️ Este documento es solo una <strong>guía generada por IA</strong>. Descárgalo, revísalo y edítalo antes de usarlo oficialmente. No tiene validez jurídica sin revisión humana.
             </p>
-
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="btn-guardar" onClick={aprobar} disabled={!resumen || aprobado}>
-                {aprobado ? 'Revisado ✅' : 'Marcar revisado'}
-              </button>
-              <button className="btn-cancelar" onClick={descartar} disabled={!resumen}>
-                Descartar
-              </button>
-            </div>
           </div>
 
         </div>

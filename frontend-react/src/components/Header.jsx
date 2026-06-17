@@ -88,17 +88,9 @@ export default function Header() {
           ☰
         </button>
 
-        {/* Módulo actual — izquierda del header derecho */}
+        {/* Módulo actual — oculto en móvil via CSS */}
         {moduloActual && (
-          <span style={{
-            color: 'rgba(255,255,255,0.5)',
-            fontSize: '12px',
-            fontWeight: '500',
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase',
-            marginRight: 'auto',
-            pointerEvents: 'none',
-          }}>
+          <span className="header-modulo" style={{ opacity: 1 }}>
             SIGJEP <span style={{ opacity: 0.4 }}>/</span> <span style={{ color: 'white', fontWeight: '700' }}>{moduloActual}</span>
           </span>
         )}
