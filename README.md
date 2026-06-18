@@ -115,6 +115,29 @@ npm run dev
 
 ---
 
+## Datos de prueba
+
+Cargar en MySQL Workbench después del schema:
+```
+File → Open SQL Script → backend/datos_prueba.sql → Execute
+```
+
+**Todos los usuarios tienen contraseña: `Sena2026`**
+
+| Usuario | Email | Rol |
+|---------|-------|-----|
+| Manuel Rodríguez | admin@sigjep.co | administrador |
+| Laura Jiménez | abogado@sigjep.co | abogado |
+| Andrés Castellanos | acastellanos@sigjep.co | abogado |
+| Patricia Vargas | pvargas@sigjep.co | abogado |
+| Sofía Morales | secretaria@sigjep.co | secretaria |
+| Jorge Quintero | jquintero@sigjep.co | secretaria |
+| Carlos Pérez | ciudadano@sigjep.co | ciudadano |
+
+> Incluye 23 expedientes, 16 PQRS con fechas variadas, 30 documentos, auditoría y backups de ejemplo.
+
+---
+
 ## En desarrollo — DOS terminales
 
 | Terminal | Comando | Puerto |

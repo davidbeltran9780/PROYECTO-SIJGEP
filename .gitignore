@@ -419,3 +419,5 @@ credentials.json
 backups/
 backups/
 token.pickle
+*.swp
+*.swo
