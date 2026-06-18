@@ -37,23 +37,28 @@ PROYECTO-SIGJEP/
 │   │   ├── ia.py             # Gemini — resumir y clasificar
 │   │   ├── backups.py        # Backups a Google Drive
 │   │   ├── pqrs.py           # Módulo PQRS
+│   │   ├── consulta.py       # Consulta pública sin cuenta
 │   │   └── reportes.py       # Estadísticas
 │   ├── models/
 │   ├── uploads/
 │   ├── main.py
 │   ├── database.py
-│   ├── schema.sql
+│   ├── auth_utils.py         # Utilidades JWT y autenticación
+│   ├── auditoria_utils.py    # Registro automático de acciones
+│   ├── fechas_utils.py       # Cálculo de días hábiles
+│   ├── schema.sql            # Estructura de la base de datos
+│   ├── datos_prueba.sql      # Datos iniciales para desarrollo
 │   ├── requirements.txt
 │   └── .env.example
-├── frontend/                 # HTML original (referencia)
-├── frontend-react/           # Frontend activo en React
+├── frontend-react/           # Frontend React (activo)
 │   ├── src/
 │   │   ├── api/axios.js
-│   │   ├── components/       # Header, Sidebar, Footer, Accesibilidad, SesionExpirando
-│   │   ├── pages/            # Login, Dashboard, Admin, Configuracion, etc.
-│   │   └── assets/styles.css
+│   │   ├── components/       # Header, Sidebar, Footer, Paginacion, ConfirmModal, Accesibilidad, SesionExpirando
+│   │   ├── pages/            # Login, Dashboard, Expedientes, Documentos, PQRS, Alertas, Reportes, ModuloIA, Admin, Ayuda, Configuracion, etc.
+│   │   ├── context/          # ToastContext
+│   │   └── assets/styles.css # Hoja de estilos principal (36 secciones documentadas)
 │   ├── .env.example
-│   └── README.md
+│   └── package.json
 └── README.md
 ```
 
@@ -209,20 +214,20 @@ npm run dev
 | Login / Registro | Autenticación JWT con roles | ✅ |
 | Recuperar contraseña | Envío de correo con token | ✅ |
 | Dashboard | Tarjetas, gráficas y tabla de expedientes con filtros | ✅ |
-| Expedientes | CRUD, asignación de abogado, cierre y reactivación | ✅ |
-| Documentos | Subida de archivos PDF/Word/imagen por expediente | ✅ |
-| Alertas | Tabla de casos por vencimiento (urgente/próximo/a tiempo) | ✅ |
-| PQRS | Gestión interna y radicación pública sin cuenta | ✅ |
-| Módulo IA | Resumen y clasificación de documentos con Gemini | ✅ |
-| Reportes | Gráficas y tabla de vencimientos con filtros | ✅ |
-| Admin — Usuarios | CRUD con activar/desactivar, filtros por rol y estado | ✅ |
-| Admin — Backups | Generar y restaurar copias en Google Drive | ✅ |
+| Expedientes | CRUD, asignación de abogado con confirmación, cierre, reactivación, paginación y filtro de fechas | ✅ |
+| Documentos | Subida de archivos por expediente, columna de días a vencer con colores, filtro por tipo y estado de vencimiento, ordenado por urgencia | ✅ |
+| Alertas | Tablas de vencimientos clasificados (vencido/urgente/próximo/a tiempo) con paginación | ✅ |
+| PQRS | Gestión interna con fecha creación/vencimiento, filtro de fechas, confirmación al cambiar estado, radicación pública con verificación de correo para anónimas | ✅ |
+| Módulo IA | Análisis jurídico con Gemini: partes, hechos, pretensiones, normas y borrador; resumen en pantalla, análisis completo en PDF/Word | ✅ |
+| Reportes | Gráficas y tablas de vencimientos y PQRS pendientes con paginación | ✅ |
+| Admin — Usuarios | CRUD con activar/desactivar, filtros por rol/estado, confirmación al guardar edición | ✅ |
+| Admin — Backups | Generar y restaurar copias en Google Drive con historial | ✅ |
 | Admin — Auditoría | Log de acciones con IP, detalle y exportar CSV (Ley 1581) | ✅ |
 | Consulta pública | Búsqueda de procesos sin cuenta por radicado/nombre/tipo | ✅ |
-| Configuración | Cambio de nombre y contraseña desde el perfil | ✅ |
-| Accesibilidad | Widget con fuente, contraste, dislexia, daltonismo, lector | ✅ |
-| Sesión expirando | Aviso 5 min antes con opción de extender sesión | ✅ |
-| Ayuda | Centro de ayuda con descripción de cada módulo | ✅ |
+| Configuración | Cambio de nombre y contraseña desde cualquier rol | ✅ |
+| Accesibilidad | Widget con fuente ajustable, alto contraste, dislexia, daltonismo | ✅ |
+| Sesión expirando | Aviso 5 min antes con cuenta regresiva y opción de extender | ✅ |
+| Ayuda | Centro de ayuda con guía de todos los módulos y preguntas frecuentes | ✅ |
 
 
 
