@@ -4,90 +4,98 @@ const SECCIONES = [
   {
     icono: '📋',
     titulo: 'Dashboard',
-    desc: 'Pantalla principal del sistema. Muestra un resumen de expedientes activos, alertas de vencimiento y estadísticas generales. Los administradores ven gráficas de casos por tipo y por mes.'
+    desc: 'Pantalla principal del sistema. Muestra un resumen de expedientes activos, PQRS recientes, alertas de vencimiento urgentes y gráficas de casos por tipo y por mes. Los administradores y secretarias ven el panel completo; los abogados ven solo sus casos asignados.'
   },
   {
     icono: '📁',
     titulo: 'Expedientes',
-    desc: 'Gestión de expedientes jurídicos. Permite crear nuevos casos, asignar abogados, cambiar el estado (activo, cerrado, archivado) y eliminar expedientes. Solo administradores y secretarias pueden crear.'
+    desc: 'Gestión de expedientes jurídicos. Permite crear nuevos casos, asignar abogados, cambiar el estado (activo, en proceso, cerrado, archivado) y eliminar expedientes. Incluye búsqueda por texto y filtro de fecha de creación. Solo administradores y secretarias pueden crear y eliminar.'
   },
   {
     icono: '📄',
     titulo: 'Documentos',
-    desc: 'Gestión de documentos por expediente. Busca el expediente en la tabla, haz clic para ver sus documentos, sube archivos (PDF, Word, imágenes) y márcalos como enviados cuando estén listos.'
+    desc: 'Gestión de documentos por expediente. La tabla de expedientes se ordena automáticamente por vencimiento más cercano primero y muestra los días restantes con colores (rojo = vencido, amarillo = urgente, verde = a tiempo). Filtra por tipo de caso y estado de vencimiento. Haz clic en un expediente para ver y subir sus documentos. Los documentos marcados como "Enviados" solo pueden eliminarse por un administrador.'
   },
   {
     icono: '💬',
     titulo: 'PQRS',
-    desc: 'Peticiones, Quejas, Reclamos y Sugerencias. Los ciudadanos pueden radicar sin cuenta en la página pública. Las quejas, reclamos y sugerencias pueden enviarse de forma anónima previo a verificar el correo con un código. Al radicar, se envía confirmación al correo con el número de radicado. Los funcionarios pueden guardar la respuesta como borrador o enviarla directamente al ciudadano por correo.'
+    desc: 'Peticiones, Quejas, Reclamos y Sugerencias. Los ciudadanos pueden radicar sin cuenta desde la página pública. Las quejas, reclamos y sugerencias pueden enviarse anónimamente previa verificación de correo con código de 6 dígitos. La tabla interna muestra fecha de creación y fecha de vencimiento (en rojo si ya venció). El cambio de estado requiere confirmación para evitar cambios accidentales. Al radicar, el sistema calcula automáticamente la fecha de vencimiento (15 días hábiles).'
   },
   {
     icono: '🤖',
     titulo: 'Módulo IA',
-    desc: 'Asistente jurídico con inteligencia artificial. Sube un documento (PDF, Word, imagen) y la IA lo clasifica, genera un resumen jurídico y redacta un borrador de respuesta institucional según el tipo de caso (tutela, derecho de petición, queja, etc.). Puedes descargar el borrador en PDF o Word, y también el resumen con encabezado SIGJEP, normas aplicables y pie de página.'
+    desc: 'Asistente jurídico con inteligencia artificial (Google Gemini). Sube un documento (PDF, Word, imagen) y la IA extrae: partes del proceso, hechos numerados, pretensiones, análisis jurídico detallado y normas aplicables. En pantalla se muestra un resumen ejecutivo. Al descargar el PDF o Word obtienes el análisis completo con todas las secciones y el borrador de respuesta institucional según el tipo de caso (tutela, derecho de petición, queja, reclamo, sugerencia).'
   },
   {
     icono: '⚠️',
     titulo: 'Alertas',
-    desc: 'Casos próximos a vencer clasificados en tres categorías: Urgente (menos de 2 días), Próximo (entre 2 y 5 días) y A tiempo (más de 5 días). Los abogados solo ven sus propios casos.'
+    desc: 'Vencimientos de casos y PQRS clasificados en cuatro categorías: Vencidos (ya superaron el plazo), Urgente (0–2 días), Próximo (3–5 días) y A tiempo (más de 5 días). Cada tabla tiene paginación. Los abogados solo ven sus propios casos; administradores y secretarias ven todos incluyendo PQRS.'
   },
   {
     icono: '📊',
     titulo: 'Reportes',
-    desc: 'Estadísticas generales del sistema. Muestra tarjetas resumen, tabla de vencimientos próximos y gráficas de casos por tipo, estado, mes y carga por abogado. Solo visible para administradores.'
+    desc: 'Estadísticas generales del sistema. Muestra tarjetas resumen, tabla de casos próximos a vencer con filtros de fecha y tipo, tabla de PQRS pendientes de respuesta, y gráficas de casos por tipo, estado, mes y carga por abogado. Todas las tablas tienen paginación. Solo visible para administradores y secretarias.'
   },
   {
     icono: '⚙️',
     titulo: 'Administración',
-    desc: 'Panel de administración con tres secciones: Usuarios (crear, editar, activar/desactivar), Backups (generar respaldos a Google Drive) y Auditoría (historial de acciones del sistema).'
+    desc: 'Panel con tres pestañas: Usuarios (crear, editar, activar/desactivar; filtros por ID, correo, rol y estado), Backups (generar respaldos automáticos a Google Drive con historial) y Auditoría (registro completo de acciones del sistema con filtros por fecha, usuario y rol). Todas las tablas tienen paginación.'
   },
   {
     icono: '👤',
-    titulo: 'Perfil',
-    desc: 'Permite cambiar el nombre y la contraseña de la cuenta. Al cambiar la contraseña, el sistema envía automáticamente un correo de confirmación al correo registrado como medida de seguridad.'
+    titulo: 'Configuración',
+    desc: 'Permite cambiar el nombre y la contraseña de la cuenta desde cualquier rol. Al cambiar la contraseña se requiere ingresar la contraseña actual como verificación de seguridad.'
   },
 ]
 
 const FAQS = [
   {
     p: '¿Cómo radico una PQRS sin tener cuenta?',
-    r: 'Ve a la página de inicio y haz clic en "📨 Radicar PQRS sin cuenta". Llena el formulario con tu correo y al finalizar recibirás el número de radicado tanto en pantalla como en tu correo electrónico.'
+    r: 'Ve a la página de inicio y haz clic en "📨 Radicar PQRS sin cuenta". Llena el formulario con tu nombre, correo y descripción. Al finalizar recibirás el número de radicado en pantalla y por correo electrónico. El sistema calcula automáticamente la fecha de vencimiento (15 días hábiles desde la radicación).'
   },
   {
     p: '¿Puedo enviar una queja de forma anónima?',
-    r: 'Sí. En el formulario público de PQRS, al seleccionar Queja, Reclamo o Sugerencia aparece la opción "Enviar de forma anónima". Al activarla, el sistema pedirá verificar tu correo con un código de 6 dígitos que se envía automáticamente. Una vez verificado, puedes radicar sin proporcionar nombre ni documento.'
+    r: 'Sí. En el formulario público de PQRS, al seleccionar Queja, Reclamo o Sugerencia aparece la opción "Enviar de forma anónima". Al activarla, el sistema pedirá verificar tu correo con un código de 6 dígitos. Una vez verificado, puedes radicar sin proporcionar nombre ni documento de identidad.'
   },
   {
     p: '¿Cómo funciona la verificación de correo en PQRS anónimas?',
-    r: 'Al marcar la opción anónima, aparece una sección de verificación. Haz clic en "Enviar código de verificación" y recibirás un código de 6 dígitos válido por 10 minutos. Ingrésalo en el campo correspondiente y haz clic en "Verificar". Una vez confirmado, el botón de radicar se activa.'
+    r: 'Al marcar la opción anónima, aparece una sección de verificación. Haz clic en "Enviar código de verificación" y recibirás un código de 6 dígitos válido por 10 minutos. Ingrésalo y haz clic en "Verificar". Una vez confirmado, el botón de radicar se activa automáticamente.'
   },
   {
     p: '¿Cómo consulto el estado de mi PQRS?',
-    r: 'En la página de inicio haz clic en "🔍 Consultar estado de proceso". Puedes buscar por número de radicado, nombre del demandante o tipo de proceso. También puedes consultar desde la pantalla de confirmación después de radicar.'
+    r: 'En la página de inicio haz clic en "🔍 Consultar estado de proceso". Puedes buscar por número de radicado, nombre del demandante o tipo de proceso. También puedes consultar desde la pantalla de confirmación tras radicar.'
   },
   {
     p: '¿Cómo sabe el ciudadano que su PQRS fue respondida?',
-    r: 'Cuando el funcionario hace clic en "📧 Enviar respuesta al ciudadano" en el módulo interno, el sistema envía automáticamente un correo al ciudadano con la respuesta oficial y el número de radicado.'
+    r: 'Cuando el funcionario hace clic en "📧 Enviar respuesta al ciudadano", el sistema envía automáticamente un correo con la respuesta oficial y el número de radicado. La PQRS cambia de estado a "respondido" y queda registrada.'
+  },
+  {
+    p: '¿Qué significan los colores en la tabla de documentos?',
+    r: 'Los colores en la columna "Vencimiento" indican el estado del expediente: 🔴 Rojo = ya venció, 🟡 Amarillo = vence en 0–2 días (urgente), 🟠 Ámbar = vence en 3–5 días (próximo), 🟢 Verde = vence en más de 5 días (a tiempo). La tabla se ordena automáticamente mostrando los más urgentes primero.'
   },
   {
     p: '¿Cómo recupero mi contraseña?',
-    r: 'En la pantalla de inicio de sesión haz clic en "¿Olvidaste tu contraseña?". Ingresa tu correo y recibirás un enlace para restablecerla. Al cambiar la contraseña desde el perfil, también se envía un correo de confirmación automáticamente.'
+    r: 'En la pantalla de inicio de sesión haz clic en "¿Olvidaste tu contraseña?". Ingresa tu correo y recibirás un enlace para restablecerla. También puedes cambiarla desde Configuración ingresando tu contraseña actual.'
   },
   {
     p: '¿Qué formatos acepta el módulo de documentos?',
-    r: 'El sistema acepta archivos PDF, Word (.docx, .doc), imágenes (JPG, JPEG, PNG). El tamaño máximo por archivo es 10 MB.'
+    r: 'El sistema acepta PDF, Word (.docx, .doc) e imágenes (JPG, JPEG, PNG). El tamaño máximo recomendado por archivo es 10 MB.'
   },
   {
     p: '¿Qué pasa cuando marco un documento como "Enviado"?',
-    r: 'El documento queda bloqueado — ya no puede ser eliminado por el usuario que lo subió. Solo un administrador puede eliminarlo después de enviado.'
+    r: 'El documento queda bloqueado y no puede ser eliminado por quien lo subió. Solo un administrador puede eliminarlo. Esta medida protege documentos que ya fueron remitidos oficialmente.'
   },
   {
     p: '¿Cuánto tiempo tiene la entidad para responder una PQRS?',
-    r: 'Según la Ley 1755 de 2015: Petición general 15 días hábiles, Derecho de Petición 10 días hábiles, Consultas 30 días hábiles.'
+    r: 'Según la Ley 1755 de 2015: Petición general 15 días hábiles, Derecho de Petición 10 días hábiles, Consultas 30 días hábiles. El sistema calcula y muestra automáticamente la fecha límite en la tabla de PQRS y en el módulo de Alertas.'
+  },
+  {
+    p: '¿Cómo funciona el Módulo IA?',
+    r: 'Sube un documento jurídico (PDF, Word o imagen). La IA analiza el contenido, identifica las partes, extrae los hechos numerados, las pretensiones y genera un análisis jurídico con normas aplicables. En pantalla verás un resumen ejecutivo. Al descargar el PDF o Word obtendrás el análisis completo más el borrador de respuesta institucional listo para revisar y firmar.'
   },
   {
     p: '¿Cómo genero un backup del sistema?',
-    r: 'Ve a Administración → pestaña Backups → clic en "Generar Backup Ahora". El respaldo se sube automáticamente a Google Drive y queda registrado en el historial.'
+    r: 'Ve a Administración → pestaña Backups → clic en "Generar Backup Ahora". El respaldo se sube automáticamente a Google Drive y queda registrado en el historial con fecha, tamaño y estado.'
   },
 ]
 

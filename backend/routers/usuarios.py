@@ -25,7 +25,7 @@ def get_ip(request: Request) -> str:
 @router.get("/usuarios")
 def get_usuarios(db=Depends(get_db), usuario: dict = Depends(solo_admin())):
     resultado = db.execute(
-        text("SELECT id_usuarios, nombre, email, rol, estado FROM usuarios")
+        text("SELECT id_usuarios, nombre, email, rol, estado FROM usuarios ORDER BY id_usuarios DESC")
     ).fetchall()
     return [dict(fila._mapping) for fila in resultado]
 

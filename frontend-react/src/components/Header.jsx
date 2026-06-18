@@ -28,7 +28,8 @@ export default function Header() {
 
   const navigate = useNavigate()
   const usuario = localStorage.getItem('usuario') || 'Usuario'
-  const rol = localStorage.getItem('rol') || 'Sin rol'
+  const rolRaw = localStorage.getItem('rol') || 'Sin rol'
+  const rol = rolRaw === 'admin' ? 'administrador' : rolRaw
   const esInterno = ['admin', 'administrador', 'secretaria', 'abogado'].includes(rol)
 
   useEffect(() => {

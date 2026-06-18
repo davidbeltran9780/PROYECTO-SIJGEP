@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from pydantic import BaseModel
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import random
+from fechas_utils import agregar_dias_habiles
 import smtplib
 import os
 from email.message import EmailMessage
@@ -111,7 +112,8 @@ def crear_pqrs(data: PQRSCreate, db: Session = Depends(get_db)):
         tipo=tipo,
         descripcion=data.descripcion,
         estado="recibido",
-        id_caso=None
+        id_caso=None,
+        fecha_vencimiento=agregar_dias_habiles(date.today(), 15)
     )
 
     db.add(nueva_pqrs)
@@ -160,7 +162,7 @@ def listar_pqrs(
             text("""
                 SELECT p.id_pqrs, p.numero_radicado, p.nombre_ciudadano, p.correo,
                        p.tipo, p.descripcion, p.estado, p.id_caso,
-                       p.fecha_creacion, p.respuesta
+                       p.fecha_creacion, p.fecha_vencimiento, p.respuesta
                 FROM pqrs p
                 JOIN casos c ON p.id_caso = c.id_caso
                 WHERE c.id_abogado_asignado = :mi_id
@@ -174,7 +176,7 @@ def listar_pqrs(
     resultado = db.execute(text("""
         SELECT id_pqrs, numero_radicado, nombre_ciudadano, correo,
                tipo, descripcion, estado, id_caso,
-               fecha_creacion, respuesta
+               fecha_creacion, fecha_vencimiento, respuesta
         FROM pqrs
         ORDER BY id_pqrs DESC
     """)).fetchall()

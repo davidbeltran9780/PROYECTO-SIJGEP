@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts'
 import api from '../api/axios'
+import Paginacion from '../components/Paginacion'
 
 const COLORES = ['#1E3A8A', '#16a34a', '#b45309', '#dc2626', '#6d28d9', '#0e7490']
 
@@ -18,6 +19,8 @@ export default function Reportes() {
   const [filtroVencDesde, setFiltroVencDesde] = useState('')
   const [filtroVencHasta, setFiltroVencHasta] = useState('')
   const [filtroVencTipo, setFiltroVencTipo] = useState('')
+  const [paginaVenc, setPaginaVenc] = useState(1)
+  const [paginaPqrs, setPaginaPqrs] = useState(1)
 
   useEffect(() => {
     Promise.all([
@@ -105,43 +108,47 @@ export default function Reportes() {
             </select>
           </div>
           <button className="btn-auditoria-limpiar"
-            onClick={() => { setFiltroVencDesde(''); setFiltroVencHasta(''); setFiltroVencTipo('') }}>
+            onClick={() => { setFiltroVencDesde(''); setFiltroVencHasta(''); setFiltroVencTipo(''); setPaginaVenc(1) }}>
             Limpiar
           </button>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th><th>Título</th><th>Tipo</th><th>Fecha vencimiento</th><th>Días restantes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(() => {
-              const filtrados = vencimientos.filter(v => {
-                if (filtroVencTipo && v.tipo !== filtroVencTipo) return false
-                if (filtroVencDesde && v.fecha_vencimiento < filtroVencDesde) return false
-                if (filtroVencHasta && v.fecha_vencimiento > filtroVencHasta) return false
-                return true
-              })
-              return filtrados.length === 0 ? (
-                <tr><td colSpan={5}>No hay casos con esos filtros</td></tr>
-              ) : filtrados.map(v => (
-                <tr key={v.id_caso}>
-                  <td>{v.id_caso}</td>
-                  <td>{v.titulo}</td>
-                  <td>{v.tipo}</td>
-                  <td>{v.fecha_vencimiento}</td>
-                  <td className={v.dias_restantes <= 2 ? 'urgente' : 'proximo'}>
-                    {v.dias_restantes <= 0
-                      ? `Vencido hace ${Math.abs(v.dias_restantes)} día(s)`
-                      : `${v.dias_restantes} día(s)`}
-                  </td>
+        {(() => {
+          const filtrados = vencimientos.filter(v => {
+            if (filtroVencTipo && v.tipo !== filtroVencTipo) return false
+            if (filtroVencDesde && v.fecha_vencimiento < filtroVencDesde) return false
+            if (filtroVencHasta && v.fecha_vencimiento > filtroVencHasta) return false
+            return true
+          })
+          const pagina = filtrados.slice((paginaVenc - 1) * 10, paginaVenc * 10)
+          return (<>
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th><th>Título</th><th>Tipo</th><th>Fecha vencimiento</th><th>Días restantes</th>
                 </tr>
-              ))
-            })()}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {filtrados.length === 0
+                  ? <tr><td colSpan={5}>No hay casos con esos filtros</td></tr>
+                  : pagina.map(v => (
+                    <tr key={v.id_caso}>
+                      <td>{v.id_caso}</td>
+                      <td>{v.titulo}</td>
+                      <td>{v.tipo}</td>
+                      <td>{v.fecha_vencimiento}</td>
+                      <td className={v.dias_restantes <= 2 ? 'urgente' : 'proximo'}>
+                        {v.dias_restantes <= 0
+                          ? `Vencido hace ${Math.abs(v.dias_restantes)} día(s)`
+                          : `${v.dias_restantes} día(s)`}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+            <Paginacion total={filtrados.length} pagina={paginaVenc} setPagina={setPaginaVenc} porPagina={10} />
+          </>)
+        })()}
       </div>
 
       {/* 3 — PQRS vencidas o próximas a vencer */}
@@ -150,31 +157,37 @@ export default function Reportes() {
           <h3 style={{ margin: '0 0 10px', fontSize: '15px', color: '#1e3a8a' }}>
             💬 PQRS pendientes de respuesta
           </h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Radicado</th><th>Tipo</th><th>Solicitante</th><th>Fecha límite</th><th>Días restantes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pqrsAlertas.map(p => (
-                <tr key={p.id_pqrs}>
-                  <td style={{ fontFamily: 'monospace', fontWeight: '700', color: '#1e3a8a', fontSize: '12px' }}>
-                    {p.numero_radicado}
-                  </td>
-                  <td>{p.tipo}</td>
-                  <td>{p.nombre_ciudadano || 'Anónimo'}</td>
-                  <td>{p.fecha_limite?.split('T')[0]}</td>
-                  <td className={p.dias_restantes < 0 ? 'urgente' : p.dias_restantes <= 3 ? 'proximo' : ''}>
-                    {p.dias_restantes < 0
-                      ? `Vencida hace ${Math.abs(p.dias_restantes)} día(s)`
-                      : p.dias_restantes === 0 ? 'Vence hoy'
-                      : `${p.dias_restantes} día(s)`}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {(() => {
+            const pagina = pqrsAlertas.slice((paginaPqrs - 1) * 10, paginaPqrs * 10)
+            return (<>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Radicado</th><th>Tipo</th><th>Solicitante</th><th>Fecha límite</th><th>Días restantes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagina.map(p => (
+                    <tr key={p.id_pqrs}>
+                      <td style={{ fontFamily: 'monospace', fontWeight: '700', color: '#1e3a8a', fontSize: '12px' }}>
+                        {p.numero_radicado}
+                      </td>
+                      <td>{p.tipo}</td>
+                      <td>{p.nombre_ciudadano || 'Anónimo'}</td>
+                      <td>{p.fecha_limite?.split('T')[0]}</td>
+                      <td className={p.dias_restantes < 0 ? 'urgente' : p.dias_restantes <= 3 ? 'proximo' : ''}>
+                        {p.dias_restantes < 0
+                          ? `Vencida hace ${Math.abs(p.dias_restantes)} día(s)`
+                          : p.dias_restantes === 0 ? 'Vence hoy'
+                          : `${p.dias_restantes} día(s)`}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Paginacion total={pqrsAlertas.length} pagina={paginaPqrs} setPagina={setPaginaPqrs} porPagina={10} />
+            </>)
+          })()}
         </div>
       )}
 

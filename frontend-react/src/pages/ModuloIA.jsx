@@ -16,9 +16,24 @@ function extraerSeccion(texto, etiqueta) {
     if (idx === -1) return ''
     return texto.slice(idx + texto.slice(idx).search(/:/) + 1).trim()
   }
-  const regex = new RegExp(`${etiqueta}:\\s*([\\s\\S]*?)(?=\\n(?:TIPO|RESUMEN|NORMAS|BORRADOR)\\s*:|$)`, 'i')
+  const todas = 'TIPO|PARTES|HECHOS|PRETENSIONES|RESUMEN|NORMAS|BORRADOR'
+  const regex = new RegExp(`${etiqueta}:\\s*([\\s\\S]*?)(?=\\n(?:${todas})\\s*:|$)`, 'i')
   const match = texto.match(regex)
   return match ? match[1].trim() : ''
+}
+
+function SeccionIA({ titulo, contenido, color = '#1e3a8a' }) {
+  if (!contenido) return null
+  return (
+    <div style={{ marginBottom: '16px', borderLeft: `3px solid ${color}`, paddingLeft: '12px' }}>
+      <p style={{ fontWeight: '700', fontSize: '12px', color, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 6px' }}>
+        {titulo}
+      </p>
+      <p style={{ fontSize: '13px', color: '#1f2937', whiteSpace: 'pre-wrap', lineHeight: '1.6', margin: 0 }}>
+        {contenido}
+      </p>
+    </div>
+  )
 }
 
 export default function ModuloIA() {
@@ -208,13 +223,17 @@ export default function ModuloIA() {
             <button className="nuevo" onClick={clasificar} disabled={cargando}>
               🤖 Analizar con IA
             </button>
-            <p style={{ marginTop: '1rem' }}><strong>Resumen completo:</strong></p>
             <textarea
               readOnly
-              value={resumen}
+              value={resumen ? (extraerSeccion(resumen, 'RESUMEN') || resumen) : ''}
               placeholder="El resumen aparecerá aquí después del análisis..."
-              style={{ width: '100%', height: '140px', marginTop: '5px', resize: 'vertical' }}
+              style={{ width: '100%', height: '140px', marginTop: '10px', resize: 'vertical' }}
             />
+            {resumen && (
+              <p style={{ fontSize: '11px', color: '#6b7280', margin: '4px 0 0', fontStyle: 'italic' }}>
+                📄 Descarga el PDF o Word para ver hechos, pretensiones, normas y borrador completo.
+              </p>
+            )}
             <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
               <button
                 className="nuevo"
@@ -222,6 +241,9 @@ export default function ModuloIA() {
                 style={{ flex: 1 }}
                 onClick={() => {
                   if (!resumen) return
+                  const partes = extraerSeccion(resumen, 'PARTES') || ''
+                  const hechos = extraerSeccion(resumen, 'HECHOS') || ''
+                  const pretensiones = extraerSeccion(resumen, 'PRETENSIONES') || ''
                   const textoResumen = extraerSeccion(resumen, 'RESUMEN') || ''
                   const textoNormas = extraerSeccion(resumen, 'NORMAS') || ''
                   const tipo = extraerSeccion(resumen, 'TIPO') || clasificacion
@@ -231,27 +253,29 @@ export default function ModuloIA() {
                   const ancho = doc.internal.pageSize.getWidth() - margen * 2
                   let y = margen
                   const escribir = (texto, bold = false, size = 10) => {
-                    doc.setFontSize(size)
-                    doc.setFont('helvetica', bold ? 'bold' : 'normal')
+                    doc.setFontSize(size); doc.setFont('helvetica', bold ? 'bold' : 'normal')
                     doc.splitTextToSize(texto, ancho).forEach(l => {
                       if (y > doc.internal.pageSize.getHeight() - margen) { doc.addPage(); y = margen }
                       doc.text(l, margen, y); y += size * 0.5 + 2
                     })
                   }
-                  doc.setTextColor(40, 40, 40)
+                  const seccion = (titulo, contenido) => {
+                    if (!contenido) return
+                    doc.setDrawColor(180,180,180); doc.line(margen, y, margen+ancho, y); y += 5
+                    escribir(titulo, true, 11); y += 2
+                    escribir(contenido, false, 10); y += 5
+                  }
+                  doc.setTextColor(40,40,40)
                   escribir('SIGJEP — Sistema Inteligente de Gestión Jurídica', true, 13); y += 2
                   escribir('Asistente Jurídico con IA para Alcaldías Colombianas', false, 10); y += 2
                   escribir(`Fecha: ${fecha}   |   Expediente: ${expedienteId || 'No asignado'}   |   Tipo: ${tipo}`, false, 9); y += 4
-                  doc.setDrawColor(180, 180, 180); doc.line(margen, y, margen + ancho, y); y += 6
-                  escribir('RESUMEN DEL CASO', true, 11); y += 2
-                  escribir(textoResumen || 'No disponible', false, 10); y += 6
-                  if (textoNormas) {
-                    doc.setDrawColor(180, 180, 180); doc.line(margen, y, margen + ancho, y); y += 6
-                    escribir('NORMAS APLICABLES', true, 11); y += 2
-                    escribir(textoNormas, false, 10); y += 6
-                  }
-                  doc.setDrawColor(180, 180, 180); doc.line(margen, y, margen + ancho, y); y += 4
-                  doc.setFontSize(8); doc.setTextColor(150, 150, 150)
+                  seccion('PARTES', partes)
+                  seccion('HECHOS', hechos)
+                  seccion('PRETENSIONES', pretensiones)
+                  seccion('ANÁLISIS JURÍDICO', textoResumen)
+                  seccion('NORMAS APLICABLES', textoNormas)
+                  doc.setDrawColor(180,180,180); doc.line(margen, y, margen+ancho, y); y += 4
+                  doc.setFontSize(8); doc.setTextColor(150,150,150)
                   doc.text('Documento generado automáticamente por IA — Requiere revisión humana antes de ser oficial.', margen, y)
                   doc.save(`resumen_exp${expedienteId || 'sin_exp'}.pdf`)
                 }}
@@ -264,27 +288,30 @@ export default function ModuloIA() {
                 style={{ flex: 1 }}
                 onClick={async () => {
                   if (!resumen) return
+                  const partes = extraerSeccion(resumen, 'PARTES') || ''
+                  const hechos = extraerSeccion(resumen, 'HECHOS') || ''
+                  const pretensiones = extraerSeccion(resumen, 'PRETENSIONES') || ''
                   const textoResumen = extraerSeccion(resumen, 'RESUMEN') || ''
                   const textoNormas = extraerSeccion(resumen, 'NORMAS') || ''
                   const tipo = extraerSeccion(resumen, 'TIPO') || clasificacion
                   const fecha = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
-                  const parrafo = (texto, bold = false, size = 22) =>
+                  const p = (texto, bold = false, size = 22) =>
                     new Paragraph({ children: [new TextRun({ text: texto, bold, size, font: 'Times New Roman' })], spacing: { after: 120 } })
+                  const titulo = (texto) => p(texto, true, 24)
+                  const bloque = (contenido) => contenido.split('\n').map(l => p(l))
+                  const espacio = new Paragraph({ children: [new TextRun({ text: ' ' })], spacing: { after: 200 } })
                   const doc = new Document({
                     sections: [{ properties: { page: { margin: { top: 1440, bottom: 1440, left: 1800, right: 1440 } } }, children: [
-                      parrafo('SIGJEP — Sistema Inteligente de Gestión Jurídica', true, 26),
-                      parrafo('Asistente Jurídico con IA para Alcaldías Colombianas', false, 20),
-                      parrafo(`Fecha: ${fecha}   |   Expediente: ${expedienteId || 'No asignado'}   |   Tipo: ${tipo}`, false, 18),
-                      new Paragraph({ children: [new TextRun({ text: ' ' })], spacing: { after: 200 } }),
-                      parrafo('RESUMEN DEL CASO', true, 24),
-                      ...(textoResumen || 'No disponible').split('\n').map(l => parrafo(l)),
-                      new Paragraph({ children: [new TextRun({ text: ' ' })], spacing: { after: 200 } }),
-                      ...(textoNormas ? [
-                        parrafo('NORMAS APLICABLES', true, 24),
-                        ...(textoNormas).split('\n').map(l => parrafo(l)),
-                        new Paragraph({ children: [new TextRun({ text: ' ' })], spacing: { after: 200 } }),
-                      ] : []),
-                      parrafo('Documento generado automáticamente por IA — Requiere revisión humana antes de ser oficial.', false, 16),
+                      p('SIGJEP — Sistema Inteligente de Gestión Jurídica', true, 26),
+                      p('Asistente Jurídico con IA para Alcaldías Colombianas', false, 20),
+                      p(`Fecha: ${fecha}   |   Expediente: ${expedienteId || 'No asignado'}   |   Tipo: ${tipo}`, false, 18),
+                      espacio,
+                      ...(partes ? [titulo('PARTES'), ...bloque(partes), espacio] : []),
+                      ...(hechos ? [titulo('HECHOS'), ...bloque(hechos), espacio] : []),
+                      ...(pretensiones ? [titulo('PRETENSIONES'), ...bloque(pretensiones), espacio] : []),
+                      ...(textoResumen ? [titulo('ANÁLISIS JURÍDICO'), ...bloque(textoResumen), espacio] : []),
+                      ...(textoNormas ? [titulo('NORMAS APLICABLES'), ...bloque(textoNormas), espacio] : []),
+                      p('Documento generado automáticamente por IA — Requiere revisión humana antes de ser oficial.', false, 16),
                     ]}]
                   })
                   const blob = await Packer.toBlob(doc)

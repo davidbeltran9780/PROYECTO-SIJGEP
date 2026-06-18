@@ -267,6 +267,7 @@ CREATE TABLE `usuarios` (
   `password` varchar(255) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   `rol` enum('abogado','secretaria','admin','administrador','ciudadano') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `estado` enum('activo','inactivo') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'activo',
+  `fecha_creacion` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_usuarios`),
   UNIQUE KEY `uk_email` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

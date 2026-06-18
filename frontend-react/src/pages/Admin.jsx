@@ -3,11 +3,15 @@ import api from '../api/axios'
 import { useToast } from '../context/ToastContext'
 import { useConfirm } from '../components/ConfirmModal'
 import Spinner from '../components/Spinner'
+import Paginacion from '../components/Paginacion'
 
 export default function Admin() {
   const toast = useToast()
   const { confirmar, ConfirmUI } = useConfirm()
   const [pestana, setPestana] = useState(localStorage.getItem('pestanaAdmin') || 'usuarios')
+  const [paginaUsuarios, setPaginaUsuarios] = useState(1)
+  const [paginaBackups, setPaginaBackups] = useState(1)
+  const [paginaAuditoria, setPaginaAuditoria] = useState(1)
   const [usuarios, setUsuarios] = useState([])
   const [backups, setBackups] = useState([])
   const [auditoria, setAuditoria] = useState([])
@@ -21,6 +25,8 @@ export default function Admin() {
   const [filtroUsuarioEmail, setFiltroUsuarioEmail] = useState('')
   const [filtroUsuarioRol, setFiltroUsuarioRol] = useState('')
   const [filtroUsuarioEstado, setFiltroUsuarioEstado] = useState('')
+  const [filtroUsuarioDesde, setFiltroUsuarioDesde] = useState('')
+  const [filtroUsuarioHasta, setFiltroUsuarioHasta] = useState('')
   const [generandoBackup, setGenerandoBackup] = useState(false)
   const [modalAbierto, setModalAbierto] = useState(false)
   const [modalEditar, setModalEditar] = useState(false)
@@ -60,6 +66,8 @@ export default function Admin() {
 
   const guardarEdicion = async (e) => {
     e.preventDefault()
+    const ok = await confirmar('¿Guardar cambios?', `Se actualizarán los datos de ${usuarioEditando.nombre}.`)
+    if (!ok) return
     try {
       await api.put(`/usuarios/${usuarioEditando.id_usuarios}`, usuarioEditando)
       setModalEditar(false)
@@ -139,7 +147,7 @@ export default function Admin() {
                 <label>Rol</label>
                 <select value={filtroUsuarioRol} onChange={e => setFiltroUsuarioRol(e.target.value)}>
                   <option value="">Todos</option>
-                  <option value="admin">Admin</option>
+                  <option value="administrador">Administrador</option>
                   <option value="abogado">Abogado</option>
                   <option value="secretaria">Secretaria</option>
                   <option value="ciudadano">Ciudadano</option>
@@ -156,9 +164,23 @@ export default function Admin() {
               <button className="btn-auditoria-limpiar" onClick={() => {
                 setFiltroUsuarioId(''); setFiltroUsuarioEmail('')
                 setFiltroUsuarioRol(''); setFiltroUsuarioEstado('')
+                setPaginaUsuarios(1)
               }}>Limpiar</button>
             </div>
 
+            {(() => {
+              const usuariosFiltrados = usuarios.filter(u => {
+                if (filtroUsuarioId && !String(u.id_usuarios).includes(filtroUsuarioId)) return false
+                if (filtroUsuarioEmail && !u.email?.toLowerCase().includes(filtroUsuarioEmail.toLowerCase())) return false
+                if (filtroUsuarioRol) {
+                  const esAdmin = filtroUsuarioRol === 'administrador' && ['admin', 'administrador'].includes(u.rol)
+                  if (!esAdmin && u.rol !== filtroUsuarioRol) return false
+                }
+                if (filtroUsuarioEstado && u.estado !== filtroUsuarioEstado) return false
+                return true
+              })
+              const usuariosPagina = usuariosFiltrados.slice((paginaUsuarios-1)*10, paginaUsuarios*10)
+              return (<>
             <table>
               <thead>
                 <tr>
@@ -166,18 +188,14 @@ export default function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {usuarios.filter(u => {
-                  if (filtroUsuarioId && !String(u.id_usuarios).includes(filtroUsuarioId)) return false
-                  if (filtroUsuarioEmail && !u.email?.toLowerCase().includes(filtroUsuarioEmail.toLowerCase())) return false
-                  if (filtroUsuarioRol && u.rol !== filtroUsuarioRol) return false
-                  if (filtroUsuarioEstado && u.estado !== filtroUsuarioEstado) return false
-                  return true
-                }).map(u => (
+                {usuariosPagina.length === 0 ? (
+                  <tr><td colSpan={6}>No hay usuarios con esos filtros</td></tr>
+                ) : usuariosPagina.map(u => (
                   <tr key={u.id_usuarios}>
                     <td data-label="ID">{u.id_usuarios}</td>
                     <td data-label="Nombre">{u.nombre}</td>
                     <td data-label="Email">{u.email}</td>
-                    <td data-label="Rol">{u.rol}</td>
+                    <td data-label="Rol">{u.rol === 'admin' ? 'administrador' : u.rol}</td>
                     <td data-label="Estado">
                       <span className={`badge ${u.estado === 'activo' ? 'activo' : 'cerrado'}`}>
                         {u.estado}
@@ -205,17 +223,11 @@ export default function Admin() {
                     </td>
                   </tr>
                 ))}
-                {usuarios.filter(u => {
-                  if (filtroUsuarioId && !String(u.id_usuarios).includes(filtroUsuarioId)) return false
-                  if (filtroUsuarioEmail && !u.email?.toLowerCase().includes(filtroUsuarioEmail.toLowerCase())) return false
-                  if (filtroUsuarioRol && u.rol !== filtroUsuarioRol) return false
-                  if (filtroUsuarioEstado && u.estado !== filtroUsuarioEstado) return false
-                  return true
-                }).length === 0 && (
-                  <tr><td colSpan={6}>No hay usuarios con esos filtros</td></tr>
-                )}
               </tbody>
             </table>
+            <Paginacion total={usuariosFiltrados.length} pagina={paginaUsuarios} setPagina={setPaginaUsuarios} porPagina={10} />
+            </>)
+            })()}
           </div>
         )}
 
@@ -250,30 +262,39 @@ export default function Admin() {
               </button>
             </div>
 
+            {(() => {
+              const backupsFiltrados = backups.filter(b => {
+                const fecha = new Date(b.fecha)
+                if (filtroBackupDesde && fecha < new Date(filtroBackupDesde)) return false
+                if (filtroBackupHasta && fecha > new Date(filtroBackupHasta + 'T23:59:59')) return false
+                return true
+              })
+              const backupsPagina = backupsFiltrados.slice((paginaBackups-1)*10, paginaBackups*10)
+              return (<>
             <table>
               <thead>
                 <tr><th>Fecha</th><th>Hora</th><th>Archivo</th><th>Estado</th><th>Enlace</th></tr>
               </thead>
               <tbody>
-                {backups.filter(b => {
-                  const fecha = new Date(b.fecha)
-                  if (filtroBackupDesde && fecha < new Date(filtroBackupDesde)) return false
-                  if (filtroBackupHasta && fecha > new Date(filtroBackupHasta + 'T23:59:59')) return false
-                  return true
-                }).map((b, i) => {
-                  const fecha = new Date(b.fecha)
-                  return (
-                    <tr key={i}>
-                      <td>{fecha.toLocaleDateString('es-CO')}</td>
-                      <td>{fecha.toLocaleTimeString('es-CO')}</td>
-                      <td>{b.archivo}</td>
-                      <td><span className="badge activo">{b.estado}</span></td>
-                      <td><a href={b.link_drive} target="_blank" className="btn-accion-editar">Ver en Drive</a></td>
-                    </tr>
-                  )
-                })}
+                {backupsPagina.length === 0
+                  ? <tr><td colSpan={5}>No hay backups con esos filtros</td></tr>
+                  : backupsPagina.map((b, i) => {
+                    const fecha = new Date(b.fecha)
+                    return (
+                      <tr key={i}>
+                        <td>{fecha.toLocaleDateString('es-CO')}</td>
+                        <td>{fecha.toLocaleTimeString('es-CO')}</td>
+                        <td>{b.archivo}</td>
+                        <td><span className="badge activo">{b.estado}</span></td>
+                        <td><a href={b.link_drive} target="_blank" className="btn-accion-editar">Ver en Drive</a></td>
+                      </tr>
+                    )
+                  })}
               </tbody>
             </table>
+            <Paginacion total={backupsFiltrados.length} pagina={paginaBackups} setPagina={setPaginaBackups} porPagina={10} />
+            </>)
+            })()}
           </div>
         )}
 
@@ -331,7 +352,7 @@ export default function Admin() {
                   onChange={e => setFiltroRol(e.target.value)}
                 >
                   <option value="">Todos</option>
-                  <option value="admin">Admin</option>
+                  <option value="administrador">Administrador</option>
                   <option value="abogado">Abogado</option>
                   <option value="secretaria">Secretaria</option>
                   <option value="ciudadano">Ciudadano</option>
@@ -345,6 +366,20 @@ export default function Admin() {
               </button>
             </div>
 
+            {(() => {
+              const auditoriaFiltrada = auditoria.filter(a => {
+                const fecha = new Date(a.fecha)
+                if (filtroFechaDesde && fecha < new Date(filtroFechaDesde)) return false
+                if (filtroFechaHasta && fecha > new Date(filtroFechaHasta + 'T23:59:59')) return false
+                if (filtroNombre && !a.nombre_usuario?.toLowerCase().includes(filtroNombre.toLowerCase())) return false
+                if (filtroRol) {
+                  const esAdmin = filtroRol === 'administrador' && ['admin', 'administrador'].includes(a.rol)
+                  if (!esAdmin && a.rol !== filtroRol) return false
+                }
+                return true
+              })
+              const auditoriaPagina = auditoriaFiltrada.slice((paginaAuditoria-1)*15, paginaAuditoria*15)
+              return (<>
             <table>
               <thead>
                 <tr>
@@ -354,18 +389,9 @@ export default function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {(() => {
-                  const filtrados = auditoria.filter(a => {
-                    const fecha = new Date(a.fecha)
-                    if (filtroFechaDesde && fecha < new Date(filtroFechaDesde)) return false
-                    if (filtroFechaHasta && fecha > new Date(filtroFechaHasta + 'T23:59:59')) return false
-                    if (filtroNombre && !a.nombre_usuario?.toLowerCase().includes(filtroNombre.toLowerCase())) return false
-                    if (filtroRol && a.rol !== filtroRol) return false
-                    return true
-                  })
-                  return filtrados.length === 0 ? (
-                    <tr><td colSpan={9}>No hay registros con esos filtros</td></tr>
-                  ) : filtrados.map(a => (
+                {auditoriaPagina.length === 0
+                  ? <tr><td colSpan={9}>No hay registros con esos filtros</td></tr>
+                  : auditoriaPagina.map(a => (
                     <tr key={a.id_auditoria}>
                       <td data-label="Fecha">{new Date(a.fecha).toLocaleString('es-CO')}</td>
                       <td data-label="Usuario">{a.nombre_usuario}</td>
@@ -381,10 +407,12 @@ export default function Admin() {
                         </span>
                       </td>
                     </tr>
-                  ))
-                })()}
+                  ))}
               </tbody>
             </table>
+            <Paginacion total={auditoriaFiltrada.length} pagina={paginaAuditoria} setPagina={setPaginaAuditoria} porPagina={15} />
+            </>)
+            })()}
           </div>
         )}
 

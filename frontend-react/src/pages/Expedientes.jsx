@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../api/axios'
 import { useToast } from '../context/ToastContext'
 import { useConfirm } from '../components/ConfirmModal'
+import Paginacion from '../components/Paginacion'
 
 function calcularDias(fecha) {
   if (!fecha) return null
@@ -15,6 +16,9 @@ export default function Expedientes() {
   const [abogados, setAbogados] = useState([])
   const [modal, setModal] = useState(false)
   const [busqueda, setBusqueda] = useState('')
+  const [filtroDesde, setFiltroDesde] = useState('')
+  const [filtroHasta, setFiltroHasta] = useState('')
+  const [pagina, setPagina] = useState(1)
   const rol = localStorage.getItem('rol') || ''
   const puedeCrear = ['admin', 'administrador', 'secretaria'].includes(rol)
   const puedeEliminar = ['admin', 'administrador'].includes(rol)
@@ -63,12 +67,20 @@ export default function Expedientes() {
   }
 
   const asignarAbogado = async (idCaso, idAbogado) => {
+    const nombre = idAbogado
+      ? abogados.find(a => String(a.id_usuarios) === String(idAbogado))?.nombre || 'este abogado'
+      : null
+    const ok = await confirmar(
+      idAbogado ? `¿Asignar a ${nombre}?` : '¿Quitar el abogado asignado?',
+      idAbogado ? 'Se asignará este abogado al expediente.' : 'El expediente quedará sin abogado asignado.'
+    )
+    if (!ok) return
     try {
       await api.put(`/casos/${idCaso}`, {
         id_abogado_asignado: idAbogado ? parseInt(idAbogado) : null
       })
       cargar()
-      toast.exito('Abogado asignado correctamente')
+      toast.exito(idAbogado ? 'Abogado asignado correctamente' : 'Abogado removido')
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Error al asignar abogado')
     }
@@ -119,13 +131,18 @@ export default function Expedientes() {
 
   const expedientesFiltrados = expedientes.filter(e => {
     const q = busqueda.toLowerCase()
-    return (
+    const coincideTexto = (
       String(e.id_expediente).includes(q) ||
       (e.titulo || '').toLowerCase().includes(q) ||
       (e.tipo || '').toLowerCase().includes(q) ||
       (e.abogado_nombre || '').toLowerCase().includes(q) ||
       (e.estado_caso || '').toLowerCase().includes(q)
     )
+    if (!coincideTexto) return false
+    const fecha = e.fecha_creacion ? e.fecha_creacion.split('T')[0] : ''
+    if (filtroDesde && fecha < filtroDesde) return false
+    if (filtroHasta && fecha > filtroHasta) return false
+    return true
   })
 
   return (
@@ -138,16 +155,32 @@ export default function Expedientes() {
         )}
       </div>
 
-      <div className="barra-busqueda">
-        <input
-          type="text"
-          placeholder="🔍 Buscar por título, tipo, abogado o estado..."
-          value={busqueda}
-          onChange={e => setBusqueda(e.target.value)}
-        />
-        {busqueda && (
-          <button onClick={() => setBusqueda('')} title="Limpiar búsqueda">✕</button>
-        )}
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '12px', alignItems: 'center' }}>
+        <div className="barra-busqueda" style={{ flex: 1, minWidth: '220px', marginBottom: 0 }}>
+          <input
+            type="text"
+            placeholder="🔍 Buscar por título, tipo, abogado o estado..."
+            value={busqueda}
+            onChange={e => { setBusqueda(e.target.value); setPagina(1) }}
+          />
+          {busqueda && <button onClick={() => { setBusqueda(''); setPagina(1) }} title="Limpiar búsqueda">✕</button>}
+        </div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <label style={{ fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap' }}>Desde</label>
+          <input type="date" value={filtroDesde}
+            onChange={e => { setFiltroDesde(e.target.value); setPagina(1) }}
+            style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '13px' }} />
+          <label style={{ fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap' }}>Hasta</label>
+          <input type="date" value={filtroHasta}
+            onChange={e => { setFiltroHasta(e.target.value); setPagina(1) }}
+            style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '13px' }} />
+          {(filtroDesde || filtroHasta) && (
+            <button onClick={() => { setFiltroDesde(''); setFiltroHasta(''); setPagina(1) }}
+              style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #d1d5db', background: '#f9fafb', fontSize: '12px', cursor: 'pointer' }}>
+              ✕ Limpiar fechas
+            </button>
+          )}
+        </div>
       </div>
 
       <table>
@@ -162,7 +195,7 @@ export default function Expedientes() {
           {expedientesFiltrados.length === 0 ? (
             <tr><td colSpan={puedeCrear ? 7 : 6}>{busqueda ? 'No se encontraron resultados' : 'No hay expedientes registrados'}</td></tr>
           ) : (
-            expedientesFiltrados.map(e => (
+            expedientesFiltrados.slice((pagina - 1) * 10, pagina * 10).map(e => (
               <tr key={e.id_expediente}>
                 <td data-label="ID">{e.id_expediente}</td>
                 <td data-label="Tipo">{e.tipo || '—'}</td>
@@ -227,6 +260,7 @@ export default function Expedientes() {
           )}
         </tbody>
       </table>
+      <Paginacion total={expedientesFiltrados.length} pagina={pagina} setPagina={setPagina} porPagina={10} />
 
       {modal && (
         <div className="modal" style={{ display: 'flex' }} onClick={e => e.target.className === 'modal' && setModal(false)}>

@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 
 function ConfirmModal({ mensaje, descripcion, onConfirm, onCancel }) {
   return (
-    <div className="modal" style={{ display: 'flex' }}>
+    <div className="modal" style={{ display: 'flex', zIndex: 9999 }}>
       <div className="modal-contenido" style={{ maxWidth: '400px', textAlign: 'center' }}>
         <p style={{ fontSize: '22px', marginBottom: '8px' }}>⚠️</p>
         <h3 style={{ marginBottom: '10px', fontSize: '16px' }}>{mensaje}</h3>

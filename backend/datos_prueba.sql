@@ -10,25 +10,25 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- 1. USUARIOS
 -- 7 internos + 3 ciudadanos
 -- ============================================================
-INSERT INTO `usuarios` (`nombre`, `email`, `password`, `rol`, `estado`) VALUES
+INSERT INTO `usuarios` (`nombre`, `email`, `password`, `rol`, `estado`, `fecha_creacion`) VALUES
 -- Administrador
-('Manuel Rodríguez',   'admin@sigjep.co',          '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'administrador', 'activo'),
+('Manuel Rodríguez',   'admin@sigjep.co',          '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'administrador', 'activo',   '2025-08-10 08:00:00'),
 -- Abogados
-('Laura Jiménez',      'abogado@sigjep.co',         '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'abogado',       'activo'),
-('Andrés Castellanos', 'acastellanos@sigjep.co',    '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'abogado',       'activo'),
-('Patricia Vargas',    'pvargas@sigjep.co',          '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'abogado',       'activo'),
+('Laura Jiménez',      'abogado@sigjep.co',         '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'abogado',       'activo',   '2025-09-03 09:15:00'),
+('Andrés Castellanos', 'acastellanos@sigjep.co',    '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'abogado',       'activo',   '2025-09-03 09:30:00'),
+('Patricia Vargas',    'pvargas@sigjep.co',          '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'abogado',       'activo',   '2025-10-15 11:00:00'),
 -- Secretarias
-('Sofía Morales',      'secretaria@sigjep.co',      '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'secretaria',    'activo'),
-('Jorge Quintero',     'jquintero@sigjep.co',       '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'secretaria',    'activo'),
--- Usuario inactivo (para probar panel Admin)
-('Roberto Salcedo',    'rsalcedo@sigjep.co',         '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'abogado',       'inactivo'),
-('Claudia Restrepo',   'crestrepo@sigjep.co',        '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'secretaria',    'inactivo'),
+('Sofía Morales',      'secretaria@sigjep.co',      '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'secretaria',    'activo',   '2025-09-05 08:45:00'),
+('Jorge Quintero',     'jquintero@sigjep.co',       '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'secretaria',    'activo',   '2026-01-20 10:00:00'),
+-- Usuarios inactivos
+('Roberto Salcedo',    'rsalcedo@sigjep.co',         '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'abogado',       'inactivo', '2025-11-08 14:20:00'),
+('Claudia Restrepo',   'crestrepo@sigjep.co',        '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'secretaria',    'inactivo', '2026-02-14 09:00:00'),
 -- Ciudadanos
-('Carlos Pérez',       'ciudadano@sigjep.co',       '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'ciudadano',     'activo'),
-('Ana Gómez',          'ana.gomez@correo.co',       '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'ciudadano',     'activo'),
-('Pedro Ramírez',      'pedro.ramirez@correo.co',   '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'ciudadano',     'activo'),
-('María Torres',       'maria.torres@correo.co',    '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'ciudadano',     'activo'),
-('Luis Herrera',       'luis.herrera@correo.co',    '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'ciudadano',     'activo');
+('Carlos Pérez',       'ciudadano@sigjep.co',       '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'ciudadano',     'activo',   '2026-03-01 16:30:00'),
+('Ana Gómez',          'ana.gomez@correo.co',       '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'ciudadano',     'activo',   '2026-04-10 11:45:00'),
+('Pedro Ramírez',      'pedro.ramirez@correo.co',   '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'ciudadano',     'activo',   '2026-05-22 08:20:00'),
+('María Torres',       'maria.torres@correo.co',    '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'ciudadano',     'activo',   '2026-06-05 13:10:00'),
+('Luis Herrera',       'luis.herrera@correo.co',    '$2b$12$BhRuvz7xtHGfDTxV3wfSnem630ZIKAiA6y4LH1sSWfDAEGJU3OsPK', 'ciudadano',     'activo',   '2026-06-10 07:50:00');
 
 -- ============================================================
 -- 2. CASOS
@@ -164,92 +164,120 @@ INSERT INTO `expedientes` (`id_caso`) VALUES
 
 -- ============================================================
 -- 4. PQRS
--- 12 registros: variedad de tipos, estados y ciudadanos
+-- 16 registros con fecha_vencimiento para probar alertas
+-- Escenarios: vencidas, urgentes, próximas, a tiempo, cerradas
+-- fecha_vencimiento = ~15 días hábiles desde fecha_creacion
 -- ============================================================
 INSERT INTO `pqrs`
-  (`numero_radicado`, `tipo`, `nombre_ciudadano`, `correo`, `descripcion`, `estado`, `respuesta`)
+  (`numero_radicado`, `tipo`, `nombre_ciudadano`, `correo`, `descripcion`, `estado`, `respuesta`, `fecha_creacion`, `fecha_vencimiento`)
 VALUES
-('PQRS-20260601-001', 'peticion',
+
+-- ── VENCIDAS (fecha_creacion lo suficientemente antigua para que 15 días hábiles ya pasaron)
+-- 15 días hábiles desde ~2026-05-15 = ~2026-06-05 (vencida hace ~13 días)
+-- 15 días hábiles desde ~2026-05-20 = ~2026-06-09 (vencida hace ~9 días)
+('PQRS-20260515-001', 'peticion',
  'Carlos Pérez', 'ciudadano@sigjep.co',
  '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3001234567\nDocumento: Cédula de Ciudadanía 1023456789\n\nAsunto: Información pensión jubilación\n\n━━━ DESCRIPCIÓN ━━━\nSolicito información sobre el estado de mi pensión de jubilación radicada el pasado mes de febrero ante la Secretaría de Hacienda Municipal.',
- 'recibido', NULL),
+ 'recibido', NULL,
+ '2026-05-15 09:00:00', NULL),
 
-('PQRS-20260603-002', 'queja',
+('PQRS-20260520-002', 'queja',
  'Ana Gómez', 'ana.gomez@correo.co',
  '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3119876543\n\n━━━ DESCRIPCIÓN ━━━\nPresento queja formal por mal estado de la vía principal del barrio Las Flores. La vía lleva 3 meses sin reparación y representa un peligro para los peatones y vehículos.',
- 'en_proceso', NULL),
+ 'en_proceso', NULL,
+ '2026-05-20 10:15:00', NULL),
 
-('PQRS-20260605-003', 'reclamo',
+-- ── URGENTES: 15 días hábiles desde ~2026-05-29 = ~2026-06-19 (mañana)
+--              15 días hábiles desde ~2026-05-28 = ~2026-06-18 (hoy = 0 días)
+('PQRS-20260529-006', 'queja',
+ 'Anónimo', 'anonimo1@correo.co',
+ '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Itagüí\n\n━━━ DESCRIPCIÓN ━━━\nQueja anónima por conducta irregular de un funcionario de la secretaría de planeación que estaría cobrando dinero a cambio de agilizar trámites de licencias de construcción.',
+ 'en_proceso', NULL,
+ '2026-05-29 08:30:00', NULL),
+
+('PQRS-20260530-007', 'derecho_peticion',
+ 'Empresa Constructora Omega SAS', 'omega.sas@empresa.co',
+ '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 6042345678\nDocumento: NIT 900123456-1\n\n━━━ DESCRIPCIÓN ━━━\nSolicitamos en calidad de proponentes en la licitación pública 003-2026 copia de los documentos de evaluación de ofertas para ejercer nuestro derecho de contradicción dentro del término legal.',
+ 'en_proceso', NULL,
+ '2026-05-30 14:00:00', NULL),
+
+-- ── PRÓXIMAS: 15 días hábiles desde ~2026-06-02 = ~2026-06-23 (+5d)
+--              15 días hábiles desde ~2026-06-03 = ~2026-06-24 (+6d → borde próximo/a tiempo)
+('PQRS-20260602-008', 'reclamo',
+ 'Asociación de Vecinos Barrio La Paz', 'asvecinos.lapaz@gmail.com',
+ '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3004567890\n\n━━━ DESCRIPCIÓN ━━━\nReclamamos ante la Empresa de Servicios Públicos Municipal por la suspensión injustificada del servicio de alumbrado público en la Calle 45 entre Carreras 12 y 18, desde hace 3 semanas.',
+ 'recibido', NULL,
+ '2026-06-02 09:45:00', NULL),
+
+('PQRS-20260601-009', 'sugerencia',
+ 'Anónimo', 'anonimo2@correo.co',
+ '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Envigado\n\n━━━ DESCRIPCIÓN ━━━\nSugerencia anónima: sería muy útil que la alcaldía habilite un canal de WhatsApp para seguimiento de PQRS, dado que muchos ciudadanos no tienen acceso fácil al portal web.',
+ 'recibido', NULL,
+ '2026-06-01 11:20:00', NULL),
+
+-- ── A TIEMPO (vencen en más de 5 días) ──────────────────────
+('PQRS-20260615-010', 'peticion',
+ 'Carlos Pérez', 'ciudadano@sigjep.co',
+ '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3001234567\nDocumento: Cédula de Ciudadanía 1023456789\n\n━━━ DESCRIPCIÓN ━━━\nSolicito información detallada sobre los requisitos y el proceso para acceder al programa de vivienda de interés social convocatoria 2026-2.',
+ 'en_proceso', NULL,
+ '2026-06-05 08:00:00', DATE_ADD(CURDATE(), INTERVAL 8 DAY)),
+
+('PQRS-20260615-011', 'queja',
+ 'Hernando Cárdenas', 'hcardenas@correo.co',
+ '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3167890123\nDocumento: Cédula de Ciudadanía 8765432\n\n━━━ DESCRIPCIÓN ━━━\nPresento queja por el mal trato recibido por parte de una servidora pública en la ventanilla de atención al ciudadano de la Secretaría de Hacienda el día 14 de junio de 2026.',
+ 'recibido', NULL,
+ '2026-06-05 10:30:00', DATE_ADD(CURDATE(), INTERVAL 10 DAY)),
+
+('PQRS-20260616-012', 'derecho_peticion',
+ 'Pedro Ramírez', 'pedro.ramirez@correo.co',
+ '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nDocumento: Cédula de Ciudadanía 98765432\n\n━━━ DESCRIPCIÓN ━━━\nEjerciendo mi derecho de petición consagrado en el artículo 23 de la Constitución Política y la Ley 1755 de 2015, solicito información sobre el estado del proceso de actualización catastral del municipio y si mi predio está incluido.',
+ 'recibido', NULL,
+ '2026-06-06 09:00:00', DATE_ADD(CURDATE(), INTERVAL 12 DAY)),
+
+('PQRS-20260617-013', 'queja',
+ 'María Torres', 'maria.torres@correo.co',
+ '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3205554433\n\n━━━ DESCRIPCIÓN ━━━\nQueja por demora excesiva en la atención del área de Tesorería. Fui citada para las 8 AM y fui atendida a las 11:30 AM sin ninguna justificación. Esto afecta directamente mi jornada laboral.',
+ 'recibido', NULL,
+ '2026-06-07 08:00:00', DATE_ADD(CURDATE(), INTERVAL 15 DAY)),
+
+('PQRS-20260617-014', 'peticion',
+ 'Luis Herrera', 'luis.herrera@correo.co',
+ '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3104449988\nDocumento: Cédula de Ciudadanía 71234567\n\nAsunto: Certificado de residencia\n\n━━━ DESCRIPCIÓN ━━━\nSolicito la expedición de un certificado de residencia para tramitar una beca universitaria. Llevo 8 años viviendo en el municipio y nunca he podido obtener dicho documento.',
+ 'en_proceso', NULL,
+ '2026-06-07 11:00:00', DATE_ADD(CURDATE(), INTERVAL 18 DAY)),
+
+('PQRS-20260617-015', 'sugerencia',
+ 'Ana Gómez', 'ana.gomez@correo.co',
+ '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3119876543\n\n━━━ DESCRIPCIÓN ━━━\nSugerencia: sería muy valioso que la alcaldía habilitara jornadas nocturnas de atención al ciudadano los martes y jueves, ya que muchas personas trabajamos en horario diurno y no podemos acceder a los servicios presenciales.',
+ 'recibido', NULL,
+ '2026-06-08 09:30:00', DATE_ADD(CURDATE(), INTERVAL 20 DAY)),
+
+('PQRS-20260617-016', 'reclamo',
+ 'Anónimo', 'anonimo3@correo.co',
+ '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Bello\n\n━━━ DESCRIPCIÓN ━━━\nReclamo anónimo: en el parque principal del municipio se está permitiendo el consumo de sustancias psicoactivas a plena luz del día sin ninguna intervención de las autoridades locales. Esto afecta a los niños y familias que usan el espacio.',
+ 'en_proceso', NULL,
+ '2026-06-08 14:00:00', DATE_ADD(CURDATE(), INTERVAL 22 DAY)),
+
+-- ── RESPONDIDAS / CERRADAS (no deben aparecer en alertas) ───
+('PQRS-20260603-003', 'reclamo',
  'Pedro Ramírez', 'pedro.ramirez@correo.co',
  '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nDocumento: Cédula de Ciudadanía 98765432\n\n━━━ DESCRIPCIÓN ━━━\nReclamo por cobro indebido en el recibo del impuesto predial del primer trimestre del año 2026. Se facturó el doble del valor correspondiente al predio con matrícula inmobiliaria 004-32145.',
  'respondido',
- 'Estimado señor Ramírez, luego de verificar en el sistema catastral se confirmó el error de facturación. Se emitió nota crédito por valor de $450.000 que será descontada del próximo período. Disculpe los inconvenientes causados.'),
+ 'Estimado señor Ramírez, luego de verificar en el sistema catastral se confirmó el error de facturación. Se emitió nota crédito por valor de $450.000 que será descontada del próximo período. Disculpe los inconvenientes causados.',
+ '2026-06-05 09:00:00', '2026-06-24'),
 
 ('PQRS-20260608-004', 'sugerencia',
  'María Torres', 'maria.torres@correo.co',
  '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3205554433\n\n━━━ DESCRIPCIÓN ━━━\nSugiero implementar un sistema de turnos en línea para la atención en la secretaría de hacienda, con el fin de evitar largas filas y optimizar el tiempo de los ciudadanos.',
- 'recibido', NULL),
+ 'recibido', NULL,
+ '2026-06-08 10:00:00', DATE_ADD(CURDATE(), INTERVAL 25 DAY)),
 
 ('PQRS-20260610-005', 'peticion',
  'Luis Herrera', 'luis.herrera@correo.co',
  '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nDocumento: Cédula de Ciudadanía 71234567\n\n━━━ DESCRIPCIÓN ━━━\nSolicito copia del acta de la última sesión ordinaria del concejo municipal correspondiente al mes de mayo de 2026, en ejercicio del derecho de acceso a documentos públicos.',
  'cerrado',
- 'En atención a su petición se adjunta digitalmente el acta de la sesión ordinaria del Concejo Municipal del 28 de mayo de 2026. Puede descargarla en el portal de transparencia de la alcaldía.'),
-
-('PQRS-20260612-006', 'queja',
- 'Anónimo', 'anonimo1@correo.co',
- '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Itagüí\n\n━━━ DESCRIPCIÓN ━━━\nQueja anónima por conducta irregular de un funcionario de la secretaría de planeación que estaría cobrando dinero a cambio de agilizar trámites de licencias de construcción.',
- 'en_proceso', NULL),
-
-('PQRS-20260613-007', 'derecho_peticion',
- 'Empresa Constructora Omega SAS', 'omega.sas@empresa.co',
- '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 6042345678\nDocumento: NIT 900123456-1\n\n━━━ DESCRIPCIÓN ━━━\nSolicitamos en calidad de proponentes en la licitación pública 003-2026 copia de los documentos de evaluación de ofertas para ejercer nuestro derecho de contradicción dentro del término legal.',
- 'en_proceso', NULL),
-
-('PQRS-20260614-008', 'reclamo',
- 'Asociación de Vecinos Barrio La Paz', 'asvecinos.lapaz@gmail.com',
- '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3004567890\n\n━━━ DESCRIPCIÓN ━━━\nReclamamos ante la Empresa de Servicios Públicos Municipal por la suspensión injustificada del servicio de alumbrado público en la Calle 45 entre Carreras 12 y 18, desde hace 3 semanas.',
- 'recibido', NULL),
-
-('PQRS-20260614-009', 'sugerencia',
- 'Anónimo', 'anonimo2@correo.co',
- '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Envigado\n\n━━━ DESCRIPCIÓN ━━━\nSugerencia anónima: sería muy útil que la alcaldía habilite un canal de WhatsApp para seguimiento de PQRS, dado que muchos ciudadanos no tienen acceso fácil al portal web.',
- 'recibido', NULL),
-
-('PQRS-20260615-010', 'peticion',
- 'Carlos Pérez', 'ciudadano@sigjep.co',
- '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3001234567\nDocumento: Cédula de Ciudadanía 1023456789\n\n━━━ DESCRIPCIÓN ━━━\nSolicito información detallada sobre los requisitos y el proceso para acceder al programa de vivienda de interés social convocatoria 2026-2.',
- 'en_proceso', NULL),
-
-('PQRS-20260615-011', 'queja',
- 'Hernando Cárdenas', 'hcardenas@correo.co',
- '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3167890123\nDocumento: Cédula de Ciudadanía 8765432\n\n━━━ DESCRIPCIÓN ━━━\nPresento queja por el mal trato recibido por parte de una servidora pública en la ventanilla de atención al ciudadano de la Secretaría de Hacienda el día 14 de junio de 2026.',
- 'recibido', NULL),
-
-('PQRS-20260616-012', 'derecho_peticion',
- 'Pedro Ramírez', 'pedro.ramirez@correo.co',
- '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nDocumento: Cédula de Ciudadanía 98765432\n\n━━━ DESCRIPCIÓN ━━━\nEjerciendo mi derecho de petición consagrado en el artículo 23 de la Constitución Política y la Ley 1755 de 2015, solicito información sobre el estado del proceso de actualización catastral del municipio y si mi predio está incluido.',
- 'recibido', NULL),
-
-('PQRS-20260617-013', 'queja',
- 'María Torres', 'maria.torres@correo.co',
- '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3205554433\n\n━━━ DESCRIPCIÓN ━━━\nQueja por demora excesiva en la atención del área de Tesorería. Fui citada para las 8 AM y fui atendida a las 11:30 AM sin ninguna justificación. Esto afecta directamente mi jornada laboral.',
- 'recibido', NULL),
-
-('PQRS-20260617-014', 'peticion',
- 'Luis Herrera', 'luis.herrera@correo.co',
- '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3104449988\nDocumento: Cédula de Ciudadanía 71234567\n\nAsunto: Certificado de residencia\n\n━━━ DESCRIPCIÓN ━━━\nSolicito la expedición de un certificado de residencia para tramitar una beca universitaria. Llevo 8 años viviendo en el municipio y nunca he podido obtener dicho documento.',
- 'en_proceso', NULL),
-
-('PQRS-20260617-015', 'sugerencia',
- 'Ana Gómez', 'ana.gomez@correo.co',
- '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Medellín\nTeléfono: 3119876543\n\n━━━ DESCRIPCIÓN ━━━\nSugerencia: sería muy valioso que la alcaldía habilitara jornadas nocturnas de atención al ciudadano los martes y jueves, ya que muchas personas trabajamos en horario diurno y no podemos acceder a los servicios presenciales.',
- 'recibido', NULL),
-
-('PQRS-20260617-016', 'reclamo',
- 'Anónimo', 'anonimo3@correo.co',
- '━━━ DATOS DEL SOLICITANTE ━━━\nMunicipio: Bello\n\n━━━ DESCRIPCIÓN ━━━\nReclamo anónimo: en el parque principal del municipio se está permitiendo el consumo de sustancias psicoactivas a plena luz del día sin ninguna intervención de las autoridades locales. Esto afecta a los niños y familias que usan el espacio.',
- 'en_proceso', NULL);
+ 'En atención a su petición se adjunta digitalmente el acta de la sesión ordinaria del Concejo Municipal del 28 de mayo de 2026. Puede descargarla en el portal de transparencia de la alcaldía.',
+ '2026-06-10 08:30:00', '2026-06-27');
 
 -- ============================================================
 -- 5. DOCUMENTOS (vinculados a expedientes)
@@ -372,7 +400,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- Casos: 23 (3 urgentes, 4 próximos, 13 a tiempo/en proceso, 3 cerrados/archivados)
 -- Expedientes: 23 (uno por caso)
 -- Documentos: 30 (distribuidos en varios expedientes)
--- PQRS: 16 (todos los tipos; incluye 3 anónimas, 2 respondidas, 1 cerrada)
+-- PQRS: 16 (con fecha_vencimiento: 2 vencidas, 2 urgentes, 2 próximas, 7 a tiempo, 1 respondida, 1 cerrada, 1 sin alerta)
 -- Auditoría: 16 registros
 -- Backups: 3 registros
 -- ============================================================

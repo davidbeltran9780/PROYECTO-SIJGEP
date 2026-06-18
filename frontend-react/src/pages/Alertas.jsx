@@ -1,6 +1,35 @@
 import { useEffect, useState } from 'react'
 import api from '../api/axios'
 
+const FILAS_PAG = 8
+
+function btnPag(disabled, activo = false) {
+  return {
+    padding: '4px 10px', borderRadius: '6px', border: '1px solid #e5e7eb', fontSize: '12px',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    background: activo ? '#1e3a8a' : disabled ? '#f9fafb' : 'white',
+    color: activo ? 'white' : disabled ? '#d1d5db' : '#374151',
+    fontWeight: activo ? '700' : '400',
+  }
+}
+
+function Paginacion({ total, pagina, setPagina }) {
+  const totalPaginas = Math.ceil(total / FILAS_PAG)
+  if (totalPaginas <= 1) return null
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', background: 'white', borderTop: '1px solid #f3f4f6', fontSize: '12px', color: '#6b7280' }}>
+      <span>{Math.min((pagina-1)*FILAS_PAG+1, total)}–{Math.min(pagina*FILAS_PAG, total)} de {total}</span>
+      <div style={{ display: 'flex', gap: '4px' }}>
+        <button onClick={() => setPagina(p => p - 1)} disabled={pagina === 1} style={btnPag(pagina === 1)}>‹ Ant.</button>
+        {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(p => (
+          <button key={p} onClick={() => setPagina(p)} style={btnPag(false, p === pagina)}>{p}</button>
+        ))}
+        <button onClick={() => setPagina(p => p + 1)} disabled={pagina === totalPaginas} style={btnPag(pagina === totalPaginas)}>Sig. ›</button>
+      </div>
+    </div>
+  )
+}
+
 function calcularDias(fecha) {
   if (!fecha) return null
   return Math.ceil((new Date(fecha) - new Date()) / (1000 * 60 * 60 * 24))
@@ -29,6 +58,8 @@ function BadgeTipo({ tipo }) {
 
 function TablaAlertas({ datos, categoria, icono, etiqueta, rango }) {
   const c = COLORES[categoria]
+  const [pagina, setPagina] = useState(1)
+  const datosPagina = datos.slice((pagina - 1) * FILAS_PAG, pagina * FILAS_PAG)
   return (
     <div style={{ marginBottom: '28px', border: `1px solid ${c.border}`, borderRadius: '12px', overflow: 'hidden' }}>
       <div style={{
@@ -54,6 +85,7 @@ function TablaAlertas({ datos, categoria, icono, etiqueta, rango }) {
           Sin registros en esta categoría
         </div>
       ) : (
+        <>
         <table style={{ margin: 0, borderRadius: 0 }}>
           <thead>
             <tr>
@@ -66,9 +98,7 @@ function TablaAlertas({ datos, categoria, icono, etiqueta, rango }) {
             </tr>
           </thead>
           <tbody>
-            {datos.map((item, i) => {
-              const oscuro = categoria === 'vencido'
-              return (
+            {datosPagina.map((item, i) => (
               <tr key={i}>
                 <td><BadgeTipo tipo={item._tipo} /></td>
                 <td style={{ fontFamily: 'monospace', fontWeight: '700', color: '#1e3a8a', fontSize: '12px' }}>
@@ -93,10 +123,11 @@ function TablaAlertas({ datos, categoria, icono, etiqueta, rango }) {
                   </span>
                 </td>
               </tr>
-              )
-            })}
+            ))}
           </tbody>
         </table>
+        <Paginacion total={datos.length} pagina={pagina} setPagina={setPagina} />
+        </>
       )}
     </div>
   )

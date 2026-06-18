@@ -1,12 +1,55 @@
 import { useEffect, useState } from 'react'
 import api from '../api/axios'
 import { useToast } from '../context/ToastContext'
+import { useConfirm } from '../components/ConfirmModal'
 
 const ESTADOS = ['recibido', 'en_proceso', 'respondido', 'cerrado']
+const FILAS_POR_PAGINA = 10
+
+function Paginacion({ total, pagina, setPagina, filasPorPagina }) {
+  const totalPaginas = Math.ceil(total / filasPorPagina)
+  if (totalPaginas <= 1) return null
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 4px', fontSize: '13px', color: '#6b7280' }}>
+      <span>Mostrando {Math.min((pagina - 1) * filasPorPagina + 1, total)}–{Math.min(pagina * filasPorPagina, total)} de {total}</span>
+      <div style={{ display: 'flex', gap: '4px' }}>
+        <button onClick={() => setPagina(1)} disabled={pagina === 1} style={btnPag(pagina === 1)}>«</button>
+        <button onClick={() => setPagina(p => p - 1)} disabled={pagina === 1} style={btnPag(pagina === 1)}>‹</button>
+        {Array.from({ length: totalPaginas }, (_, i) => i + 1)
+          .filter(p => p === 1 || p === totalPaginas || Math.abs(p - pagina) <= 1)
+          .reduce((acc, p, i, arr) => {
+            if (i > 0 && p - arr[i - 1] > 1) acc.push('...')
+            acc.push(p)
+            return acc
+          }, [])
+          .map((p, i) => p === '...'
+            ? <span key={`e${i}`} style={{ padding: '0 6px' }}>…</span>
+            : <button key={p} onClick={() => setPagina(p)} style={btnPag(false, p === pagina)}>{p}</button>
+          )}
+        <button onClick={() => setPagina(p => p + 1)} disabled={pagina === totalPaginas} style={btnPag(pagina === totalPaginas)}>›</button>
+        <button onClick={() => setPagina(totalPaginas)} disabled={pagina === totalPaginas} style={btnPag(pagina === totalPaginas)}>»</button>
+      </div>
+    </div>
+  )
+}
+
+function btnPag(disabled, activo = false) {
+  return {
+    padding: '4px 10px', borderRadius: '6px', border: '1px solid #e5e7eb', fontSize: '13px',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    background: activo ? '#1e3a8a' : disabled ? '#f9fafb' : 'white',
+    color: activo ? 'white' : disabled ? '#d1d5db' : '#374151',
+    fontWeight: activo ? '700' : '400',
+  }
+}
 
 export default function PQRS() {
   const toast = useToast()
+  const { confirmar, ConfirmUI } = useConfirm()
   const [busqueda, setBusqueda] = useState('')
+  const [filtroDesde, setFiltroDesde] = useState('')
+  const [filtroHasta, setFiltroHasta] = useState('')
+  const [pagina, setPagina] = useState(1)
   const [pqrs, setPqrs] = useState([])
   const [modal, setModal] = useState(false)
   const [modalRespuesta, setModalRespuesta] = useState(null)
@@ -39,6 +82,8 @@ export default function PQRS() {
 
   const guardar = async (e) => {
     e.preventDefault()
+    if (guardando) return
+    setGuardando(true)
     try {
       const res = await api.post('/pqrs', form)
       setModal(false)
@@ -47,10 +92,17 @@ export default function PQRS() {
       cargar()
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Error al crear PQRS')
+    } finally {
+      setGuardando(false)
     }
   }
 
   const cambiarEstado = async (id, nuevoEstado) => {
+    const ok = await confirmar(
+      `¿Cambiar estado a "${nuevoEstado}"?`,
+      'Esta acción cambiará el estado de la PQRS.'
+    )
+    if (!ok) return
     try {
       await api.patch(`/pqrs/${id}/estado`, { estado: nuevoEstado })
       cargar()
@@ -101,7 +153,7 @@ export default function PQRS() {
 
   const pqrsFiltradas = pqrs.filter(p => {
     const q = busqueda.toLowerCase()
-    return (
+    const coincideTexto = (
       (p.numero_radicado || '').toLowerCase().includes(q) ||
       (p.nombre_ciudadano || '').toLowerCase().includes(q) ||
       (p.correo || '').toLowerCase().includes(q) ||
@@ -109,10 +161,17 @@ export default function PQRS() {
       (p.estado || '').toLowerCase().includes(q) ||
       (p.descripcion || '').toLowerCase().includes(q)
     )
+    if (!coincideTexto) return false
+    if (filtroDesde && p.fecha_creacion && p.fecha_creacion.split('T')[0] < filtroDesde) return false
+    if (filtroHasta && p.fecha_creacion && p.fecha_creacion.split('T')[0] > filtroHasta) return false
+    return true
   })
+
+  const pqrsPagina = pqrsFiltradas.slice((pagina - 1) * FILAS_POR_PAGINA, pagina * FILAS_POR_PAGINA)
 
   return (
     <main className="content">
+      {ConfirmUI}
       {radicadoNuevo && (
         <div style={{
           background: '#f0fdf4', border: '1px solid #86efac',
@@ -142,16 +201,32 @@ export default function PQRS() {
         )}
       </div>
 
-      <div className="barra-busqueda">
-        <input
-          type="text"
-          placeholder="🔍 Buscar por nombre, correo, tipo o estado..."
-          value={busqueda}
-          onChange={e => setBusqueda(e.target.value)}
-        />
-        {busqueda && (
-          <button onClick={() => setBusqueda('')} title="Limpiar búsqueda">✕</button>
-        )}
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '12px', alignItems: 'center' }}>
+        <div className="barra-busqueda" style={{ flex: 1, minWidth: '220px', marginBottom: 0 }}>
+          <input
+            type="text"
+            placeholder="🔍 Buscar por nombre, correo, tipo o estado..."
+            value={busqueda}
+            onChange={e => { setBusqueda(e.target.value); setPagina(1) }}
+          />
+          {busqueda && <button onClick={() => setBusqueda('')} title="Limpiar búsqueda">✕</button>}
+        </div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <label style={{ fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap' }}>Desde</label>
+          <input type="date" value={filtroDesde}
+            onChange={e => { setFiltroDesde(e.target.value); setPagina(1) }}
+            style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '13px' }} />
+          <label style={{ fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap' }}>Hasta</label>
+          <input type="date" value={filtroHasta}
+            onChange={e => { setFiltroHasta(e.target.value); setPagina(1) }}
+            style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '13px' }} />
+          {(filtroDesde || filtroHasta) && (
+            <button onClick={() => { setFiltroDesde(''); setFiltroHasta(''); setPagina(1) }}
+              style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #d1d5db', background: '#f9fafb', fontSize: '12px', cursor: 'pointer' }}>
+              ✕ Limpiar fechas
+            </button>
+          )}
+        </div>
       </div>
 
       <table id="tablaPQRS">
@@ -162,6 +237,7 @@ export default function PQRS() {
             ) : (
               <>
                 <th>Radicado</th><th>Nombre</th><th>Tipo</th><th>Mensaje</th>
+                <th>Creación</th><th>Vencimiento</th>
                 <th>Estado</th>
                 {(puedeGestionar || esAbogado) && <th>Acciones</th>}
               </>
@@ -171,7 +247,7 @@ export default function PQRS() {
         <tbody>
           {pqrsFiltradas.length === 0 ? (
             <tr><td colSpan={6}>{busqueda ? 'No se encontraron resultados' : 'No hay PQRS registradas'}</td></tr>
-          ) : pqrsFiltradas.map((p) => (
+          ) : pqrsPagina.map((p) => (
             <tr key={p.id_pqrs || p.numero_radicado}>
               {esCiudadano ? (
                 <>
@@ -199,8 +275,18 @@ export default function PQRS() {
                   <td data-label="Radicado" style={{ fontSize: '11px', color: '#6b7280', whiteSpace: 'nowrap' }}>{p.numero_radicado}</td>
                   <td data-label="Nombre">{p.nombre_ciudadano}</td>
                   <td data-label="Tipo">{p.tipo}</td>
-                  <td data-label="Mensaje" style={{ maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <td data-label="Mensaje" style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {extraerMensaje(p.descripcion)}
+                  </td>
+                  <td data-label="Creación" style={{ fontSize: '12px', whiteSpace: 'nowrap', color: '#374151' }}>
+                    {p.fecha_creacion ? p.fecha_creacion.split('T')[0] : '—'}
+                  </td>
+                  <td data-label="Vencimiento" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
+                    {p.fecha_vencimiento ? (
+                      <span style={{ color: new Date(p.fecha_vencimiento) < new Date() ? '#dc2626' : '#374151', fontWeight: new Date(p.fecha_vencimiento) < new Date() ? '700' : '400' }}>
+                        {p.fecha_vencimiento.split('T')[0]}
+                      </span>
+                    ) : '—'}
                   </td>
                   <td data-label="Estado">
                     {puedeGestionar ? (
@@ -251,11 +337,12 @@ export default function PQRS() {
           ))}
         </tbody>
       </table>
+      <Paginacion total={pqrsFiltradas.length} pagina={pagina} setPagina={setPagina} filasPorPagina={FILAS_POR_PAGINA} />
 
       {/* Modal nueva PQRS */}
       {modal && (
         <div className="modal" style={{ display: 'flex' }}
-          onClick={e => e.target.className === 'modal' && setModal(false)}>
+          onClick={e => !guardando && e.target.className === 'modal' && setModal(false)}>
           <div className="modal-content">
             <h2>Nuevo PQRS</h2>
             <form onSubmit={guardar} className="pqrs-form">
@@ -277,8 +364,10 @@ export default function PQRS() {
                 value={form.descripcion}
                 onChange={e => setForm({ ...form, descripcion: e.target.value })} />
               <div className="form-actions">
-                <button type="submit" className="btn-guardar">Guardar</button>
-                <button type="button" className="btn-cancelar" onClick={() => setModal(false)}>Cancelar</button>
+                <button type="submit" className="btn-guardar" disabled={guardando}>
+                  {guardando ? 'Guardando...' : 'Guardar'}
+                </button>
+                <button type="button" className="btn-cancelar" disabled={guardando} onClick={() => setModal(false)}>Cancelar</button>
               </div>
             </form>
           </div>

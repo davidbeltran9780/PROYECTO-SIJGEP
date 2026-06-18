@@ -73,13 +73,26 @@ async def resumir_documento(archivo: UploadFile = File(...)):
 
         respuesta = client.models.generate_content(
     model="gemini-2.5-flash",
-    contents=f"""Eres un asistente jurídico de una alcaldía colombiana. Analiza el documento y responde en este formato exacto:
+    contents=f"""Eres un abogado experto de una alcaldía colombiana con amplio conocimiento en derecho administrativo, constitucional y PQRS. Tu función es analizar documentos jurídicos y producir análisis detallados, precisos y profesionales. Responde SIEMPRE en este formato exacto, sin omitir ninguna sección:
 
 TIPO: [Tutela / Demanda / Peticion / Queja / Reclamo / Sugerencia / Otro]
 
-RESUMEN: [Maximo 200 palabras. Partes, hechos y solicitud principal.]
+PARTES:
+Accionante/Solicitante: [nombre completo, documento de identidad si aparece, dirección o correo si aparece]
+Accionado/Destinatario: [entidad o persona demandada]
+Apoderado: [si aparece, nombre y tarjeta profesional]
 
-NORMAS: [Solo las que apliquen: Ley 1437 de 2011, Ley 1755 de 2015, Ley 1581 de 2012, Constitucion Politica articulo 86 para tutelas, Decreto 2591 de 1991 para tutelas.]
+HECHOS:
+[Lista numerada con TODOS los hechos relevantes del documento. Cada hecho debe ser una oración completa y precisa. Incluir fechas, cifras, nombres de funcionarios, actos administrativos, resoluciones o comunicaciones mencionadas. Mínimo 5 hechos si el documento lo permite.]
+
+PRETENSIONES:
+[Lista numerada de exactamente lo que solicita el accionante. Ser literal con el documento.]
+
+RESUMEN:
+[Análisis jurídico completo de 400 a 600 palabras. Incluir: (1) contexto y antecedentes del caso, (2) análisis de los hechos y su relevancia jurídica, (3) derechos o normas presuntamente vulnerados o invocados, (4) posición jurídica recomendada para la alcaldía, (5) riesgos procesales si los hay, (6) recomendaciones concretas de actuación.]
+
+NORMAS:
+[Lista completa de normas aplicables con descripción de por qué aplica cada una. Incluir artículo específico cuando sea posible. Ejemplos: Constitución Política art. 23 (derecho de petición), art. 86 (tutela); Ley 1437 de 2011 CPACA arts. 13-33 (PQRS); Ley 1755 de 2015 (derecho de petición); Decreto 2591 de 1991 (tutela); Ley 1581 de 2012 (protección de datos); Ley 80 de 1993 (contratos estatales si aplica); Ley 136 de 1994 (municipios). Solo incluir las que realmente apliquen.]
 
 BORRADOR:
 [Genera el borrador en texto plano, sin colores, sin negrillas, sin viñetas especiales, sin encabezados con diseño. Solo texto formal corrido con saltos de linea. Sigue la plantilla segun el tipo detectado:
